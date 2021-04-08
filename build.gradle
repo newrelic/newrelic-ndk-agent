@@ -1,0 +1,130 @@
+plugins {
+    id "com.android.library"
+    id "kotlin-android"
+}
+
+def withThirdPartySupport = false
+
+android {
+    compileSdkVersion versions.agp.compileSdk
+    buildToolsVersion versions.agp.buildTools
+
+    defaultConfig {
+        minSdkVersion versions.agp.minSdk
+        targetSdkVersion versions.agp.targetSdk
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++17"
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+            version versions.cpp.cmake
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    testOptions {
+        unitTests {
+            all {
+                // environment 'LD_LIBRARY_PATH', "${buildDir}/intermediates/cmake/debug/obj/x86_64/"
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation project(path: ':agent-core', configuration: 'uber')
+    // implementation project(":agent-core")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin.plugin}"
+
+    // https://android-developers.googleblog.com/2020/02/native-dependencies-in-android-studio-40.html
+    if (withThirdPartySupport) {
+        implementation 'com.android.ndk.thirdparty:curl:7.68.0-alpha-1'
+        implementation 'com.android.ndk.thirdparty:jsoncpp:1.8.4-alpha-1'
+        implementation 'com.android.ndk.thirdparty:openssl:1.1.1d-alpha-1'
+    }
+
+    testImplementation 'org.robolectric:robolectric:' + project.versions.test.robolectric
+    testImplementation 'junit:junit:' + project.versions.test.junit
+    testImplementation 'org.mockito:mockito-core:' + project.versions.test.mockitoCore
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:' + project.versions.kotlin.mockito
+}
+
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+task install(type: Upload) {
+    afterEvaluate() {
+        repositories {
+            mavenInstaller {
+                configuration = configurations.archives
+                pom.groupId = 'com.newrelic.agent.android'
+                pom.artifactId = 'agent-ndk'
+                pom.version = rootProject.version
+            }
+        }
+    }
+}
+
+
+/**
+ * kudos: https://sureshjoshi.com/mobile/android-junit-native-libraries/
+ */
+def osxDir = projectDir.absolutePath + '/.externalNativeBuild/cmake/debug/osx/'
+
+task createBuildDir() {
+    def folder = new File(osxDir)
+    if (!folder.exists()) {
+        folder.mkdirs()
+    }
+}
+
+task cmake(type: Exec) {
+    dependsOn createBuildDir
+    workingDir osxDir
+    commandLine "/usr/local/bin/cmake"
+    args "${projectDir.absolutePath}/src/main/cpp"
+}
+
+task cmake_test(type: Exec) {
+    dependsOn createBuildDir
+    workingDir osxDir
+    commandLine "/usr/local/bin/cmake"
+    args "${projectDir.absolutePath}/src/test/cpp"
+}
+
+task make(type: Exec) {
+    dependsOn cmake
+    workingDir osxDir
+    commandLine "make"
+}
+
+project.afterEvaluate {
+    // Not sure how much of a hack this is - but it allows CMake/SWIG to run before Android Studio
+    // complains about missing generated files
+    // TODO: Probably need a release hook too?
+    javaPreCompileDebug.dependsOn externalNativeBuildDebug
+    // if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+    javaPreCompileDebugAndroidTest.dependsOn make
+    // }
+}
