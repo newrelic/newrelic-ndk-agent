@@ -16,7 +16,19 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                cppFlags "-std=c++17"
+                // cppFlags "-std=c++17"
+
+                // Passes optional arguments to CMake.
+                // arguments "-DANDROID_ARM_NEON=TRUE", "-DANDROID_TOOLCHAIN=clang"
+
+                // Sets a flag to enable format macro constants for the C compiler.
+                // cFlags "-D__STDC_FORMAT_MACROS"
+
+                // Sets optional flags for the C++ compiler.
+                cppFlags "-fexceptions", "-frtti", "-std=c++14"
+
+                // Specifies the targets Gradle should build
+                targets "agent-ndk" // , "agent-ndk-test"
             }
         }
     }

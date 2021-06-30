@@ -3,26 +3,32 @@
 
 # Sets the minimum version of CMake required to build the native library.
 
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required(VERSION 3.11.0)
 
 # Declares and names the project.
 
 project("agent-ndk")
 
-if (FIXME)
+include(FetchContent)
+
+
+if (0)
     # abi's don't have JNI?
     find_package(JNI REQUIRED)
     if (JNI_FOUND)
-        message (STATUS "JNI_INCLUDE_DIRS=${JNI_INCLUDE_DIRS}")
-        message (STATUS "JNI_LIBRARIES=${JNI_LIBRARIES}")
+        message(STATUS "JNI_INCLUDE_DIRS=${JNI_INCLUDE_DIRS}")
+        message(STATUS "JNI_LIBRARIES=${JNI_LIBRARIES}")
         include_directories(${JAVA_INCLUDE_PATH})
-    else()
-        message (STATUS "JNI NOT FOUND")
-    endif()
-endif()
+    else ()
+        message(STATUS "JNI NOT FOUND")
+    endif ()
+endif ()
 
 add_compile_options(-Wall -Wextra -Wformat)
 add_compile_options(-fvisibility=hidden)
+
+set(PROJECT_TEST_DIR ${CMAKE_HOME_DIRECTORY}/../../test/cpp)
+message(STATUS "${PROJECT_TEST_DIR}")
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -44,7 +50,6 @@ add_library( # Sets the name of the library.
 # you want to add. CMake verifies that the library exists before
 # completing its build.
 
-if(0)
 find_library( # Sets the name of the path variable.
         log-lib
 
@@ -56,7 +61,6 @@ add_library(
         glue-lib
         STATIC
         ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c )
-endif()
 
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this
@@ -66,15 +70,16 @@ target_link_libraries( # Specifies the target library.
         agent-ndk
 
         # Links the target library to the NDK libraries included in the NDK.
-        # ${log-lib}
-        # ${glue-lib}
+        ${log-lib}
+        ${glue-lib}
         )
 
 
-get_cmake_property(_variableNames VARIABLES)
-foreach (_variableName ${_variableNames})
-    message(STATUS "${_variableName}=${${_variableName}}")
-endforeach()
+##
+# Include testing framework(s) and test app
+##
+
+include(UnitTests.cmake)
 
 
 
