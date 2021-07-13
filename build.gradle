@@ -16,19 +16,16 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                // cppFlags "-std=c++17"
-
-                // Passes optional arguments to CMake.
-                // arguments "-DANDROID_ARM_NEON=TRUE", "-DANDROID_TOOLCHAIN=clang"
-
-                // Sets a flag to enable format macro constants for the C compiler.
-                // cFlags "-D__STDC_FORMAT_MACROS"
-
                 // Sets optional flags for the C++ compiler.
                 cppFlags "-fexceptions", "-frtti", "-std=c++14"
 
                 // Specifies the targets Gradle should build
                 targets "agent-ndk" // , "agent-ndk-test"
+                // Passes optional arguments to CMake.
+                // arguments "-DANDROID_ARM_NEON=TRUE", "-DANDROID_TOOLCHAIN=clang"
+
+                // Sets a flag to enable format macro constants for the C compiler.
+                // cFlags "-D__STDC_FORMAT_MACROS"
             }
         }
     }
@@ -58,7 +55,7 @@ android {
     testOptions {
         unitTests {
             all {
-                // environment 'LD_LIBRARY_PATH', "${buildDir}/intermediates/cmake/debug/obj/x86_64/"
+                    environment 'LD_LIBRARY_PATH', "${buildDir}/intermediates/cmake/debug/obj/x86_64/"
             }
         }
     }
@@ -66,7 +63,6 @@ android {
 
 dependencies {
     implementation project(path: ':agent-core', configuration: 'uber')
-    // implementation project(":agent-core")
     implementation "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin.plugin}"
 
     // https://android-developers.googleblog.com/2020/02/native-dependencies-in-android-studio-40.html
