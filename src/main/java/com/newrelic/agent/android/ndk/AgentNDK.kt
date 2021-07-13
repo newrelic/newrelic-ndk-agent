@@ -1,3 +1,8 @@
+/**
+ * Copyright 2021-present New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package com.newrelic.agent.android.ndk
 
 import com.newrelic.agent.android.logging.AgentLog
@@ -10,14 +15,16 @@ open class AgentNDK {
     /**
      * API methods callable from agent
      **/
-    external fun initialize(): Boolean
+    external fun initialize() : Boolean
     external fun shutdown(hardKill: Boolean = false): Void
+    external fun crashNow(cause: String? = "This is a demonstration native crash courtesy of New Relic"): Void
+    external fun dumpstack(): String
 
     companion object {
         private val log: AgentLog = AgentLogManager.getAgentLog()
 
         init {
-            // loadAgent()
+            // TODO: loadAgent()
         }
 
         @JvmStatic
@@ -48,7 +55,7 @@ open class AgentNDK {
         fun getInstance() = agentNdk ?: synchronized(this) {
                 agentNdk ?: AgentNDK().also { agentNdk = it }
             }
-
     }
+
 
 }

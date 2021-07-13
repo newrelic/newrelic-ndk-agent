@@ -8,8 +8,15 @@ class AgentNDKTest {
 
     private var agentNdk: AgentNDK? = null
 
+    companion object {
+        init {
+            AgentNDK.loadAgent()
+        }
+    }
+
     @Before
     fun setUp() {
+
         agentNdk = AgentNDK.getInstance()
         /*
         agentNdk = mock() {
@@ -41,5 +48,15 @@ class AgentNDKTest {
     @Test
     fun getInstance() {
         Assert.assertNotNull(AgentNDK.getInstance())
+    }
+
+    @Test
+    fun crashNow() {
+        // TODO
+    }
+
+    @Test
+    fun dumpstack() {
+        // TODO
     }
 }
