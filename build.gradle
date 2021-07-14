@@ -8,6 +8,7 @@ def withThirdPartySupport = false
 android {
     compileSdkVersion versions.agp.compileSdk
     buildToolsVersion versions.agp.buildTools
+    ndkVersion versions.agp.ndk
 
     defaultConfig {
         minSdkVersion versions.agp.minSdk
@@ -16,17 +17,23 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
+                // Sets a flag to enable format macro constants for the C compiler.
+                cFlags "-DHAVE_STDLIB_H -D HAVE_STRING_H -D__STDC_FORMAT_MACROS"
+
                 // Sets optional flags for the C++ compiler.
                 cppFlags "-fexceptions", "-frtti", "-std=c++14"
 
                 // Specifies the targets Gradle should build
                 targets "agent-ndk" // , "agent-ndk-test"
-                // Passes optional arguments to CMake.
-                // arguments "-DANDROID_ARM_NEON=TRUE", "-DANDROID_TOOLCHAIN=clang"
 
-                // Sets a flag to enable format macro constants for the C compiler.
-                // cFlags "-D__STDC_FORMAT_MACROS"
+                // Passes optional arguments to CMake.
+                arguments "-DAGENT_VERSION=${project.version}"
             }
+        }
+
+        ndk {
+            // https://developer.android.com/ndk/guides/abis#sa
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64', 'x86'
         }
     }
 
@@ -55,7 +62,7 @@ android {
     testOptions {
         unitTests {
             all {
-                    environment 'LD_LIBRARY_PATH', "${buildDir}/intermediates/cmake/debug/obj/x86_64/"
+                environment 'LD_LIBRARY_PATH', "${buildDir}/intermediates/cmake/debug/obj/x86_64/"
             }
         }
     }
@@ -67,9 +74,7 @@ dependencies {
 
     // https://android-developers.googleblog.com/2020/02/native-dependencies-in-android-studio-40.html
     if (withThirdPartySupport) {
-        implementation 'com.android.ndk.thirdparty:curl:7.68.0-alpha-1'
         implementation 'com.android.ndk.thirdparty:jsoncpp:1.8.4-alpha-1'
-        implementation 'com.android.ndk.thirdparty:openssl:1.1.1d-alpha-1'
     }
 
     testImplementation 'org.robolectric:robolectric:' + project.versions.test.robolectric

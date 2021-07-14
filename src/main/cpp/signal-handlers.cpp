@@ -6,14 +6,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <android/log.h>
 #include <signal.h>
+#include <cstring>
+#include <csignal>
 #include <pthread.h>
 #include <malloc.h>
 #include <stdbool.h>
 #include <agent-ndk.h>
 
 #include "signal-handlers.h"
+#include "unwinder.h"
 
 typedef struct observed_signal {
     int signo;
@@ -23,10 +25,9 @@ typedef struct observed_signal {
 
 } observed_signal_t;
 
+// forward decls
 void invoke_sigaction(int signo, struct sigaction *_sigaction, siginfo_t *_siginfo, void *context);
-
 void invoke_previous(int signo, siginfo_t *_siginfo, void *context);
-
 void uninstall_handlers();
 
 /* signal mask */
@@ -43,12 +44,12 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /* Collection of observed signals */
 static observed_signal_t observedSignals[] = {
-        {SIGQUIT, "SIGQUIT", "Application not responding (ANR)",                  {}},
-        {SIGABRT, "SIGABRT", "Abnormal termination",                              {}},
+        {SIGQUIT, "SIGQUIT", "Application not responding (ANR)", {}},
+        {SIGILL,  "SIGILL",  "Illegal instruction", {}},
+        {SIGABRT, "SIGABRT", "Abnormal termination", {}},
+        {SIGFPE,  "SIGFPE",  "Floating-point exception", {}},
+        {SIGBUS,  "SIGBUS",  "Bus error (bad memory access)", {}},
         {SIGSEGV, "SIGSEGV", "Segmentation violation (invalid memory reference)", {}},
-        {SIGILL,  "SIGILL",  "Illegal instruction",                               {}},
-        {SIGBUS,  "SIGBUS",  "Bus error (bad memory access)",                     {}},
-        {SIGFPE,  "SIGFPE",  "Floating-point exception",                          {}},
 };
 
 static size_t observedSignalCnt = sizeof(observedSignals) / sizeof(observedSignals[0]);
@@ -60,6 +61,12 @@ static bool initialized = false;
  * Intercept a raised signal
  */
 void interceptor(int signo, siginfo_t *_siginfo, void *ucontext) {
+    const ucontext_t *_ucontext = static_cast<const ucontext_t *>(ucontext);
+    char buffer[BACKTRACE_SZ_MAX];
+
+    // Uninstall the custom handlers to prevent recursion
+    uninstall_handlers();
+
     for (size_t i = 0; i < observedSignalCnt; i++) {
         if (observedSignals[i].signo == signo) {
             const observed_signal_t *signal = &observedSignals[i];
@@ -68,16 +75,19 @@ void interceptor(int signo, siginfo_t *_siginfo, void *ucontext) {
 
             switch (signo) {
                 case SIGQUIT:
-                    _LOGI("ANR detected");
                     // TODO handle ANR
+                    collectBacktrace(buffer, sizeof(buffer), _siginfo, _ucontext);
+                    _LOGI("ANR detected: %s", buffer);
                     break;
 
-                case SIGKILL:
                 case SIGILL:
                 case SIGBUS:
                 case SIGABRT:
                 case SIGFPE:
+                case SIGSEGV:
                     // TODO handle this signal
+                    collectBacktrace(buffer, sizeof(buffer), _siginfo, _ucontext);
+                    _LOGI("Signal raised: %s", buffer);
                     break;
 
                 default:
@@ -89,22 +99,24 @@ void interceptor(int signo, siginfo_t *_siginfo, void *ucontext) {
         }
     }
 
-    // Uninstall the custom handlers to prevent recursion
-    uninstall_handlers();
-
     // chain to previous signo handler for abend
     invoke_previous(signo, _siginfo, ucontext);
 }
 
-void *install_handlers() {
+/**
+ * Install observed signals
+ */
+void *install_handlers(void* unused) {
+    (void) unused;
+
     if (!initialized) {
         for (size_t i = 0; i < observedSignalCnt; i++) {
             const observed_signal_t *signal = &observedSignals[i];
             if (0 != sigaction(signal->signo, &signalHandler,
                                (struct sigaction *) &signal->sa_previous)) {
-                _LOGE("Unable to install interceptor signal: %d", signal->signo);
+                _LOGE("Unable to install signal %d handler", signal->signo);
             } else {
-                _LOGI("Signal %d interceptor installed", signal->signo);
+                _LOGI("Signal %d handler installed", signal->signo);
             }
         }
 
@@ -122,12 +134,12 @@ void uninstall_handlers() {
     if (initialized) {
         for (size_t i = 0; i < observedSignalCnt; i++) {
             observed_signal_t signal = observedSignals[i];
-            sigaction(signal.signo, &signal.sa_previous, 0);
+            sigaction(signal.signo, &signal.sa_previous, nullptr);
             memset(&signal.sa_previous, 0, sizeof(struct sigaction));
-            _LOGI("Signal handler (%d) uninstalled", signal.signo);
+            // _LOGD("Signal %d interceptor uninstalled", signal.signo);
         }
 
-        signalHandler.sa_handler = SIG_DFL;         // the default interceptor
+        signalHandler.sa_handler = SIG_DFL;         // the default handler
         signalHandler.sa_flags = SA_RESETHAND;      // default signal flags
 
         initialized = false;
@@ -182,8 +194,8 @@ bool signal_handler_initialize() {
     sigemptyset(&_sigset);
     sigaddset(&_sigset, SIGQUIT);
 
-    if (pthread_sigmask(SIG_BLOCK, &_sigset, NULL) == 0) {
-        if (pthread_create(&handlerThread, NULL, install_handlers, NULL) != 0) {
+    if (pthread_sigmask(SIG_BLOCK, &_sigset, nullptr) == 0) {
+        if (pthread_create(&handlerThread, nullptr, install_handlers, nullptr) != 0) {
             _LOGE("Unable to create watchdog thread");
         }
 
@@ -243,7 +255,7 @@ void invoke_previous(int signo, siginfo_t *_siginfo, void *ucontext) {
     for (size_t i = 0; i < observedSignalCnt; ++i) {
         observed_signal_t signal = observedSignals[i];
         if (signal.signo == signo) {
-            _LOGI("Invoking previous handler for signal %d", signal.signo);
+            _LOGD("Invoking previous handler for signal %d", signal.signo);
             invoke_sigaction(signo, &signal.sa_previous, _siginfo, ucontext);
         }
     }

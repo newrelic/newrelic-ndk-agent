@@ -31,7 +31,14 @@ message(STATUS "${PROJECT_TEST_DIR}")
 
 include_directories("./include")
 
-add_library(agent-ndk SHARED agent-ndk.cpp signal-handlers.c)
+add_library(agent-ndk SHARED
+    agent-ndk.cpp
+    signal-handlers.cpp
+    terminate-handlers.cpp
+    unwinder.cpp
+    # demangle/cp-demangle.c
+)
+
 
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this

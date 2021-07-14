@@ -11,15 +11,15 @@
 
 #include "signal-handlers.h"
 
-static const char *get_arch() {
+const char *get_arch() {
 #if defined(__arm__)
-    return "ARM32";
+    return "arm";
 #elif defined(__aarch64__)
-    return "ARM64";
+    return "arm64";
 #elif defined(__i386__)
-    return "X86";
+    return "x86";
 #elif defined(__x86_64__)
-    return "X86_64";
+    return "x86_64";
 #else
 #error Unknown architecture!
 #endif
@@ -32,7 +32,7 @@ Java_com_newrelic_agent_android_ndk_AgentNDK_initialize(JNIEnv *env, jobject thi
     (void) thiz;
 
     if (signal_handler_initialize()) {
-        _LOGE("%s sig handlers installed: pid(%d) ppid(%d) tid(%d)",
+        _LOGI("%s signal handlers installed: pid(%d) ppid(%d) tid(%d)",
               get_arch(), getpid(), getppid(), gettid());
         return true;
     }
@@ -48,7 +48,6 @@ Java_com_newrelic_agent_android_ndk_AgentNDK_shutdown(JNIEnv *env, jobject thiz,
     (void) env;
     (void) thiz;
     (void) hard_kill;
-
     signal_handler_shutdown();
     return nullptr;
 }
@@ -58,7 +57,7 @@ JNIEXPORT jstring JNICALL
 Java_com_newrelic_agent_android_ndk_AgentNDK_dumpstack(JNIEnv *env, jobject thiz) {
     (void) env;
     (void) thiz;
-    char str[0x200] = "TODO";
+    char str[0x200] = "TODO: implement dumpstack()";
 
     // TODO: implement dumpstack()
 
@@ -71,7 +70,8 @@ Java_com_newrelic_agent_android_ndk_AgentNDK_crashNow(JNIEnv *env, jobject thiz,
     (void) env;
     (void) thiz;
     (void) cause;
+    // TODO emit the cause in the crash report
+    env->FindClass(NULL);
     kill(0, SIGKILL);
     return NULL;
 }
-
