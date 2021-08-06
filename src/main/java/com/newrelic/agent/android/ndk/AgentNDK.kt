@@ -5,22 +5,31 @@
 
 package com.newrelic.agent.android.ndk
 
+import android.content.Context
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import com.newrelic.agent.android.logging.AgentLog
 import com.newrelic.agent.android.logging.AgentLogManager
 import com.newrelic.agent.android.metric.MetricNames
 import com.newrelic.agent.android.stats.StatsEngine
+
 
 open class AgentNDK {
 
     /**
      * API methods callable from agent
      **/
-    external fun initialize() : Boolean
+    external fun initialize(): Boolean
     external fun shutdown(hardKill: Boolean = false): Void
     external fun crashNow(cause: String? = "This is a demonstration native crash courtesy of New Relic"): Void
     external fun dumpstack(): String
 
     companion object {
+
+        class Builder {
+
+        }
+
         private val log: AgentLog = AgentLogManager.getAgentLog()
 
         init {
@@ -28,7 +37,7 @@ open class AgentNDK {
         }
 
         @JvmStatic
-        fun loadAgent() : Boolean {
+        fun loadAgent(): Boolean {
             try {
                 System.loadLibrary("agent-ndk")
                 log.info("Agent NDK loaded")
@@ -53,9 +62,17 @@ open class AgentNDK {
 
         @JvmStatic
         fun getInstance() = agentNdk ?: synchronized(this) {
-                agentNdk ?: AgentNDK().also { agentNdk = it }
-            }
+            agentNdk ?: AgentNDK().also { agentNdk = it }
+        }
     }
 
+    fun getNativeLibraryDir(context: Context) {
+        val packageName = context.packageName
+        val packageManager = context.packageManager
+
+        val ainfo: ApplicationInfo =
+            packageManager.getApplicationInfo(packageName, PackageManager.GET_SHARED_LIBRARY_FILES)
+        log.debug("native library dir " + ainfo.nativeLibraryDir)
+    }
 
 }

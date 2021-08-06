@@ -106,7 +106,7 @@ TEST_F(TestFixtures, DefaultConstructor) {
 }
 
 // Tests installation
-TEST_F(TestFixtures, InstallHandlers) {
+TEST_F(TestFixtures, InstallHandler) {
 }
 
 

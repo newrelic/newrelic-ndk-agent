@@ -9,7 +9,6 @@
 #include <unwind.h>
 #include <dlfcn.h>
 #include <fcntl.h>
-#include <unwind.h>
 #include <unistd.h>
 #include <string>
 #include <sys/ucontext.h>
@@ -39,17 +38,17 @@ void transformFrame(size_t, const _Unwind_Ptr, std::string *);
 _Unwind_Reason_Code unwinder_cb(struct _Unwind_Context *ucontext, void *arg) {
     backtrace_t *state = static_cast<backtrace_t *>(arg);
 
-    // Skip some frames that belong to the signal handler frame.
-    if (state->skip_frames > 0) {
-        state->skip_frames--;
-        return _URC_NO_REASON;
-    }
-
     if (state->frame_cnt == 0) {
         collectCrashingThread(ucontext, state);
         return _URC_NO_REASON;
     }
 
+    // Skip some frames that belong to the signal handler frame.
+    if (state->skip_frames > 0) {
+        state->skip_frames--;
+        return _URC_NO_REASON;
+    }
+    
     // Sets ip_before_insn flag indicating whether that IP is before or
     // after first not yet fully executed instruction.
     int ip_before = 0;
@@ -146,6 +145,8 @@ void transformFrame(size_t index, const _Unwind_Ptr address, std::string *backtr
 void collectContext(struct _Unwind_Context *ucontext, backtrace_t *state) {
     (void) ucontext;
     (void) state;
+
+    // TODO
 }
 
 void collectCrashingThread(struct _Unwind_Context *ucontext, backtrace_t *state) {
@@ -290,7 +291,7 @@ bool collectBacktrace(char *backtrace_buffer, size_t max_size, const siginfo_t *
     // unwinds the backtrace and fills the buffer with stack frame addresses
     _Unwind_Backtrace(unwinder_cb, &state);
 
-    _LOGI("[%s] collectBacktrace: frames[%zu] skipped[%d] context[%p]",
+    _LOGD("[%s] collectBacktrace: frames[%zu] skipped[%d] context[%p]",
         get_arch(), state.frame_cnt, state.skip_frames, state.sa_ucontext);
 
     backtrace.append("'backtrace': {");
