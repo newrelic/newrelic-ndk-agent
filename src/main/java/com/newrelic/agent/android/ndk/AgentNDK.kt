@@ -30,7 +30,7 @@ open class AgentNDK {
 
         }
 
-        private val log: AgentLog = AgentLogManager.getAgentLog()
+        val log: AgentLog = AgentLogManager.getAgentLog()
 
         init {
             // TODO: loadAgent()
