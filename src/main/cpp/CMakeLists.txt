@@ -39,6 +39,8 @@ add_library(agent-ndk SHARED
         anr-handler.cpp
         procfs.cpp
         signal-utils.cpp
+        jni/jni.cpp
+        jni/jni-delegate.cpp
         )
 
 
