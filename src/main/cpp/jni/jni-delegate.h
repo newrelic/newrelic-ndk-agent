@@ -8,19 +8,19 @@
 #define _AGENT_NDK_JNI_DELEGATE_H
 
 /**
- * Bind C methods to Java adapters in JNIDelegate.
+ * Bind C methods to Java adapters in JavaDelegate.
  * Delegates will minimize the service time,
- * making the delegate call on worker threads.
+ * making the delegate calls on worker threads.
  *
- * @param pEnv JNI environment
- * @return true if all goes well
+ * @param env JNI environment
+ * @return true JVM classes are bound to JNI structs
  */
-bool bind_delegate(JNIEnv *pEnv, jni::native_context_t &native_context);
+bool bind_delegate(JNIEnv *env, jni::native_context_t &native_context);
 
 /**
  * Release and reset all resources alloc'd in bind_delegate()
  */
-void release_delegate(JNIEnv *pEnv);
+void release_delegate(JNIEnv *env);
 
 /**
  * Called with a serialized crash report (WIP)

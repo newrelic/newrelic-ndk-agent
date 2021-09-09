@@ -96,6 +96,10 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, __unused void *reserved) {
 
     native_context.initialized = bind_delegate(env, native_context);
 
+    if (!native_context.initialized) {
+        _LOGE("Could not bind to JVM delegates. Reports will not be uploaded.");
+    }
+
     return JNI_VERSION_1_6;
 }
 
@@ -128,8 +132,7 @@ jclass env_find_class(JNIEnv *env, const char *class_name) {
     return nullptr;
 }
 
-jmethodID
-env_get_methodid(JNIEnv *env, jclass clz, const char *method_name, const char *method_sig) {
+jmethodID env_get_methodid(JNIEnv *env, jclass clz, const char *method_name, const char *method_sig) {
     if (env != nullptr) {
         if (clz != nullptr) {
             if (method_name != nullptr) {

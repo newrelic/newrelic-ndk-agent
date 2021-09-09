@@ -6,11 +6,11 @@
 #ifndef _AGENT_NDK_SIGNAL_UTILS_H
 #define _AGENT_NDK_SIGNAL_UTILS_H
 
-namespace sigutils {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-//#ifdef __cplusplus
-//extern "C" {
-//#endif
+namespace sigutils {
 
     bool set_sigstack(stack_t *_stack, size_t stackSize);
 
@@ -20,12 +20,11 @@ namespace sigutils {
 
     bool install_handler(int signo, void sig_action(int, siginfo_t*, void*));
 
-
-//#ifdef __cplusplus
-//}
-//#endif
-
 }   // namespace sigutils
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif // _AGENT_NDK_SIGNAL_UTILS_H

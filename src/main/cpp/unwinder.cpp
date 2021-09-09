@@ -30,16 +30,16 @@ typedef struct backtrace {
 } backtrace_t;
 
 // forward decls
-void collectCrashingThread(struct _Unwind_Context *, backtrace_t *);
-void collectNoncrashingThreads(struct _Unwind_Context *, backtrace_t *);
-bool recordFrame(uintptr_t, backtrace_t *);
-void transformFrame(size_t, const _Unwind_Ptr, std::string *);
+void collect_crashing_thread(struct _Unwind_Context *, backtrace_t *);
+void collect_noncrashing_threads(struct _Unwind_Context *, backtrace_t *);
+bool record_frame(uintptr_t, backtrace_t *);
+void transform_frame(size_t, const _Unwind_Ptr, std::string *);
 
 _Unwind_Reason_Code unwinder_cb(struct _Unwind_Context *ucontext, void *arg) {
     backtrace_t *state = static_cast<backtrace_t *>(arg);
 
     if (state->frame_cnt == 0) {
-        collectCrashingThread(ucontext, state);
+        collect_crashing_thread(ucontext, state);
         return _URC_NO_REASON;
     }
 
@@ -54,13 +54,13 @@ _Unwind_Reason_Code unwinder_cb(struct _Unwind_Context *ucontext, void *arg) {
     int ip_before = 0;
     _Unwind_Ptr ip = _Unwind_GetIPInfo(ucontext, &ip_before);
 
-    return recordFrame(ip, state) ? _URC_NO_REASON : _URC_END_OF_STACK;
+    return record_frame(ip, state) ? _URC_NO_REASON : _URC_END_OF_STACK;
 }
 
-bool recordFrame(uintptr_t ip, backtrace_t *state) {
+bool record_frame(uintptr_t ip, backtrace_t *state) {
 
     if (state->frame_cnt >= BACKTRACE_FRAMES_MAX) {
-        _LOGE("recordFrame: stack is full");
+        _LOGE("record_frame: stack is full");
         return false;
     }
 
@@ -75,7 +75,7 @@ bool recordFrame(uintptr_t ip, backtrace_t *state) {
         if (ip == (uintptr_t) NULL || ip == state->frames[state->frame_cnt - 1]) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat"
-            _LOGE("recordFrame: ip is null or duplicate of frame[%lu]", state->frame_cnt - 1);
+            _LOGE("record_frame: ip is null or duplicate of frame[%lu]", state->frame_cnt - 1);
 #pragma clang diagnostic pop
             return true;
         }
@@ -87,7 +87,7 @@ bool recordFrame(uintptr_t ip, backtrace_t *state) {
     return true;
 }
 
-void transformFrame(size_t index, const _Unwind_Ptr address, std::string *backtrace) {
+void transform_frame(size_t index, const _Unwind_Ptr address, std::string *backtrace) {
     Dl_info info = {};
     std::string frame;
 
@@ -142,14 +142,14 @@ void transformFrame(size_t index, const _Unwind_Ptr address, std::string *backtr
  * Register context
  *
  */
-void collectContext(struct _Unwind_Context *ucontext, backtrace_t *state) {
+void collect_context(struct _Unwind_Context *ucontext, backtrace_t *state) {
     (void) ucontext;
     (void) state;
 
     // TODO
 }
 
-void collectCrashingThread(struct _Unwind_Context *ucontext, backtrace_t *state) {
+void collect_crashing_thread(struct _Unwind_Context *ucontext, backtrace_t *state) {
     (void) ucontext;
     std::string frame;
 
@@ -162,7 +162,7 @@ void collectCrashingThread(struct _Unwind_Context *ucontext, backtrace_t *state)
     _EMIT("'name':%s, ", "FIXME");
 
     if (state->sa_ucontext == nullptr) {
-        _LOGE("collectCrashingThread: sa_ucontext is null");
+        _LOGE("collect_crashing_thread: sa_ucontext is null");
         _EMIT("}");
         return;
     }
@@ -170,7 +170,7 @@ void collectCrashingThread(struct _Unwind_Context *ucontext, backtrace_t *state)
     const mcontext_t *mcontext = &(state->sa_ucontext->uc_mcontext);
 
     if (mcontext == nullptr) {
-        _LOGE("collectCrashingThread: mcontext is null");
+        _LOGE("collect_crashing_thread: mcontext is null");
         _EMIT("}");
         return;
     }
@@ -188,7 +188,7 @@ void collectCrashingThread(struct _Unwind_Context *ucontext, backtrace_t *state)
     _EMIT("'code':%ld, ", mcontext->gregs[REG_ERR]);
 
     // Program counter (pc)/instruction pointer (ip) register contains the crash address.
-    recordFrame(mcontext->gregs[REG_EIP], state);
+    record_frame(mcontext->gregs[REG_EIP], state);
 
 #elif defined(__x86_64__)
     for (int i = 0; i< NGREG; i++) {
@@ -201,7 +201,7 @@ void collectCrashingThread(struct _Unwind_Context *ucontext, backtrace_t *state)
     _EMIT("'code':%ld, ", mcontext->gregs[REG_ERR]);
 
     // Program counter (pc)/instruction pointer (ip) register contains the crash address.
-    recordFrame(mcontext->gregs[REG_RIP], state);
+    record_frame(mcontext->gregs[REG_RIP], state);
 
 #elif defined(__arm__)
     _EMIT("'r0': 0x%llu, ", REG_R0, mcontext->arm_r0);
@@ -244,7 +244,7 @@ void collectCrashingThread(struct _Unwind_Context *ucontext, backtrace_t *state)
     _Unwind_SetGR(ucontext, REG_R15, mcontext->arm_pc);
 
     // Program counter (pc)/instruction pointer (ip) register contains the crash address.
-    recordFrame(mcontext->arm_ip, state);
+    record_frame(mcontext->arm_ip, state);
 
 #elif defined(__aarch64__)
 
@@ -258,7 +258,7 @@ void collectCrashingThread(struct _Unwind_Context *ucontext, backtrace_t *state)
     _EMIT("],");
     _EMIT("fault_address': '%p', ", mcontext->fault_address);
 
-    recordFrame(mcontext->pc, state);
+    record_frame(mcontext->pc, state);
 
 #else
     // FAIL
@@ -270,14 +270,14 @@ void collectCrashingThread(struct _Unwind_Context *ucontext, backtrace_t *state)
     _EMIT("}");
 }
 
-void collectNoncrashingThreads(struct _Unwind_Context *ucontext, backtrace_t *state) {
+void collect_noncrashing_threads(struct _Unwind_Context *ucontext, backtrace_t *state) {
     (void) ucontext;
     (void) state;
 
     // TODO
 }
 
-bool collectBacktrace(char *backtrace_buffer, size_t max_size, const siginfo_t *siginfo,
+bool unwind_backtrace(char *backtrace_buffer, size_t max_size, const siginfo_t *siginfo,
                       const ucontext_t *sa_ucontext) {
 
     std::string backtrace;
@@ -291,7 +291,7 @@ bool collectBacktrace(char *backtrace_buffer, size_t max_size, const siginfo_t *
     // unwinds the backtrace and fills the buffer with stack frame addresses
     _Unwind_Backtrace(unwinder_cb, &state);
 
-    _LOGD("[%s] collectBacktrace: frames[%zu] skipped[%d] context[%p]",
+    _LOGD("[%s] unwind_backtrace: frames[%zu] skipped[%d] context[%p]",
         get_arch(), state.frame_cnt, state.skip_frames, state.sa_ucontext);
 
     backtrace.append("'backtrace': {");
@@ -313,7 +313,7 @@ bool collectBacktrace(char *backtrace_buffer, size_t max_size, const siginfo_t *
         }
 
         // translate each stack frame
-        transformFrame(idx, ip, &backtrace);
+        transform_frame(idx, ip, &backtrace);
     }
 
     size_t str_size = backtrace.size();

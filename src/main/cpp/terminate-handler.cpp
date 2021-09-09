@@ -6,8 +6,11 @@
 #include <exception>
 #include <iostream>
 #include <cstdlib>
+
 #include <agent-ndk.h>
 #include "unwinder.h"
+#include "serializer.h"
+#include "terminate-handler.h"
 
 std::terminate_handler currentHandler = std::get_terminate();
 
@@ -17,26 +20,42 @@ std::terminate_handler currentHandler = std::get_terminate();
 static void terminateHandler() {
     char buffer[BACKTRACE_SZ_MAX];
 
+    // reset the handler
+    try {
+        if (currentHandler != nullptr) {
+            std::set_terminate(currentHandler);
+        }
+    } catch (...) {
+        _LOGE("Couldn't reset the previous termination handler!");
+    }
+
     try {
         std::exception_ptr unknown = std::current_exception();
         if (unknown != nullptr) {
-            collectBacktrace(buffer, sizeof(buffer), nullptr, nullptr);
+            if (unwind_backtrace(buffer, sizeof(buffer), nullptr, nullptr)) {
+                serializer::from_exception(buffer, sizeof(buffer));
+            }
             _LOGI("Unknown current exception, rethrowing: %s", buffer);
             std::rethrow_exception(unknown);
         } else {
-            _LOGI("Normal termination");
+            _LOGI("Normal termination recvd");
         }
     } catch (const std::exception &e) {
-        collectBacktrace(buffer, sizeof(buffer), nullptr, nullptr);
+        if (unwind_backtrace(buffer, sizeof(buffer), nullptr, nullptr)) {
+            serializer::from_exception(buffer, sizeof(buffer));
+        }
         _LOGI("Unexpected exception: %s %s", e.what(), buffer);
         throw e;
 
     } catch (...) {
-        collectBacktrace(buffer, sizeof(buffer), nullptr, nullptr);
+        if (unwind_backtrace(buffer, sizeof(buffer), nullptr, nullptr)) {
+            serializer::from_exception(buffer, sizeof(buffer));
+        }
         _LOGI("Unknown exception: %s", buffer);
         throw;
-    };
-    
+    }
+
+    // kill the process if the rethrown exception doesn't
     abort();
 }
 
@@ -46,12 +65,23 @@ std::unexpected_handler currentUnexpectedHandler;
 void unexpectedHandler() {
     // TODO
 }
+
 #endif // _LIBCPP_STD_VER <= 14
 
-void setTerminateHandler() {
+
+bool terminate_handler_initialize() {
     currentHandler = std::set_terminate(terminateHandler);
 #if _LIBCPP_STD_VER <= 14
     currentUnexpectedHandler = std::set_unexpected(unexpectedHandler);
 #endif // LIBCPP_STD_VER <= 14
+    return true;
 }
+
+void terminate_handler_shutdown() {
+    std::set_terminate(currentHandler);
+#if _LIBCPP_STD_VER <= 14
+    std::set_unexpected(currentUnexpectedHandler);
+#endif // LIBCPP_STD_VER <= 14
+}
+
 

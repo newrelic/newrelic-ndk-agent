@@ -43,13 +43,28 @@ bool bind_delegate(JNIEnv *env, jni::native_context_t &native_context) {
             native_context.jniDelegateClass,
             on_native_crashMethod, "(Ljava/lang/String;)V");
 
+    if (!native_context.on_native_crash) {
+        _LOGE("Failed to retrieve on_native_crash() method id");
+        return false;
+    }
+
     native_context.on_native_exception = env->GetMethodID(
             native_context.jniDelegateClass,
             on_native_exceptionMethod, "(Ljava/lang/String;)V");
 
+    if (!native_context.on_native_exception) {
+        _LOGE("Failed to retrieve on_native_crash() method id");
+        return false;
+    }
+
     native_context.on_application_not_responding = env->GetMethodID(
             native_context.jniDelegateClass,
             on_application_not_respondingMethod, "(Ljava/lang/String;)V");
+
+    if (!native_context.on_application_not_responding) {
+        _LOGE("Failed to retrieve on_native_crash() method id");
+        return false;
+    }
 
     return true;
 }
@@ -90,10 +105,6 @@ void *on_native_crashThread(void *arg) {
         }
     }
 
-    if (!native_context.on_native_crash) {
-        _LOGE("Failed to retrieve on_native_crash() methodID @ line %d", __LINE__);
-        return NULL;
-    }
 
     // invoke the method passing the backtrace as a string
     jstring jbacktrace = static_cast<jstring>(arg);
@@ -119,9 +130,9 @@ void on_native_crash(const char *backtrace) {
 
     JNIEnv *env;
     if (native_context.jvm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
-        jint res = native_context.jvm->AttachCurrentThread(&env, NULL);
-        if (JNI_OK != res) {
-            _LOGE("AttachCurrentThread: errorCode = %d", res);
+        jint jrc = native_context.jvm->AttachCurrentThread(&env, NULL);
+        if (JNI_OK != jrc) {
+            _LOGE("AttachCurrentThread: error %d: %s", jrc, strerror(jrc));
             return;
         }
     }
@@ -154,16 +165,11 @@ void on_native_exception(const char *backtrace) {
 
     JNIEnv *env;
     if (native_context.jvm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
-        jint res = native_context.jvm->AttachCurrentThread(&env, NULL);
-        if (JNI_OK != res) {
-            _LOGE("AttachCurrentThread: errorCode = %d", res);
+        jint jrc = native_context.jvm->AttachCurrentThread(&env, NULL);
+        if (JNI_OK != jrc) {
+            _LOGE("AttachCurrentThread: error %d: %s", jrc, strerror(jrc));
             return;
         }
-    }
-
-    if (!native_context.on_native_exception) {
-        _LOGE("Failed to retrieve on_native_crash() methodID @ line %d", __LINE__);
-        return;
     }
 
     // invoke the method passing the backtrace as a string
@@ -188,16 +194,11 @@ void on_application_not_responding(const char *backtrace) {
 
     JNIEnv *env;
     if (native_context.jvm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
-        jint res = native_context.jvm->AttachCurrentThread(&env, NULL);
-        if (JNI_OK != res) {
-            _LOGE("AttachCurrentThread: errorCode = %d", res);
+        jint jrc = native_context.jvm->AttachCurrentThread(&env, NULL);
+        if (JNI_OK != jrc) {
+            _LOGE("AttachCurrentThread: error %d: %s", jrc, strerror(jrc));
             return;
         }
-    }
-
-    if (!native_context.on_application_not_responding) {
-        _LOGE("Failed to retrieve on_native_crash() methodID @ line %d", __LINE__);
-        return;
     }
 
     // invoke the method passing the backtrace as a string

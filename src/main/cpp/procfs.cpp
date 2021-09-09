@@ -5,8 +5,8 @@
 
 #include <unistd.h>
 #include <string>
-#include <agent-ndk.h>
 
+#include <agent-ndk.h>
 #include "procfs.h"
 
 namespace procfs {

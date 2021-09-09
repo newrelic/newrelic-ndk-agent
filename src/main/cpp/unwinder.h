@@ -25,7 +25,7 @@ extern "C" {
 char* __cxa_demangle(const char* mangled, char* demangled, size_t* buffsz, int* status);
 #endif  // _DEMANGLE_CXX
 
-bool collectBacktrace(char*, size_t, const siginfo_t*, const ucontext_t*);
+bool unwind_backtrace(char*, size_t, const siginfo_t*, const ucontext_t*);
 
 #ifdef __cplusplus
 }

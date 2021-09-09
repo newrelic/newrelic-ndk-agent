@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
 ** */
 
-#ifndef _AGENT_NDK_SIGNALHANDLER_H
-#define _AGENT_NDK_SIGNALHANDLER_H
+#ifndef _AGENT_NDK_SIGNAL_HANDLER_H
+#define _AGENT_NDK_SIGNAL_HANDLER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,4 +18,4 @@ void signal_handler_shutdown();
 }
 #endif
 
-#endif // _AGENT_NDK_SIGNALHANDLER_H
+#endif // _AGENT_NDK_SIGNAL_HANDLER_H

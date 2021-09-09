@@ -3,20 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <ctype.h>
 #include <dirent.h>
-#include <inttypes.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 #include <semaphore.h>
-#include <errno.h>
-#include <agent-ndk.h>
 
-#include "anr-handler.h"
+#include <agent-ndk.h>
 #include "procfs.h"
 #include "signal-utils.h"
+#include "unwinder.h"
+#include "serializer.h"
+#include "anr-handler.h"
+
 
 static pid_t pid = getpid();
 static pid_t anr_monitor_tid = -1;
@@ -53,7 +51,8 @@ void *anr_monitor_thread(__unused void *unused) {
     _LOGD("anr_monitor_thread: started");
     while (true) {
         watchdog_triggered = false;
-        _LOGD("anr_monitor_thread: waiting on trigger via %s",  watchdog_has_sem ? "semaphore" : "polling");
+        _LOGD("anr_monitor_thread: waiting on trigger via %s",
+              watchdog_has_sem ? "semaphore" : "polling");
         if (!watchdog_has_sem || sem_wait(&watchdog_semaphore) != 0) {
             while (enabled && !watchdog_triggered) {
                 _LOGD("anr_monitor_thread: sleeping [%d] ns", poll_sleep);
@@ -77,13 +76,17 @@ void *anr_monitor_thread(__unused void *unused) {
     return nullptr;
 }
 
-static void anr_interceptor(__unused int signo, __unused siginfo_t *info, __unused void *user_context) {
+void anr_interceptor(__unused int signo, siginfo_t *_siginfo, void *ucontext) {
+    const ucontext_t *_ucontext = static_cast<const ucontext_t *>(ucontext);
 
     // Block SIGQUIT in this thread so the Google handler can run.
     sigutils::block_signal(SIGQUIT);
 
     if (enabled) {
-        _LOGE("TODO Collect stacktrace from unwinder");
+        char buffer[BACKTRACE_SZ_MAX];
+        if (unwind_backtrace(buffer, sizeof(buffer), _siginfo, _ucontext)) {
+            serializer::from_anr(buffer, sizeof(buffer));
+        }
     }
 
     // set the trigger flag for the poll loop if a semaphore was not created
@@ -190,7 +193,9 @@ bool anr_handler_initialize() {
     }
 
     // Install the ANR handler
-    sigutils::install_handler(SIGQUIT, anr_interceptor);
+    if (!sigutils::install_handler(SIGQUIT, anr_interceptor)) {
+        _LOGE("Could not install SIGQUIT handler: ANR reported won't be collected.");
+    }
 
     // Unblock SIGQUIT to allow the ANR handler to run
     _LOGD("anr_handler_initialize: posting to watchdog sem [%d]", (int) watchdog_has_sem);
@@ -205,9 +210,8 @@ bool anr_handler_initialize() {
 
 /**
  * Disable ANR handling via SIGQUIT
- * @return true
  */
-bool anr_handler_shutdown() {
+void anr_handler_shutdown() {
     reset_android_anr_handler();
     if (watchdog_has_sem && (sem_post(&watchdog_semaphore) != 0)) {
         _LOGE("anr_handler_shutdown: Could not unlock ANR handler semaphore");
@@ -215,7 +219,5 @@ bool anr_handler_shutdown() {
     sem_close(&watchdog_semaphore);
     enabled = false;
     watchdog_triggered = false;
-
-    return true;
 }
 

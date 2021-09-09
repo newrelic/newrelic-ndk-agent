@@ -8,6 +8,10 @@
 
 #include <string>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 namespace procfs {
 
     const char *get_process_name(pid_t pid, std::string &processName);
@@ -19,5 +23,9 @@ namespace procfs {
     const char *get_task_path(pid_t pid, std::string& taskName);
 
 }   // namespace procfs
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _AGENT_NDK_PROCFS_H

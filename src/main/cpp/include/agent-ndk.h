@@ -30,7 +30,10 @@ static const size_t BACKTRACE_FRAMES_MAX = 100;
 // Limit each frame to 1k
 static const size_t BACKTRACE_FRAMES_SZ_MAX = 1024;
 
-// Limit backtrace to 64k
+// Limit backtrace to 256 threads
+static const size_t BACKTRACE_THREADS_MAX = 256;
+
+// Limit backtrace to 64k// Limit backtrace to 64k
 static const size_t BACKTRACE_SZ_MAX = 0x10000;
 
 // Return label representing  current architecture

@@ -5,7 +5,7 @@
 
 cmake_minimum_required(VERSION 3.18.1)
 
-project("agent-ndk" )   ## VERSION ${AGENT_VERSION} LANGUAGES CXX)
+project("agent-ndk")   ## VERSION ${AGENT_VERSION} LANGUAGES CXX)
 
 include(FetchContent)
 
@@ -32,12 +32,15 @@ add_library(agent-ndk
         agent-ndk.cpp
         signal-handler.cpp
         terminate-handler.cpp
-        unwinder.cpp
         anr-handler.cpp
+        unwinder.cpp
         procfs.cpp
         signal-utils.cpp
         jni/jni.cpp
         jni/jni-delegate.cpp
+        serializer.cpp
+        backtrace.cpp
+        parson.c
         )
 
 target_include_directories(agent-ndk PUBLIC include)
@@ -55,26 +58,23 @@ target_link_libraries(agent-ndk ${log-lib})
 ##
 # For debugging
 ##
-add_library(agent-ndk-a
-        STATIC
+add_library(agent-ndk-a STATIC
         agent-ndk.cpp
         signal-handler.cpp
         terminate-handler.cpp
-        unwinder.cpp
         anr-handler.cpp
+        unwinder.cpp
         procfs.cpp
         signal-utils.cpp
         jni/jni.cpp
         jni/jni-delegate.cpp
         serializer.cpp
+        backtrace.cpp
+        parson.c
         )
+
 target_include_directories(agent-ndk-a PUBLIC include)
 target_link_libraries(agent-ndk-a ${log-lib})
 
-
-##
 # Include testing framework(s) and test app
-##
-
 ## FIXME include(UnitTests.cmake)
-

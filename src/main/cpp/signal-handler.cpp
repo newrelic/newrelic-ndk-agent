@@ -12,11 +12,12 @@
 #include <pthread.h>
 #include <malloc.h>
 #include <stdbool.h>
-#include <agent-ndk.h>
 
+#include <agent-ndk.h>
 #include "signal-utils.h"
-#include "signal-handler.h"
 #include "unwinder.h"
+#include "serializer.h"
+#include "signal-handler.h"
 
 typedef struct observed_signal {
     int signo;
@@ -35,9 +36,6 @@ void invoke_previous_sigaction(int signo, siginfo_t *_siginfo, void *context);
 void install_handler();
 
 void uninstall_handler();
-
-/* report serialization methods */
-void emit_backtrace(const char *);
 
 
 /* signal mask */
@@ -85,9 +83,7 @@ void interceptor(int signo, siginfo_t *_siginfo, void *ucontext) {
 
             switch (signo) {
                 case SIGQUIT:
-                    // ANRs are managed in anr-handler.cpp
-                    // collectBacktrace(buffer, sizeof(buffer), _siginfo, _ucontext);
-                    // emit_backtrace(buffer);
+                    _LOGE("ANR detected");
                     break;
 
                 case SIGILL:
@@ -96,13 +92,14 @@ void interceptor(int signo, siginfo_t *_siginfo, void *ucontext) {
                 case SIGFPE:
                 case SIGBUS:
                 case SIGSEGV:
-                    collectBacktrace(buffer, sizeof(buffer), _siginfo, _ucontext);
-                    emit_backtrace(buffer);
-                    _LOGI("Signal raised: %s", buffer);
+                    _LOGE("Signal %d intercepted", signo);
+                    if (unwind_backtrace(buffer, sizeof(buffer), _siginfo, _ucontext)) {
+                        serializer::from_crash(buffer, sizeof(buffer));
+                    }
                     break;
 
                 default:
-                    _LOGE("Unsupported signal %d detected!", signo);
+                    _LOGE("Unsupported signal %d intercepted!", signo);
                     break;
             }
 
@@ -260,12 +257,4 @@ void invoke_previous_sigaction(int signo, siginfo_t *_siginfo, void *ucontext) {
     }
 
     pthread_mutex_unlock(&mutex);
-}
-
-/**
- * Serialize the backtrace to local storage, to be picked up for processing on
- * the next app invocation
- */
-void emit_backtrace(const char *buffer) {
-    // TODO
 }

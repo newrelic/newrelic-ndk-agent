@@ -4,9 +4,7 @@
  */
 
 #include <string>
-#include <signal.h>
-#include <stdbool.h>
-#include <errno.h>
+#include <cerrno>
 
 #include <agent-ndk.h>
 #include "signal-utils.h"
@@ -40,9 +38,8 @@ bool block_signal(int signo) {
     sigset_t sigmask;
     sigemptyset(&sigmask);
     sigaddset(&sigmask, signo);
-    int rc = pthread_sigmask(SIG_BLOCK, &sigmask, nullptr);
-    if (rc != 0) {
-        _LOGE("Could not block signal [%d]: %s", signo, std::strerror(rc));
+    if (pthread_sigmask(SIG_BLOCK, &sigmask, nullptr) != 0) {
+        _LOGE("Could not block signal [%d]: %s", signo, std::strerror(errno));
         return false;
     }
 
@@ -55,9 +52,8 @@ bool unblock_signal(int signo) {
     sigset_t sigmask;
     sigemptyset(&sigmask);
     sigaddset(&sigmask, signo);
-    int rc = pthread_sigmask(SIG_UNBLOCK, &sigmask, nullptr);
-    if (rc != 0) {
-        _LOGE("Could not unblock signal [%d]: %s", signo, std::strerror(rc));
+    if (pthread_sigmask(SIG_UNBLOCK, &sigmask, nullptr) != 0) {
+        _LOGE("Could not unblock signal [%d]: %s", signo, std::strerror(errno));
         return false;
     }
 
@@ -72,7 +68,7 @@ bool install_handler(int signo, void sig_action(int, siginfo_t*, void*)) {
     handler.sa_sigaction = sig_action;
     handler.sa_flags = SA_SIGINFO;
     if (sigaction(signo, &handler, NULL) != 0) {
-        _LOGE("Could not install SIGQUIT handler: ANR reported won't be collected\n%s.", strerror(errno));
+        _LOGE("Could not install signal[%d] handler: %s.", signo, strerror(errno));
         return false;
     }
 

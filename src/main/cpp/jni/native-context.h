@@ -24,6 +24,9 @@ namespace jni {
         jmethodID on_native_exception;
         jmethodID on_application_not_responding;
 
+        // report storage
+        const char* report_path_absolute;
+
     } native_context_t;
 
     // FIXME returns global instance
