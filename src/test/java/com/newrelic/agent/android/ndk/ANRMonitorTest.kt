@@ -12,9 +12,5 @@ class ANRMonitorTest {
     @Test
     fun ignoreWhileDebugging() {
     }
-
-    fun testStartMonitor() {}
-    fun testStopMonitor() {}
-    fun testGetInstance() {}
-
+    
 }
