@@ -3,11 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 ##
 
-cmake_minimum_required(VERSION 3.11.0)
+cmake_minimum_required(VERSION 3.18.1)
 
-# Declares and names the project.
-
-project("agent-ndk")
+project("agent-ndk" )   ## VERSION ${AGENT_VERSION} LANGUAGES CXX)
 
 include(FetchContent)
 
@@ -29,9 +27,8 @@ add_compile_options(-fvisibility=hidden)
 set(PROJECT_TEST_DIR ${CMAKE_HOME_DIRECTORY}/../../test/cpp)
 message(STATUS "${PROJECT_TEST_DIR}")
 
-include_directories("./include")
-
-add_library(agent-ndk SHARED
+add_library(agent-ndk
+        SHARED
         agent-ndk.cpp
         signal-handler.cpp
         terminate-handler.cpp
@@ -43,19 +40,41 @@ add_library(agent-ndk SHARED
         jni/jni-delegate.cpp
         )
 
+target_include_directories(agent-ndk PUBLIC include)
+
 
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this
 # build script, prebuilt third-party libraries, or system libraries.
 
-# NDK support libs
+# NDK support libs: https://developer.android.com/ndk/guides/stable_apis
 find_library(log-lib log)
 
 target_link_libraries(agent-ndk ${log-lib})
 
 ##
+# For debugging
+##
+add_library(agent-ndk-a
+        STATIC
+        agent-ndk.cpp
+        signal-handler.cpp
+        terminate-handler.cpp
+        unwinder.cpp
+        anr-handler.cpp
+        procfs.cpp
+        signal-utils.cpp
+        jni/jni.cpp
+        jni/jni-delegate.cpp
+        serializer.cpp
+        )
+target_include_directories(agent-ndk-a PUBLIC include)
+target_link_libraries(agent-ndk-a ${log-lib})
+
+
+##
 # Include testing framework(s) and test app
 ##
 
-include(UnitTests.cmake)
+## FIXME include(UnitTests.cmake)
 

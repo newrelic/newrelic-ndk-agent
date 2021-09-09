@@ -7,7 +7,7 @@
 # Testing frameworks: we will choose one based on usability
 #
 
-cmake_minimum_required(VERSION 3.11.0)
+cmake_minimum_required(VERSION 3.18.0)
 enable_testing()
 
 include(CTest)
