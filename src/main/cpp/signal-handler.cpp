@@ -266,6 +266,6 @@ void invoke_previous_sigaction(int signo, siginfo_t *_siginfo, void *ucontext) {
  * Serialize the backtrace to local storage, to be picked up for processing on
  * the next app invocation
  */
-void emit_backtrace(const char *buffer) {
+void emit_backtrace(__unused const char *buffer) {
     // TODO
 }

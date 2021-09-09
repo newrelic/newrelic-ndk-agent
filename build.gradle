@@ -3,7 +3,7 @@ plugins {
     id "kotlin-android"
 }
 
-def withThirdPartySupport = false
+def withPreFabSupport = false
 
 android {
     compileSdkVersion versions.agp.compileSdk
@@ -59,6 +59,31 @@ android {
         jvmTarget = "1.8"
     }
 
+    /** AGP 4.1:
+    // Enable generation of Prefab packages and include them in the library's AAR.
+    buildFeatures {
+        prefabPublishing true
+    }
+
+    /*
+    // Include the "agent-ndk" module from the native build system in the AAR,
+    // and export the headers in src/main/cpp/include to its consumers
+    prefab {
+        agent-ndk {
+            headers "src/main/cpp/include"
+        }
+    }
+    /**/
+
+    // Avoid packing the unnecessary libraries into final AAR. For details
+    // refer to https://issuetracker.google.com/issues/168777344#comment5
+    // Note that if your AAR also contains Java/Kotlin APIs, you should not
+    // exclude libraries that are used by those APIs.
+
+    packagingOptions {
+       exclude("**/libc++_shared.so")
+    }
+
     testOptions {
         unitTests {
             all {
@@ -73,7 +98,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin.plugin}"
 
     // https://android-developers.googleblog.com/2020/02/native-dependencies-in-android-studio-40.html
-    if (withThirdPartySupport) {
+    if (withPreFabSupport) {
         implementation 'com.android.ndk.thirdparty:jsoncpp:1.8.4-alpha-1'
     }
 
@@ -81,6 +106,8 @@ dependencies {
     testImplementation 'junit:junit:' + project.versions.test.junit
     testImplementation 'org.mockito:mockito-core:' + project.versions.test.mockitoCore
     testImplementation 'org.mockito.kotlin:mockito-kotlin:' + project.versions.kotlin.mockito
+    testImplementation 'androidx.test:core:' + project.versions.test.androidxCore
+
 }
 
 apply plugin: 'maven'
