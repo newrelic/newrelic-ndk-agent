@@ -69,8 +69,9 @@ open class ANRMonitor {
     /**
      * Ignore detected ANRs when debugging
      */
-    fun ignoreWhileDebugging() {
+    fun disableWhileDebugging() : ANRMonitor {
         disableWhileDebugging = true
+        return this
     }
 
     fun startMonitor() {
