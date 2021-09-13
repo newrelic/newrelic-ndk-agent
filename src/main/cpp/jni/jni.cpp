@@ -14,7 +14,9 @@
 
 #include <agent-ndk.h>
 #include "native-context.h"
+#include "jni.h"
 #include "jni-delegate.h"
+#include "procfs.h"
 
 /**
  * The JNIEnv is used for thread-local storage. For this reason, you cannot share a
@@ -22,45 +24,21 @@
  * make JNI calls. Calling AttachCurrentThread() on an already-attached thread is a no-op.
  * Threads attached through JNI must call DetachCurrentThread() before they exit.
  *
- * CheckJNI:
- * adb shell stop
- * adb shell setprop dalvik.vm.checkjni true
- * adb shell start
+ * Attaching to the VM
+ * The JNI interface pointer (JNIEnv) is valid only in the current thread. Should another thread
+ * need to access the Java VM, it must first call AttachCurrentThread() to attach itself to the
+ * VM and obtain a JNI interface pointer. Once attached to the VM, a native thread works just like
+ * an ordinary Java thread running inside a native method. The native thread remains attached to
+ * the VM until it calls DetachCurrentThread() to detach itself.
+ *
+ * The attached thread should have enough stack space to perform a reasonable amount of work.
+ * The allocation of stack space per thread is operating system-specific. For example, using pthreads,
+ * the stack size can be specified in the pthread_attr_t argument to pthread_create.
+ *
+ * Detaching from the VM
+ * A native thread attached to the VM must call DetachCurrentThread() to detach itself before exiting.
+ * A thread cannot detach itself if there are Java methods on the call stack.
  */
-
-namespace jni {
-
-pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-
-/**
- * Return native context instance
- * @return native_context singleton
- */
-native_context_t &get_native_context() {
-    static native_context_t instance = {};
-    return instance;
-}
-
-/*
- * Release and reset any global JNI resources
- */
-void release_native_context(JNIEnv *env) {
-    native_context_t &native_context = get_native_context();
-
-    pthread_mutex_lock(&lock);
-    if (native_context.initialized) {
-        release_delegate(env);
-
-        pthread_mutex_unlock(&lock);
-        pthread_mutex_destroy(&lock);
-
-        lock = PTHREAD_MUTEX_INITIALIZER;
-        native_context.initialized = false;
-
-        return;
-    }
-    pthread_mutex_unlock(&lock);
-}
 
 /**
  *  If performance is important, it's useful to query certain values once and cache
@@ -82,11 +60,19 @@ void release_native_context(JNIEnv *env) {
  *  the pairing function JNI_OnUnload() is usually not called.
  *
  */
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, __unused void *reserved) {
-    jni::native_context_t native_context = jni::get_native_context();
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
+    (void) reserved;
+
+    std::string cstr;
+    jni::native_context_t &native_context = jni::get_native_context();
 
     native_context.initialized = false;
     native_context.jvm = vm;
+
+    // FIXME should get from NativeContext
+    std::snprintf(native_context.reportPathAbsolute, sizeof(native_context.reportPathAbsolute),
+                  "/data/data/%s/cache/newrelic/reports",
+                  procfs::get_process_name(getpid(), cstr));
 
     JNIEnv *env;
     if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
@@ -94,58 +80,147 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, __unused void *reserved) {
         return JNI_ERR;     // JNI version not supported.
     }
 
-    native_context.initialized = bind_delegate(env, native_context);
+    native_context.initialized = jni::bind_delegate(env, native_context);
 
     if (!native_context.initialized) {
-        _LOGE("Could not bind to JVM delegates. Reports will not be uploaded.");
+        _LOGE("Could not bind to JVM delegates. Reports will cached until the next app launch.");
     }
 
     return JNI_VERSION_1_6;
 }
 
-JNIEXPORT void JNI_OnUnload(JavaVM *vm, __unused void *reserved) {
-    JNIEnv *env;
+JNIEXPORT void JNI_OnUnload(JavaVM *vm, void *reserved) {
+    (void) reserved;
+
+    JNIEnv *env = nullptr;
     if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
-        jni::release_native_context(env);
+        jni::release_native_context(env, jni::get_native_context());
     }
 }
 
 
-bool env_check_and_clear_ex(JNIEnv *env) {
-    if (env != nullptr) {
-        if (env->ExceptionCheck()) {
-            env->ExceptionClear();
-            return true;
-        }
-    }
-    return false;
-}
+namespace jni {
 
-jclass env_find_class(JNIEnv *env, const char *class_name) {
-    if (env != nullptr) {
-        if (class_name != NULL) {
-            jclass clz = env->FindClass(class_name);
-            env_check_and_clear_ex(env);
-            return clz;
-        }
-    }
-    return nullptr;
-}
-
-jmethodID env_get_methodid(JNIEnv *env, jclass clz, const char *method_name, const char *method_sig) {
-    if (env != nullptr) {
-        if (clz != nullptr) {
-            if (method_name != nullptr) {
-                if (method_sig != nullptr) {
-                    jmethodID methodId = env->GetMethodID(clz, method_name, method_sig);
-                    env_check_and_clear_ex(env);
-                    return methodId;
-                }
+    bool env_check_and_clear_ex(JNIEnv *env) {
+        if (env != nullptr) {
+            if (env->ExceptionCheck()) {
+                env->ExceptionClear();
+                _LOGD("env_check_and_clear_ex: JEnv exception cleared");
+                return true;
             }
+        } else {
+            _LOGE("env_check_and_clear_ex: JNIEnv is null");
+        }
+        return false;
+    }
+
+    jclass env_find_class(JNIEnv *env, const char *class_name) {
+        if (env != nullptr) {
+            if (class_name != nullptr) {
+                jclass clz = env->FindClass(class_name);
+                env_check_and_clear_ex(env);
+                return clz;
+            } else {
+                _LOGE("env_find_class: class name is null");
+            }
+        } else {
+            _LOGE("env_find_class: JNIEnv is null");
+        }
+        return nullptr;
+    }
+
+    jmethodID env_get_methodid(JNIEnv *env, jclass class_name,
+                               const char *method_name, const char *method_sig) {
+        if (env != nullptr) {
+            if (class_name != nullptr && method_name != nullptr && method_sig != nullptr) {
+                jmethodID methodId = env->GetMethodID(class_name, method_name, method_sig);
+                env_check_and_clear_ex(env);
+                return methodId;
+            } else {
+                _LOGE("env_get_methodid: class, method or signature name is null");
+            }
+        } else {
+            _LOGE("env_get_methodid: JNIEnv is null");
+        }
+        return nullptr;
+    }
+
+    void env_call_void_method(JNIEnv *env, jobject class_name, jmethodID method_id, ...) {
+        if (env != nullptr) {
+            if (class_name != nullptr && method_id != nullptr) {
+                va_list args;
+                va_start(args, method_id);
+                env->CallVoidMethod(class_name, method_id, args);
+                va_end(args);
+                env_check_and_clear_ex(env);
+            } else {
+                _LOGE("env_get_methodid: class name or method ID is null");
+            }
+        } else {
+            _LOGE("env_call_void_method: JNIEnv is null");
         }
     }
-    return nullptr;
-}
+
+    jobject env_new_object(JNIEnv *env, jclass class_name, jmethodID method_id, ...) {
+        if (env != nullptr) {
+            if (class_name != nullptr && method_id != nullptr) {
+                va_list args;
+                va_start(args, method_id);
+                jobject jobj = env->NewObjectV(class_name, method_id, args);
+                va_end(args);
+                env_check_and_clear_ex(env);
+                return jobj;
+            } else {
+                _LOGE("env_new_object: class name or method ID is null");
+            }
+        } else {
+            _LOGE("env_new_object: JNIEnv is null");
+        }
+        return nullptr;
+    }
+
+    jobject env_new_global_ref(JNIEnv *env, jobject jobj) {
+        if (env != nullptr) {
+            if (jobj != nullptr) {
+                jobject gref = env->NewGlobalRef(jobj);
+                env_check_and_clear_ex(env);
+                return gref;
+            } else {
+                _LOGE("env_new_global_ref: passed jobject is null");
+            }
+        } else {
+            _LOGE("env_new_global_ref: JNIEnv is null");
+        }
+        return nullptr;
+    }
+
+    void env_delete_global_ref(JNIEnv *env, jobject jobj) {
+        if (env != nullptr) {
+            if (jobj != nullptr) {
+                env->DeleteGlobalRef(jobj);
+                env_check_and_clear_ex(env);
+            } else {
+                _LOGE("env_delete_global_ref: passed jobject is null");
+            }
+        } else {
+            _LOGE("env_delete_global_ref: JNIEnv is null");
+        }
+    }
+
+    jstring env_new_string_utf(JNIEnv *env, const char *str) {
+        if (env != nullptr) {
+            if (str != nullptr) {
+                jstring jstr = env->NewStringUTF(str);
+                env_check_and_clear_ex(env);
+                return jstr;
+            } else {
+                _LOGE("env_new_string_utf: passed string is null");
+            }
+        } else {
+            _LOGE("env_new_string_utf: JNIEnv is null");
+        }
+        return nullptr;
+    }
 
 }   // namespace jni
 

@@ -20,7 +20,7 @@ namespace procfs {
 
     const char *get_thread_status_path(pid_t pid, std::string &threadStatus);
 
-    const char *get_task_path(pid_t pid, std::string& taskName);
+    const char *get_task_path(pid_t pid, std::string &taskName);
 
 }   // namespace procfs
 

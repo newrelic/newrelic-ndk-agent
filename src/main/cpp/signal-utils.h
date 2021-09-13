@@ -18,7 +18,7 @@ namespace sigutils {
 
     bool unblock_signal(int signo);
 
-    bool install_handler(int signo, void sig_action(int, siginfo_t*, void*));
+    bool install_handler(int signo, void sig_action(int, siginfo_t *, void *));
 
 }   // namespace sigutils
 

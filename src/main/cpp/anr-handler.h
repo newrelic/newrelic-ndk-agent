@@ -14,6 +14,8 @@ bool anr_handler_initialize();
 
 void anr_handler_shutdown();
 
+void raise_anr_signal();
+
 #ifdef __cplusplus
 }
 #endif

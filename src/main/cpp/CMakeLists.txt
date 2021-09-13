@@ -38,12 +38,13 @@ add_library(agent-ndk
         signal-utils.cpp
         jni/jni.cpp
         jni/jni-delegate.cpp
+        jni/native_context.cpp
         serializer.cpp
         backtrace.cpp
-        parson.c
         )
 
 target_include_directories(agent-ndk PUBLIC include)
+target_include_directories(agent-ndk PRIVATE .)
 
 
 # Specifies libraries CMake should link to your target library. You
@@ -68,12 +69,13 @@ add_library(agent-ndk-a STATIC
         signal-utils.cpp
         jni/jni.cpp
         jni/jni-delegate.cpp
+        jni/native_context.cpp
         serializer.cpp
         backtrace.cpp
-        parson.c
         )
 
 target_include_directories(agent-ndk-a PUBLIC include)
+target_include_directories(agent-ndk PRIVATE .)
 target_link_libraries(agent-ndk-a ${log-lib})
 
 # Include testing framework(s) and test app

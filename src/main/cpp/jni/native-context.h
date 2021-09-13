@@ -20,21 +20,29 @@ namespace jni {
         jobject jniDelegateObject;
 
         // delegate method IDs
-        jmethodID on_native_crash;
-        jmethodID on_native_exception;
-        jmethodID on_application_not_responding;
+        jmethodID onNativeCrash;
+        jmethodID onNativeException;
+        jmethodID onApplicationNotResponding;
 
         // report storage
-        const char* report_path_absolute;
+        char reportPathAbsolute[PATH_MAX];
 
     } native_context_t;
 
-    // FIXME returns global instance
+    /**
+     * Returns a populated native context singleton
+     * @return native_context instance
+     */
     native_context_t &get_native_context();
 
-    void release_native_context(JNIEnv *env);
+    /**
+     * Clean up JNI mem tied to the native_context
+     *
+     * @param env
+     */
+    void release_native_context(JNIEnv *env, native_context_t &native_context);
 
-    }   // namespace jni
+}   // namespace jni
 
 #endif // _AGENT_NDK_NATIVE_CONTEXT_H
 

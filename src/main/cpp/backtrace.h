@@ -10,14 +10,15 @@
 
 #ifndef PATH_MAX
 #define PATH_MAX 1024
-#endif   // PATH_MAX
+#endif  // !PATH_MAX
 
 #define CLASS_NAME_MAX  255
 #define METHOD_NAME_MAX 255
 
 #ifndef THREAD_MAX
 #define THREAD_MAX BACKTRACE_THREADS_MAX
-#endif   // _THREAD_MAX
+#endif  // !_THREAD_MAX
+
 
 /**
  * Supported ABIs: https://developer.android.com/ndk/guides/abis
@@ -34,27 +35,42 @@
  *
  **/
 
+#ifndef NGREG
+#if defined(__arm__)
+#define NGREG 16
+#elif defined(__aarch64__)
+#define NGREG 34
+#elif defined(__i386__)
+#define NGREG 16
+#elif defined(__x86_64__)
+#define NGREG 34
+#endif  // defined(__arm__)
+#endif  // !NGREG
+
 typedef struct stackframe {
+    const char platform[32];    // native or jvm
     const char filename[PATH_MAX];
     const char classname[CLASS_NAME_MAX];
     const char methodname[METHOD_NAME_MAX];
     const int linenumber;
 
-}   stackframe_t;
+} stackframe_t;
 
 typedef struct threadinfo {
+    const char platform[32];    // native or jvm
     const bool crashing_thread;
     const char thread_state[32];
     const int priority;
     const int tid;
     const stackframe_t stackframes[BACKTRACE_FRAMES_MAX];
 
-}   threadinfo_t;
+} threadinfo_t;
 
 /**
  * A backtrace represents the state of the machine at crash:
  */
 typedef struct backtrace {
+    const char platform[32];    // native or jvm
     const char arch[16];
     long timestamp;
     const char description[128];
@@ -62,8 +78,8 @@ typedef struct backtrace {
     int tid;
     int uid;
     threadinfo_t threads[THREAD_MAX];
-    uint64_t registers[32];
+    uint64_t registers[NGREG];
 
-}   backtrace_t;
+} backtrace_t;
 
 #endif // _AGENT_NDK_BACKTRACE_H

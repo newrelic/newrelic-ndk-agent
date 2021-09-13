@@ -28,7 +28,7 @@ static volatile bool enabled = true;
 static volatile bool watchdog_triggered = false;
 
 static sem_t watchdog_semaphore;
-static bool watchdog_has_sem = false;
+static bool watchdog_must_poll = false;
 
 /**
  * https://android.googlesource.com/platform/art/+/master/runtime/signal_catcher.cc
@@ -48,12 +48,12 @@ void raise_anr_signal() {
 void *anr_monitor_thread(__unused void *unused) {
     static const useconds_t poll_sleep = 100000;
 
-    _LOGD("anr_monitor_thread: started");
-    while (true) {
+    _LOGD("anr_monitor_thread: started (enabled[%d])", (int) enabled);
+    while (enabled) {
         watchdog_triggered = false;
         _LOGD("anr_monitor_thread: waiting on trigger via %s",
-              watchdog_has_sem ? "semaphore" : "polling");
-        if (!watchdog_has_sem || sem_wait(&watchdog_semaphore) != 0) {
+              watchdog_must_poll ? "polling" : "semaphore");
+        if (watchdog_must_poll || sem_wait(&watchdog_semaphore) != 0) {
             while (enabled && !watchdog_triggered) {
                 _LOGD("anr_monitor_thread: sleeping [%d] ns", poll_sleep);
                 usleep(poll_sleep);
@@ -65,13 +65,13 @@ void *anr_monitor_thread(__unused void *unused) {
         raise_anr_signal();
 
         if (enabled) {
-            _LOGE("Notify the agent an ANR has occurred");
+            _LOGE("Notify the JVM delegate an ANR has occurred");
         }
 
         // Unblock SIGQUIT again so handler will run again.
         sigutils::unblock_signal(SIGQUIT);
     }
-    _LOGD("anr_monitor_thread: stopped");
+    _LOGD("anr_monitor_thread: stopped (enabled[%d])", (int) enabled);
 
     return nullptr;
 }
@@ -79,7 +79,7 @@ void *anr_monitor_thread(__unused void *unused) {
 void anr_interceptor(__unused int signo, siginfo_t *_siginfo, void *ucontext) {
     const ucontext_t *_ucontext = static_cast<const ucontext_t *>(ucontext);
 
-    // Block SIGQUIT in this thread so the Google handler can run.
+    // Block SIGQUIT in this thread so the default handler can run.
     sigutils::block_signal(SIGQUIT);
 
     if (enabled) {
@@ -93,8 +93,9 @@ void anr_interceptor(__unused int signo, siginfo_t *_siginfo, void *ucontext) {
     watchdog_triggered = true;
 
     // Signal the ANR monitor thread to report:
-    if (watchdog_has_sem && (sem_post(&watchdog_semaphore) != 0)) {
+    if (!watchdog_must_poll && (sem_post(&watchdog_semaphore) != 0)) {
         _LOGE("Could not post ANR handler semaphore");
+        watchdog_must_poll = true;
     }
 }
 
@@ -141,7 +142,7 @@ bool detect_android_anr_handler() {
 
             if ((sigblk & ANR_THREAD_SIGBLK) == ANR_THREAD_SIGBLK) {
                 anr_monitor_tid = tid;
-                _LOGD("Android ANR monitor: tid[%d]", anr_monitor_tid);
+                _LOGD("Android ANR monitor found on thread[%d]", anr_monitor_tid);
             } else {
                 _LOGE("Cannot access Android runtime ANR monitor while debugging");
             }
@@ -187,9 +188,9 @@ bool anr_handler_initialize() {
     }
 
     // alloc our thread semaphore
-    watchdog_has_sem = (sem_init(&watchdog_semaphore, 0, 0) == 0);
-    if (!watchdog_has_sem) {
-        _LOGW("Failed to init semaphore. Will poll instead");
+    watchdog_must_poll = (sem_init(&watchdog_semaphore, 0, 0) != 0);
+    if (watchdog_must_poll) {
+        _LOGW("Failed to init semaphore, revert to polling");
     }
 
     // Install the ANR handler
@@ -198,12 +199,12 @@ bool anr_handler_initialize() {
     }
 
     // Unblock SIGQUIT to allow the ANR handler to run
-    _LOGD("anr_handler_initialize: posting to watchdog sem [%d]", (int) watchdog_has_sem);
     sigutils::unblock_signal(SIGQUIT);
 
     enabled = true;
 
-    _LOGD("anr_handler_initialize: enabled[%d]", (int) enabled);
+    _LOGD("anr_handler_initialize: enabled[%d] watchdog sem [%d]",
+          (int) enabled, (int) !watchdog_must_poll);
 
     return enabled;
 }
@@ -213,7 +214,7 @@ bool anr_handler_initialize() {
  */
 void anr_handler_shutdown() {
     reset_android_anr_handler();
-    if (watchdog_has_sem && (sem_post(&watchdog_semaphore) != 0)) {
+    if (!watchdog_must_poll && (sem_post(&watchdog_semaphore) != 0)) {
         _LOGE("anr_handler_shutdown: Could not unlock ANR handler semaphore");
     }
     sem_close(&watchdog_semaphore);

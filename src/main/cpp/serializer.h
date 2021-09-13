@@ -17,15 +17,15 @@
  * Default behaviour should be persist to disk *FIRST*
  * using async-safe i/o functions.
  */
-class serializer {
-public:
+namespace serializer {
+
     /**
      * Pass a serialized crash report to its delegate.
      *
      * @param buffer character buffer containing the flattened crash report
      * @param cbsz size of cbuffer
      */
-    static void from_crash(const char *buffer, size_t cbsz);
+    void from_crash(const char *buffer, size_t cbsz);
 
     /**
      * Pass a serialized exception to its delegate.
@@ -33,7 +33,7 @@ public:
      * @param buffer character buffer containing the flattened exception report
      * @param cbsz size of cbuffer
      */
-    static void from_exception(const char *buffer, size_t cbsz);
+    void from_exception(const char *buffer, size_t cbsz);
 
     /**
      * Pass a ANR exception to its delegate.
@@ -41,17 +41,17 @@ public:
      * @param buffer character buffer containing the flattened exception report
      * @param cbsz size of cbuffer
      */
-    static void from_anr(const char *buffer, size_t cbsz);
+    void from_anr(const char *buffer, size_t cbsz);
 
-protected:
     /**
      * Write the payload locally using only MT thread-safe functions
      *
      * @param payload char buffer holding data
      * @param cbsz size of payload
      */
-    static void to_storage(const char* filepath, const char *payload, size_t cbsz);
-};
+    bool to_storage(const char *filepath, const char *payload, size_t cbsz);
+
+}   // namespace serializer
 
 
 #endif // _AGENT_NDK_SERIALIZER_H

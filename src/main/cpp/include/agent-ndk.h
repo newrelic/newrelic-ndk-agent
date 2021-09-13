@@ -22,10 +22,14 @@
 
 #pragma once
 
+#ifndef AGENT_VERSION
+#define AGENT_VERSION "6.FIXME"
+#endif  // !AGENT_VERSION
+
 static const char *TAG = "newrelic";
 
 // Limit backtrace to 100 frames
-static const size_t BACKTRACE_FRAMES_MAX = 100;
+static const size_t BACKTRACE_FRAMES_MAX = 200;
 
 // Limit each frame to 1k
 static const size_t BACKTRACE_FRAMES_SZ_MAX = 1024;
@@ -33,11 +37,14 @@ static const size_t BACKTRACE_FRAMES_SZ_MAX = 1024;
 // Limit backtrace to 256 threads
 static const size_t BACKTRACE_THREADS_MAX = 256;
 
-// Limit backtrace to 64k// Limit backtrace to 64k
-static const size_t BACKTRACE_SZ_MAX = 0x10000;
+// Limit backtrace to 1Mb
+static const size_t BACKTRACE_SZ_MAX = 0x100000;
 
 // Return label representing  current architecture
-const char* get_arch();
+const char *get_arch();
+
+// return true if cpu is 32bit
+bool arch_is_32b();
 
 #include <android/log.h>
 
