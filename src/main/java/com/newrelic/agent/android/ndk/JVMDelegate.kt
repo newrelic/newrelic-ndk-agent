@@ -13,7 +13,7 @@ import com.newrelic.agent.android.crash.CrashReporter
 import com.newrelic.agent.android.logging.AgentLogManager
 import java.util.*
 
-class JavaDelegate() : AgentNDKListener {
+class JVMDelegate() : AgentNDKListener {
 
     /**
      * Delegated classes:

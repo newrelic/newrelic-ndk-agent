@@ -16,10 +16,15 @@ class ManagedContext(context: Context? = null) {
     var context: Context? = context
     var sessionId: String? = null
     var buildId: String? = null
-    var reportCache: File? = context?.filesDir
+    var reportsDir: File? = getNativeReportsDir(context?.cacheDir)
     var libDir: File? = getNativeLibraryDir(context)
     var ipc: ByteBuffer = ByteBuffer.allocateDirect(0x10000)
-    var ndkListener: AgentNDKListener? = JavaDelegate()
+    var ndkListener: AgentNDKListener? = JVMDelegate()
+    var anrMonitor: Boolean = false
+
+    fun getNativeReportsDir(rootDir: File?): File {
+        return File("${rootDir?.absolutePath}/newrelic/reports")
+    }
 
     fun getNativeLibraryDir(context: Context?): File {
         val packageName = context?.packageName
@@ -27,7 +32,7 @@ class ManagedContext(context: Context? = null) {
         context?.apply {
             val ainfo: ApplicationInfo? = packageManager?.getApplicationInfo(
                 packageName, PackageManager.GET_SHARED_LIBRARY_FILES)
-            return File(ainfo?.nativeLibraryDir )
+            return File(ainfo?.nativeLibraryDir)
         }
 
         return File("./")

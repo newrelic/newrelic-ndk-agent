@@ -5,6 +5,7 @@
 
 package com.newrelic.agent.android.ndk
 
+import android.os.Debug
 import android.os.Handler
 import android.os.Looper
 import com.newrelic.agent.android.agentdata.AgentDataController
@@ -42,7 +43,11 @@ open class ANRMonitor {
 
                     runner.wait(DEFAULT_ANR_TIMEOUT)
 
-                    if (!(runner.signaled || disableWhileDebugging)) {
+                    if (!runner.signaled) {
+                        if (disableWhileDebugging &&
+                            (Debug.isDebuggerConnected() || Debug.waitingForDebugger())) {
+                            return@synchronized
+                        }
                         val attributes: HashMap<String?, Any?> = object : HashMap<String?, Any?>() {
                             init {
                                 put(AnalyticsAttribute.APPLICATION_PLATFORM_ATTRIBUTE, "native")
