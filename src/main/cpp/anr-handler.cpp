@@ -49,6 +49,8 @@ void *anr_monitor_thread(__unused void *unused) {
     static const useconds_t poll_sleep = 100000;
 
     _LOGD("anr_monitor_thread: started (enabled[%d])", (int) enabled);
+    pthread_setname_np(pthread_self(), "NR-ANR-Monitor");
+
     while (enabled) {
         watchdog_triggered = false;
         _LOGD("anr_monitor_thread: waiting on trigger via %s",
@@ -106,9 +108,10 @@ void anr_interceptor(__unused int signo, siginfo_t *_siginfo, void *ucontext) {
  * Scan the /proc tree for the the current process to identify the thread ID.
  */
 bool detect_android_anr_handler() {
+    pid_t pid = getpid();
     struct dirent *_dirent;
     std::string path;
-    const char *taskPath = procfs::get_task_path(getpid(), path);
+    const char *taskPath = procfs::get_task_path(pid, path);
     DIR *dir = opendir(taskPath);
 
     // iterate through this process' threads, looking for the ANR monitor thread
@@ -122,13 +125,13 @@ bool detect_android_anr_handler() {
         pid_t tid = std::strtol(_dirent->d_name, nullptr, 10);
 
         std::string threadName;
-        procfs::get_thread_name(tid, threadName);
+        procfs::get_thread_name(pid, tid, threadName);
 
         if (strncmp(threadName.c_str(), ANR_THREAD_NAME, ANR_THREAD_NAME_LEN) == 0) {
             char buff[1024];
             uint64_t sigblk = 0;
             std::string threadStatus;
-            FILE *fp = fopen(procfs::get_thread_status_path(tid, threadStatus), "r");
+            FILE *fp = fopen(procfs::get_thread_status_path(pid, tid, threadStatus), "r");
 
             if (fp != nullptr) {
                 while (fgets(buff, sizeof(buff), fp) != NULL) {

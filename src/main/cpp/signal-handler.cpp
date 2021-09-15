@@ -72,6 +72,8 @@ void interceptor(int signo, siginfo_t *_siginfo, void *ucontext) {
     const ucontext_t *_ucontext = static_cast<const ucontext_t *>(ucontext);
     char buffer[BACKTRACE_SZ_MAX];
 
+    pthread_setname_np(pthread_self(), "NR-Signal-Monitor");
+
     // Uninstall the custom handler to prevent recursion
     uninstall_handler();
 
