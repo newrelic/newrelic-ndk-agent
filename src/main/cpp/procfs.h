@@ -14,13 +14,15 @@ extern "C" {
 
 namespace procfs {
 
-    const char *get_process_name(pid_t pid, std::string &processName);
+    const char *get_process_name(pid_t, std::string &);
 
-    const char *get_thread_name(pid_t tid, std::string &threadName);
+    const char *get_thread_name(pid_t, pid_t, std::string &);
 
-    const char *get_thread_status_path(pid_t pid, std::string &threadStatus);
+    const char *get_thread_status_path(pid_t, pid_t, std::string &);
 
-    const char *get_task_path(pid_t pid, std::string &taskName);
+    const char *get_task_path(pid_t, std::string &);
+
+    const char *get_thread_schedstat(pid_t, pid_t, std::string &);
 
 }   // namespace procfs
 

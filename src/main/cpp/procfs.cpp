@@ -11,58 +11,78 @@
 
 namespace procfs {
 
-// https://www.kernel.org/doc/Documentation/filesystems/proc.txt
+    // https://www.kernel.org/doc/Documentation/filesystems/proc.txt
+
+    const char *trim_trailing_ws(const char *buff) {
+        char *buffEol = const_cast<char *>(&buff[std::strlen(buff) - 1]);
+        while ((buffEol > buff) && (std::strpbrk(buffEol, "\n\r\t ") != nullptr)) {
+            *buffEol-- = '\0';
+        }
+        return buff;
+    }
 
     const char *get_process_name(pid_t pid, std::string &processName) {
         char path[PATH_MAX];
-        char processNameBuffer[1024];
-        FILE *fp = nullptr;
-
         std::snprintf(path, sizeof(path), "/proc/%d/cmdline", pid);
-        if ((fp = fopen(path, "r"))) {
-            processName = fgets(processNameBuffer, sizeof(processNameBuffer), fp);
+
+        processName = "<unknown>";
+        FILE *fp = fopen(path, "r");
+        if (fp != nullptr) {
+            char buff[1024];
+            if (fgets(buff, sizeof(buff), fp)) {
+                processName = trim_trailing_ws(buff);
+            }
             fclose(fp);
         }
 
         return processName.c_str();
     }
 
-    const char *get_thread_name(pid_t pid, std::string &threadName) {
+    const char *get_thread_name(pid_t pid, pid_t tid, std::string &threadName) {
         char path[PATH_MAX];
-        char threadNameBuffer[1024];
-        char *threadname = nullptr;
-        FILE *fp = nullptr;
+        std::snprintf(path, sizeof(path), "/proc/%d/task/%d/comm", pid, tid);
 
-        std::snprintf(path, sizeof(path), "/proc/%d/comm", pid);
-        if ((fp = fopen(path, "r"))) {
-            threadname = fgets(threadNameBuffer, sizeof(threadNameBuffer), fp);
-            fclose(fp);
-            if (threadname != nullptr) {
-                size_t len = strlen(threadname);
-                if ((len > 0) && (threadname[len - 1] == '\n')) {
-                    threadname[len - 1] = '\0';
-                }
+        threadName = "<unknown>";
+        FILE *fp = fopen(path, "r");
+        if (fp != nullptr) {
+            char buff[1024];
+            if (fgets(buff, sizeof(buff), fp) != nullptr) {
+                threadName = trim_trailing_ws(buff);
             }
+            fclose(fp);
         }
-
-        threadName = (threadname ? threadname : "<unknown>");
 
         return threadName.c_str();
     }
 
-    const char *get_thread_status_path(pid_t pid, std::string &threadStatus) {
-        char statusBuffer[PATH_MAX];
-        std::snprintf(statusBuffer, sizeof(statusBuffer), "/proc/%d/status", pid);
-        threadStatus = statusBuffer;
+    const char *get_thread_status_path(pid_t pid, pid_t tid, std::string &threadStatus) {
+        char path[PATH_MAX];
+        std::snprintf(path, sizeof(path), "/proc/%d/task/%d/status", pid, tid);
+        threadStatus = path;
 
         return threadStatus.c_str();
     }
 
-    const char *get_task_path(pid_t pid, std::string &taskPath) {
-        char pathBuffer[PATH_MAX];
+    const char *get_thread_schedstat(pid_t pid, pid_t tid, std::string &schedstat) {
+        char path[PATH_MAX];
+        std::snprintf(path, sizeof(path), "/proc/%d/task/%d/schedstat", pid, tid);
 
-        std::snprintf(pathBuffer, sizeof(pathBuffer), "/proc/%d/task", pid);
-        taskPath = pathBuffer;
+        FILE *fp = fopen(path, "r");
+        if (fp != nullptr) {
+            char buff[1024];
+            if (fgets(buff, sizeof(buff), fp) != nullptr) {
+                schedstat = trim_trailing_ws(buff);
+            }
+            fclose(fp);
+        }
+
+        return schedstat.c_str();
+    }
+
+    const char *get_task_path(pid_t pid, std::string &taskPath) {
+        char path[PATH_MAX];
+        std::snprintf(path, sizeof(path), "/proc/%d/task", pid);
+        taskPath = path;
 
         return taskPath.c_str();
     }
