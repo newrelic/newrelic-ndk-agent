@@ -118,13 +118,6 @@ JNIEXPORT jobject JNICALL
 Java_com_newrelic_agent_android_ndk_AgentNDK_crashNow(__unused JNIEnv *env, __unused jobject thiz, __unused jstring cause) {
     syscall(SYS_tgkill, getpid(), gettid(), SIGQUIT);
 
-    char buffer[BACKTRACE_SZ_MAX];
-    siginfo_t _siginfo = {};
-    ucontext_t _sa_ucontext = {};
-    if (unwind_backtrace(buffer, sizeof(buffer), &_siginfo, &_sa_ucontext)) {
-        serializer::from_crash(buffer, sizeof(buffer));
-    }
-
     return nullptr;
 }
 

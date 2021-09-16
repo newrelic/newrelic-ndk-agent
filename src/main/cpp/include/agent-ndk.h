@@ -29,7 +29,7 @@
 static const char *TAG = "newrelic";
 
 // Limit backtrace to 100 frames
-static const size_t BACKTRACE_FRAMES_MAX = 200;
+static const size_t BACKTRACE_FRAMES_MAX = 100;
 
 // Limit each frame to 1k
 static const size_t BACKTRACE_FRAMES_SZ_MAX = 1024;
