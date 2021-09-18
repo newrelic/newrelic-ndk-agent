@@ -16,10 +16,7 @@ namespace jni {
         JavaVM *jvm;
 
         // the crash serializer delegate class and global references
-        jclass jniDelegateClass;
         jobject jniDelegateObject;
-
-        // delegate method IDs
         jmethodID onNativeCrash;
         jmethodID onNativeException;
         jmethodID onApplicationNotResponding;

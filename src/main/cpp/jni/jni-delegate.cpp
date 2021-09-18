@@ -24,27 +24,32 @@ namespace jni {
     static const char *on_native_crash_method = "onNativeCrash";
     static const char *on_native_exception_method = "onNativeException";
     static const char *on_application_not_responding_method = "onApplicationNotResponding";
+    static const char *delegate_method_sig = "(Ljava/lang/String;)V";
 
     bool bind_delegate(JNIEnv *env, jni::native_context_t &native_context) {
-        jclass jniDelegate = jni::env_find_class(env, delegate_class);
-        if (jniDelegate == nullptr) {
-            _LOGE("Unable to find delegate class [%s]", delegate_class);
+        jclass jniDelegateClass = jni::env_find_class(env, delegate_class);
+
+        if (jniDelegateClass == nullptr) {
+            _LOGE("Unable to find AgentNDK delegate class [%s]", delegate_class);
             return JNI_ERR;
         }
 
-        jclass delegateClassRef = static_cast<jclass>(jni::env_new_global_ref(env, jniDelegate));
-        jmethodID delegateCtor = jni::env_get_methodid(env, delegateClassRef, "<init>", "()V");
-        jobject delegateObj = jni::env_new_object(env, delegateClassRef, delegateCtor);
+        jmethodID delegateCtor = jni::env_get_methodid(env, jniDelegateClass, "<init>", "()V");
+        jobject delegateObj = jni::env_new_object(env, jniDelegateClass, delegateCtor);
 
-        native_context.jniDelegateClass = delegateClassRef;
+        // cache the jni vars
         native_context.jniDelegateObject = jni::env_new_global_ref(env, delegateObj);
+        if (native_context.jniDelegateObject == nullptr) {
+            _LOGE("Unable to create a global ref to the AgentNDK delegate class [%s]",
+                  delegate_class);
+            return JNI_ERR;
+        }
 
         // set the delegate method IDs (opaque structs that should not be cast to jobject)
-        // can this be cached?
         native_context.onNativeCrash = jni::env_get_methodid(env,
-                                                             native_context.jniDelegateClass,
+                                                             jniDelegateClass,
                                                              on_native_crash_method,
-                                                             "(Ljava/lang/String;)V");
+                                                             delegate_method_sig);
 
         if (!native_context.onNativeCrash) {
             _LOGE("Failed to retrieve on_native_crash() method id");
@@ -52,9 +57,9 @@ namespace jni {
         }
 
         native_context.onNativeException = jni::env_get_methodid(env,
-                                                                 native_context.jniDelegateClass,
+                                                                 jniDelegateClass,
                                                                  on_native_exception_method,
-                                                                 "(Ljava/lang/String;)V");
+                                                                 delegate_method_sig);
 
         if (!native_context.onNativeException) {
             _LOGE("Failed to retrieve on_native_crash() method id");
@@ -62,26 +67,26 @@ namespace jni {
         }
 
         native_context.onApplicationNotResponding = jni::env_get_methodid(env,
-                                                                          native_context.jniDelegateClass,
+                                                                          jniDelegateClass,
                                                                           on_application_not_responding_method,
-                                                                          "(Ljava/lang/String;)V");
+                                                                          delegate_method_sig);
 
         if (!native_context.onApplicationNotResponding) {
             _LOGE("Failed to retrieve on_native_crash() method id");
             return false;
         }
 
-        return true;
+        native_context.initialized = true;
+
+        return native_context.initialized;
     }
 
     void release_delegate(JNIEnv *env, jni::native_context_t &native_context) {
 
         if (env != nullptr) {
             // release objects allocated during binding
-            jni::env_delete_global_ref(env, native_context.jniDelegateClass);
             jni::env_delete_global_ref(env, native_context.jniDelegateObject);
 
-            native_context.jniDelegateClass = nullptr;
             native_context.jniDelegateObject = nullptr;
             native_context.onNativeCrash = nullptr;
             native_context.onNativeException = nullptr;
@@ -100,9 +105,9 @@ namespace jni {
      */
 
     typedef struct delegate_thread_args {
-        JNIEnv env;
-        jobject delegate_class;
-        jmethodID method_id;
+        JNIEnv *env;
+        jobject delegate;
+        jmethodID method;
         jobject backtrace;
 
     } delegate_thread_args_t;
@@ -110,6 +115,7 @@ namespace jni {
     void *delegate_worker_thread(void *args) {
         jni::native_context_t &native_context = jni::get_native_context();
         delegate_thread_args_t *delegate_args = (delegate_thread_args *) args;
+        bool jni_attached = false;
 
         JNIEnv *env = nullptr;
         int jrc = native_context.jvm->GetEnv((void **) &env, JNI_VERSION_1_6);
@@ -117,12 +123,13 @@ namespace jni {
             case JNI_OK:
                 break;
             case JNI_EDETACHED:
-                jrc = native_context.jvm->AttachCurrentThread(&env, NULL);
+                jrc = native_context.jvm->AttachCurrentThread(&env, nullptr);
                 if (JNI_OK != jrc) {
                     _LOGE("delegate_worker_thread: AttachCurrentThread failed: error %d: %s", jrc,
                           strerror(jrc));
                     return nullptr;
                 }
+                jni_attached = true;
                 jni::env_check_and_clear_ex(env);
                 break;
             default:
@@ -132,20 +139,20 @@ namespace jni {
 
         // invoke the delegate method passing the backtrace as a string
         jni::env_call_void_method(env,
-                                  delegate_args->delegate_class,
-                                  delegate_args->method_id,
+                                  native_context.jniDelegateObject,
+                                  delegate_args->method,
                                   delegate_args->backtrace);
-
-        jni::env_delete_global_ref(env, delegate_args->backtrace);
 
         // release the memory alloc'd in calling thread
         jni::env_delete_global_ref(env, delegate_args->backtrace);
         delete delegate_args;
 
         // and detach from JVM
-        native_context.jvm->DetachCurrentThread();
+        if (jni_attached) {
+            native_context.jvm->DetachCurrentThread();
+        }
 
-        return NULL;
+        return nullptr;
     }
 
     /**
@@ -162,18 +169,20 @@ namespace jni {
             return false;
         }
 
+        bool jniAttached = false;
         JNIEnv *env = nullptr;
         int jrc = native_context.jvm->GetEnv((void **) &env, JNI_VERSION_1_6);
         switch (jrc) {
             case JNI_OK:
                 break;
             case JNI_EDETACHED:
-                jrc = native_context.jvm->AttachCurrentThread(&env, NULL);
+                jrc = native_context.jvm->AttachCurrentThread(&env, nullptr);
                 if (JNI_OK != jrc) {
                     _LOGE("threaded_delegate_call: AttachCurrentThread failed: error %d: %s", jrc,
                           strerror(jrc));
                     return false;
                 }
+                jniAttached = true;
                 break;
             default:
                 _LOGE("delegate_worker_thread:: Unsupported JNI version");
@@ -189,10 +198,12 @@ namespace jni {
         jstring jBacktrace = jni::env_new_string_utf(env, backtrace);
         jobject jBacktraceRef = jni::env_new_global_ref(env, jBacktrace);
 
-        delegate_thread_args->env = *env;
-        delegate_thread_args->delegate_class = native_context.jniDelegateObject;
-        delegate_thread_args->method_id = methodId;
+        delegate_thread_args->env = env;
+        delegate_thread_args->delegate = native_context.jniDelegateObject;
+        delegate_thread_args->method = methodId;
         delegate_thread_args->backtrace = jBacktraceRef;
+
+        // delegate_worker_thread((void*) delegate_thread_args);
 
         pthread_t threadInfo = {};
         pthread_attr_t threadAttr;
@@ -212,8 +223,11 @@ namespace jni {
         }
 
         _LOGD("threaded_delegate_call: delegate running on thread [%p]", (void *) threadInfo);
-
         pthread_attr_destroy(&threadAttr);
+
+        if (jniAttached) {
+            native_context.jvm->DetachCurrentThread();
+        }
 
         return true;
     }

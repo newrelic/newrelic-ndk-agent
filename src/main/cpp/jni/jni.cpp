@@ -175,8 +175,8 @@ namespace jni {
         if (env != nullptr) {
             if (_jobject != nullptr && _jmethodID != nullptr) {
                 va_list args;
-                va_start(args, _jmethodID);
-                env->CallVoidMethod(_jobject, _jmethodID, args);
+                va_start(args, method_id);
+                env->CallVoidMethodV(class_name, method_id, args);
                 va_end(args);
                 env_check_and_clear_ex(env);
             } else {
