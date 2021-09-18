@@ -231,7 +231,7 @@ void collect_context(backtrace_state_t *state) {
 
 #elif defined(__aarch64__)
     _EMIT(state, "'registers':{");
-    for (int i = 0; i < NGREG; i++) {
+    for (int i = 0; i < NGREG-2; i++) {
         _EMIT(state, "r%d:%016x,", i, mcontext->regs[i]);
     }
     _EMIT(state, "'sp':'%016x',", mcontext->sp);            // == r31

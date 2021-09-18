@@ -81,7 +81,8 @@ jboolean JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStart(JNIEnv
 }
 
 extern "C"
-JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStop(JNIEnv *env, jobject thiz, jboolean hard_kill) {
+JNIEXPORT void JNICALL
+Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStop(JNIEnv *env, jobject thiz, jboolean hard_kill) {
     (void) env;
     (void) thiz;
     (void) hard_kill;
@@ -107,19 +108,17 @@ JNIEXPORT jstring JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_dumpStack
 }
 
 extern "C"
-JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_crashNow(JNIEnv *env,
-                                                                             jobject thiz,
-                                                                             jstring cause) {
+JNIEXPORT void JNICALL
+Java_com_newrelic_agent_android_ndk_AgentNDK_crashNow(JNIEnv *env, jobject thiz, jstring cause) {
     (void) env;
-    (void)  thiz;
+    (void) thiz;
     (void) cause;
-
-    syscall(SYS_tgkill, getpid(), gettid(), SIGSEGV);
+    syscall(SYS_tgkill, getpid(), gettid(), SIGQUIT);
 }
 
 extern "C"
-JNIEXPORT jboolean JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_isRootedDevice(JNIEnv * env,
-                                                                                       jobject thiz) {
+JNIEXPORT jboolean JNICALL
+Java_com_newrelic_agent_android_ndk_AgentNDK_isRootedDevice(JNIEnv * env, jobject thiz) {
     (void) env;
     (void) thiz;
 
@@ -135,3 +134,4 @@ JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_setNativeCon
     (void) thiz;
     jni::set_native_context(env, managedContext);
 }
+

@@ -27,6 +27,7 @@ static const uint64_t ANR_THREAD_SIGBLK = 0x1000;
 static volatile bool enabled = true;
 static volatile bool watchdog_triggered = false;
 
+static pthread_t watchdog_thread = 0;
 static sem_t watchdog_semaphore;
 static bool watchdog_must_poll = false;
 
@@ -62,12 +63,10 @@ void *anr_monitor_thread(__unused void *unused) {
             }
         }
 
-        // Raise SIGQUIT to alert ART's ANR processing
-        _LOGD("anr_monitor_thread: raising ANR signal");
-        raise_anr_signal();
-
         if (enabled) {
-            _LOGE("Notify the JVM delegate an ANR has occurred");
+            // Raise SIGQUIT to alert ART's ANR processing
+            _LOGD("anr_monitor_thread: raising ANR signal");
+            raise_anr_signal();
         }
 
         // Unblock SIGQUIT again so handler will run again.
@@ -79,13 +78,15 @@ void *anr_monitor_thread(__unused void *unused) {
 }
 
 void anr_interceptor(__unused int signo, siginfo_t *_siginfo, void *ucontext) {
-    const ucontext_t *_ucontext = static_cast<const ucontext_t *>(ucontext);
 
     // Block SIGQUIT in this thread so the default handler can run.
     sigutils::block_signal(SIGQUIT);
 
     if (enabled) {
+        _LOGE("Notify the JVM delegate an ANR has occurred (1)");
         char buffer[BACKTRACE_SZ_MAX];
+        const ucontext_t *_ucontext = static_cast<const ucontext_t *>(ucontext);
+
         if (unwind_backtrace(buffer, sizeof(buffer), _siginfo, _ucontext)) {
             serializer::from_anr(buffer, sizeof(buffer));
         }
@@ -175,7 +176,6 @@ void reset_android_anr_handler() {
  * @return
  */
 bool anr_handler_initialize() {
-    pthread_t watchdog_thread;
 
     _LOGD("anr_handler_initialize: starting");
 
@@ -216,12 +216,20 @@ bool anr_handler_initialize() {
  * Disable ANR handling via SIGQUIT
  */
 void anr_handler_shutdown() {
-    reset_android_anr_handler();
+    enabled = false;
+
     if (!watchdog_must_poll && (sem_post(&watchdog_semaphore) != 0)) {
         _LOGE("anr_handler_shutdown: Could not unlock ANR handler semaphore");
     }
+
+    if (watchdog_thread != 0) {
+        // pthread_kill(watchdog_thread, SIGQUIT);
+        pthread_join(watchdog_thread, nullptr);
+        watchdog_thread = (pthread_t) nullptr;
+    }
+
     sem_close(&watchdog_semaphore);
-    enabled = false;
     watchdog_triggered = false;
+    reset_android_anr_handler();
 }
 

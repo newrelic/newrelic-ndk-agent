@@ -37,10 +37,6 @@ void install_handler();
 
 void uninstall_handler();
 
-
-/* signal mask */
-static sigset_t _sigset;
-
 /* replacement stack */
 static stack_t _stack = {};
 
@@ -120,13 +116,13 @@ void *install_handler(__unused void *unused) {
     if (!initialized) {
         for (size_t i = 0; i < observedSignalCnt; i++) {
             const observed_signal_t *signal = &observedSignals[i];
-            if (0 != sigaction(signal->signo, &signalHandler,
-                               (struct sigaction *) &signal->sa_previous)) {
-                _LOGE("Unable to install signal %d handler", signal->signo);
-            } else {
-                _LOGI("Signal %d [%s] handler installed", signal->signo, signal->description);
+                if (0 != sigaction(signal->signo, &signalHandler,
+                                   (struct sigaction *) &signal->sa_previous)) {
+                    _LOGE("Unable to install signal %d handler", signal->signo);
+                } else {
+                    _LOGI("Signal %d [%s] handler installed", signal->signo, signal->description);
+                }
             }
-        }
 
         initialized = true;
         _LOGI("Signal handler initialized");
@@ -145,7 +141,6 @@ void uninstall_handler() {
             observed_signal_t signal = observedSignals[i];
             sigaction(signal.signo, &signal.sa_previous, nullptr);
             memset(&signal.sa_previous, 0, sizeof(struct sigaction));
-            // _LOGD("Signal %d interceptor uninstalled", signal.signo);
         }
 
         signalHandler.sa_handler = SIG_DFL;         // the default handler
@@ -161,15 +156,15 @@ void uninstall_handler() {
  */
 void dealloc() {
 
-    if (_stack.ss_sp != NULL) {
+    if (_stack.ss_sp != nullptr) {
         free(_stack.ss_sp);
-        _stack.ss_sp = NULL;
+        _stack.ss_sp = nullptr;
         _LOGI("Handler stack memory freed(%zu bytes)", _stack.ss_size);
     }
 }
 
 bool signal_handler_initialize() {
-    pthread_t handlerThread = (pthread_t) NULL;
+    pthread_t handlerThread = (pthread_t) nullptr;
 
     pthread_mutex_lock(&mutex);
 
@@ -180,7 +175,7 @@ bool signal_handler_initialize() {
 
     // the replacement signal handler
     memset(&signalHandler, 0, sizeof(struct sigaction));
-    sigemptyset(&signalHandler.sa_mask);                // clear the action mask
+    sigemptyset(&signalHandler.sa_mask);                    // clear the action mask
     signalHandler.sa_sigaction = interceptor;               // set the action intercept handler
     signalHandler.sa_flags = (SA_SIGINFO | SA_ONSTACK);     // set the action signal flags
 
@@ -188,6 +183,7 @@ bool signal_handler_initialize() {
     // Block it and start a new thread to handle all signals,
     // using the signal mask of the parent thread.
 
+    sigset_t _sigset = {};
     sigemptyset(&_sigset);
     sigaddset(&_sigset, SIGQUIT);
 
@@ -197,7 +193,7 @@ bool signal_handler_initialize() {
         }
 
         // reset defaults on the main thread
-        if (pthread_sigmask(SIG_UNBLOCK, &_sigset, NULL) != 0) {
+        if (pthread_sigmask(SIG_UNBLOCK, &_sigset, nullptr) != 0) {
             _LOGE("Unable to restore mask on SIGQUIT");
         }
 
@@ -205,6 +201,7 @@ bool signal_handler_initialize() {
         _LOGE("Unable to mask SIGQUIT");
     }
 
+    pthread_join(handlerThread, nullptr);
     pthread_mutex_unlock(&mutex);
 
     return true;
