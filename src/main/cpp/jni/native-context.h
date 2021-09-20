@@ -36,9 +36,18 @@ namespace jni {
     native_context_t &get_native_context();
 
     /**
+     * Conditions the native context from a passed JVM ManagedContext instance
+     * @param env
+     * @param managedContext instance
+     * @return
+     */
+    native_context_t &set_native_context(JNIEnv *env, jobject managedContext);
+
+    /**
      * Clean up JNI mem tied to the native_context
      *
-     * @param env
+     * @param env JNI env
+     * @param native_context instance
      */
     void release_native_context(JNIEnv *env, native_context_t &native_context);
 

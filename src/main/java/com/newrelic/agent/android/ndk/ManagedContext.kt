@@ -19,7 +19,7 @@ class ManagedContext(context: Context? = null) {
     var reportsDir: File? = getNativeReportsDir(context?.cacheDir)
     var libDir: File? = getNativeLibraryDir(context)
     var ipc: ByteBuffer = ByteBuffer.allocateDirect(0x10000)
-    var ndkListener: AgentNDKListener? = JVMDelegate()
+    var nativeReportListener: AgentNDKListener = JVMDelegate()
     var anrMonitor: Boolean = false
 
     fun getNativeReportsDir(rootDir: File?): File {

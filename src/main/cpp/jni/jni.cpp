@@ -69,11 +69,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     native_context.initialized = false;
     native_context.jvm = vm;
 
-    // FIXME should get from NativeContext
-    std::snprintf(native_context.reportPathAbsolute, sizeof(native_context.reportPathAbsolute),
-                  "/data/data/%s/cache/newrelic/reports",
-                  procfs::get_process_name(getpid(), cstr));
-
     JNIEnv *env;
     if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
         _LOGE("JNI version 1.6 not supported");
@@ -117,9 +112,9 @@ namespace jni {
     jclass env_find_class(JNIEnv *env, const char *class_name) {
         if (env != nullptr) {
             if (class_name != nullptr) {
-                jclass clz = env->FindClass(class_name);
+                jclass result = env->FindClass(class_name);
                 env_check_and_clear_ex(env);
-                return clz;
+                return result;
             } else {
                 _LOGE("env_find_class: class name is null");
             }
@@ -129,11 +124,42 @@ namespace jni {
         return nullptr;
     }
 
-    jmethodID env_get_methodid(JNIEnv *env, jclass class_name,
+    jclass env_get_object_class(JNIEnv *env, jobject _jobject) {
+        if (env != nullptr) {
+            if (_jobject != nullptr) {
+                jclass result = env->GetObjectClass(_jobject);
+                env_check_and_clear_ex(env);
+                return result;
+            } else {
+                _LOGE("env_get_object_class: class object is null");
+            }
+        } else {
+            _LOGE("env_get_object_class: JNIEnv is null");
+        }
+        return nullptr;
+    }
+
+    jfieldID env_get_fieldid(JNIEnv *env, jclass _jclass,
+                               const char *field_name, const char *field_sig) {
+        if (env != nullptr) {
+            if (_jclass != nullptr && field_name != nullptr && field_sig != nullptr) {
+                jfieldID fieldId = env->GetFieldID(_jclass, field_name, field_sig);
+                env_check_and_clear_ex(env);
+                return fieldId;
+            } else {
+                _LOGE("env_get_fieldid: class, method or signature name is null");
+            }
+        } else {
+            _LOGE("env_get_fieldid: JNIEnv is null");
+        }
+        return nullptr;
+    }
+
+    jmethodID env_get_methodid(JNIEnv *env, jclass _jclass,
                                const char *method_name, const char *method_sig) {
         if (env != nullptr) {
-            if (class_name != nullptr && method_name != nullptr && method_sig != nullptr) {
-                jmethodID methodId = env->GetMethodID(class_name, method_name, method_sig);
+            if (_jclass != nullptr && method_name != nullptr && method_sig != nullptr) {
+                jmethodID methodId = env->GetMethodID(_jclass, method_name, method_sig);
                 env_check_and_clear_ex(env);
                 return methodId;
             } else {
@@ -145,31 +171,49 @@ namespace jni {
         return nullptr;
     }
 
-    void env_call_void_method(JNIEnv *env, jobject class_name, jmethodID method_id, ...) {
+    void env_call_void_method(JNIEnv *env, jobject _jobject, jmethodID _jmethodID, ...) {
         if (env != nullptr) {
-            if (class_name != nullptr && method_id != nullptr) {
+            if (_jobject != nullptr && _jmethodID != nullptr) {
                 va_list args;
-                va_start(args, method_id);
-                env->CallVoidMethod(class_name, method_id, args);
+                va_start(args, _jmethodID);
+                env->CallVoidMethod(_jobject, _jmethodID, args);
                 va_end(args);
                 env_check_and_clear_ex(env);
             } else {
-                _LOGE("env_get_methodid: class name or method ID is null");
+                _LOGE("env_call_void_method: class name or method ID is null");
             }
         } else {
             _LOGE("env_call_void_method: JNIEnv is null");
         }
     }
 
-    jobject env_new_object(JNIEnv *env, jclass class_name, jmethodID method_id, ...) {
+    jobject env_call_object_method(JNIEnv *env, jobject _jobject, jmethodID _jmethodID, ...) {
         if (env != nullptr) {
-            if (class_name != nullptr && method_id != nullptr) {
+            if (_jobject != nullptr && _jmethodID != nullptr) {
                 va_list args;
-                va_start(args, method_id);
-                jobject jobj = env->NewObjectV(class_name, method_id, args);
+                va_start(args, _jmethodID);
+                jobject result = env->CallObjectMethod(_jobject, _jmethodID, args);
                 va_end(args);
                 env_check_and_clear_ex(env);
-                return jobj;
+                return result;
+            } else {
+                _LOGE("env_call_object_method: class name or method ID is null");
+            }
+        } else {
+            _LOGE("env_call_object_method: JNIEnv is null");
+        }
+        return nullptr;
+    }
+
+    jobject env_new_object(JNIEnv *env, jclass _jclass, jmethodID _jmethodID, ...) {
+        if (env != nullptr) {
+            if (_jclass != nullptr && _jmethodID != nullptr) {
+                va_list args;
+                va_start(args, _jmethodID);
+                jobject result = env->NewObjectV(_jclass, _jmethodID, args);
+                va_end(args);
+                env_check_and_clear_ex(env);
+                return result;
             } else {
                 _LOGE("env_new_object: class name or method ID is null");
             }
@@ -179,12 +223,12 @@ namespace jni {
         return nullptr;
     }
 
-    jobject env_new_global_ref(JNIEnv *env, jobject jobj) {
+    jobject env_new_global_ref(JNIEnv *env, jobject _jobject) {
         if (env != nullptr) {
-            if (jobj != nullptr) {
-                jobject gref = env->NewGlobalRef(jobj);
+            if (_jobject != nullptr) {
+                jobject result = env->NewGlobalRef(_jobject);
                 env_check_and_clear_ex(env);
-                return gref;
+                return result;
             } else {
                 _LOGE("env_new_global_ref: passed jobject is null");
             }
@@ -194,10 +238,10 @@ namespace jni {
         return nullptr;
     }
 
-    void env_delete_global_ref(JNIEnv *env, jobject jobj) {
+    void env_delete_global_ref(JNIEnv *env, jobject _jobject) {
         if (env != nullptr) {
-            if (jobj != nullptr) {
-                env->DeleteGlobalRef(jobj);
+            if (_jobject != nullptr) {
+                env->DeleteGlobalRef(_jobject);
                 env_check_and_clear_ex(env);
             } else {
                 _LOGE("env_delete_global_ref: passed jobject is null");
@@ -207,12 +251,12 @@ namespace jni {
         }
     }
 
-    jstring env_new_string_utf(JNIEnv *env, const char *str) {
+    jstring env_new_string_utf(JNIEnv *env, const char *cstr) {
         if (env != nullptr) {
-            if (str != nullptr) {
-                jstring jstr = env->NewStringUTF(str);
+            if (cstr != nullptr) {
+                jstring result = env->NewStringUTF(cstr);
                 env_check_and_clear_ex(env);
-                return jstr;
+                return result;
             } else {
                 _LOGE("env_new_string_utf: passed string is null");
             }
@@ -222,5 +266,35 @@ namespace jni {
         return nullptr;
     }
 
+    jobject env_get_object_field(JNIEnv *env, jobject _jobject, jfieldID _jfieldID) {
+        if (env != nullptr) {
+            if (_jobject != nullptr && _jfieldID != nullptr) {
+                jobject result = env->GetObjectField(_jobject, _jfieldID);
+                env_check_and_clear_ex(env);
+                return result;
+            } else {
+                _LOGE("env_get_object_field: class or field ID is null");
+            }
+        } else {
+            _LOGE("env_get_object_field: JNIEnv is null");
+        }
+        return nullptr;
+    }
+
+    const char* env_get_string_UTF_chars(JNIEnv *env, jstring _jstring) {
+        if (env != nullptr) {
+            if (_jstring != nullptr) {
+                jboolean isCopy;
+                const char* result = env->GetStringUTFChars(_jstring, &isCopy);
+                env_check_and_clear_ex(env);
+                return result;
+            } else {
+                _LOGE("env_get_string_UTF_chars: jstring is null");
+            }
+        } else {
+            _LOGE("env_get_string_UTF_chars: JNIEnv is null");
+        }
+        return nullptr;
+    }
 }   // namespace jni
 

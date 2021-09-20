@@ -9,6 +9,7 @@
 #include <android/log.h>
 #include <android/api-level.h>
 #include <unistd.h>
+#include <sys/ucontext.h>
 #include <sys/syscall.h>
 
 #include <agent-ndk.h>
@@ -16,6 +17,7 @@
 #include "anr-handler.h"
 #include "terminate-handler.h"
 #include "unwinder.h"
+#include "jni/jni.h"
 #include "jni/native-context.h"
 #include "jni/jni-delegate.h"
 #include "serializer.h"
@@ -42,26 +44,21 @@ bool arch_is_32b() {
 
 volatile bool initialized = false;
 
-extern "C"
-JNIEXPORT jboolean JNICALL
-Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStart(JNIEnv *env, jobject thiz) {
+extern "C" JNIEXPORT
+jboolean JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStart(JNIEnv *env,jobject thz,
+                                        jobject managedContext) {
     (void) env;
-    (void) thiz;
+    (void) thz;
     std::string cstr;
 
     _LOGD("Starting NewRelic native reporting: %s", AGENT_VERSION);
     _LOGD("    pid: %d ppid: %d tid: %d", getpid(), getppid(), gettid());
 
-    jni::native_context_t &native_context = jni::get_native_context();
+    jni::native_context_t &native_context = jni::set_native_context(env, managedContext);
 
     if (native_context.jvm == nullptr) {
         native_context.initialized = bind_delegate(env, native_context);
     }
-
-    // FIXME get from ManagedContext (jvm) on handoff
-    std::snprintf(native_context.reportPathAbsolute, sizeof(native_context.reportPathAbsolute),
-                  "/data/data/%s/cache/newrelic/reports",
-                  procfs::get_process_name(getpid(), cstr));
 
     if (!signal_handler_initialize()) {
         _LOGE("Error: Failed to initialize signal handlers!");
@@ -84,8 +81,7 @@ Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStart(JNIEnv *env, jobject th
 }
 
 extern "C"
-JNIEXPORT jobject JNICALL
-Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStop(JNIEnv *env, jobject thiz, jboolean hard_kill) {
+JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStop(JNIEnv *env, jobject thiz, jboolean hard_kill) {
     (void) env;
     (void) thiz;
     (void) hard_kill;
@@ -93,20 +89,17 @@ Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStop(JNIEnv *env, jobject thi
     signal_handler_shutdown();
     anr_handler_shutdown();
     terminate_handler_shutdown();
-
-    return nullptr;
 }
 
 extern "C"
-JNIEXPORT jstring JNICALL
-Java_com_newrelic_agent_android_ndk_AgentNDK_dumpStack(JNIEnv *env, jobject thiz) {
+JNIEXPORT jstring JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_dumpStack(JNIEnv * env, jobject thiz) {
     (void) env;
     (void) thiz;
 
     char buffer[BACKTRACE_SZ_MAX];
     siginfo_t _siginfo = {};
     ucontext_t _sa_ucontext = {};
-    if (unwind_backtrace(buffer, sizeof(buffer), &_siginfo, &_sa_ucontext)) {
+        if (unwind_backtrace(buffer, sizeof(buffer), &_siginfo, &_sa_ucontext)) {
         return env->NewStringUTF(buffer);      // FIXME leak
     }
 
@@ -114,16 +107,19 @@ Java_com_newrelic_agent_android_ndk_AgentNDK_dumpStack(JNIEnv *env, jobject thiz
 }
 
 extern "C"
-JNIEXPORT jobject JNICALL
-Java_com_newrelic_agent_android_ndk_AgentNDK_crashNow(__unused JNIEnv *env, __unused jobject thiz, __unused jstring cause) {
-    syscall(SYS_tgkill, getpid(), gettid(), SIGQUIT);
+JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_crashNow(JNIEnv *env,
+                                                                             jobject thiz,
+                                                                             jstring cause) {
+    (void) env;
+    (void)  thiz;
+    (void) cause;
 
-    return nullptr;
+    syscall(SYS_tgkill, getpid(), gettid(), SIGSEGV);
 }
 
 extern "C"
-JNIEXPORT jboolean JNICALL
-Java_com_newrelic_agent_android_ndk_AgentNDK_isRootedDevice(JNIEnv *env, jobject thiz) {
+JNIEXPORT jboolean JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_isRootedDevice(JNIEnv * env,
+                                                                                       jobject thiz) {
     (void) env;
     (void) thiz;
 
@@ -133,11 +129,9 @@ Java_com_newrelic_agent_android_ndk_AgentNDK_isRootedDevice(JNIEnv *env, jobject
 }
 
 extern "C"
-JNIEXPORT void JNICALL
-Java_com_newrelic_agent_android_ndk_AgentNDK_nativeSetContext(JNIEnv *env, jobject thiz, jobject context) {
-    (void) env;
+JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_setNativeContext(JNIEnv *env,
+                                                                           jobject thiz,
+                                                                           jobject managedContext) {
     (void) thiz;
-    (void) context;
-
-// TODO: implement setContext()
+    jni::set_native_context(env, managedContext);
 }

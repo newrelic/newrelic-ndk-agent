@@ -23,11 +23,10 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
     /**
      * API methods callable from agent
      **/
-    external fun nativeStart(): Boolean
-    external fun nativeStop(hardKill: Boolean = false)
-    external fun nativeSetContext(context: ManagedContext)
-
-    external fun crashNow(cause: String? = "This is a demonstration native crash courtesy of New Relic"): Void
+    external fun nativeStart(context: ManagedContext? = null): Boolean
+    external fun nativeStop()
+    external fun setNativeContext(context: ManagedContext)
+    external fun crashNow(cause: String? = "This is a demonstration native crash courtesy of New Relic")
     external fun dumpStack(): String
     external fun isRootedDevice(): Boolean
 
@@ -76,14 +75,22 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
         if (managedContext?.anrMonitor == true) {
             ANRMonitor.getInstance().startMonitor()
         }
-        return nativeStart()
+
+        try {
+            lock.lock()
+            flushPendingReports()
+        } finally {
+            lock.unlock()
+        }
+
+        return nativeStart(managedContext!!)
     }
 
     fun stop() {
         if (managedContext?.anrMonitor == true) {
             ANRMonitor.getInstance().stopMonitor()
         }
-        nativeStop(true)
+        nativeStop()
     }
 
     fun flushPendingReports() {
@@ -112,7 +119,7 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
     private fun postReport(report: File): Boolean {
         if (report.exists()) {
             log.info("Posting native report data: " + report.absolutePath)
-            managedContext?.ndkListener?.apply {
+            managedContext?.nativeReportListener?.apply {
                 if (report.name.startsWith("crash-", true)) {
                     onNativeCrash(report.readText(Charsets.UTF_8))
                 } else if (report.name.startsWith("ex-", true)) {
@@ -151,7 +158,7 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
         }
 
         fun withReportListener(ndkListener: AgentNDKListener): Builder {
-            managedContext.ndkListener = ndkListener
+            managedContext.nativeReportListener = ndkListener
             return this
         }
 

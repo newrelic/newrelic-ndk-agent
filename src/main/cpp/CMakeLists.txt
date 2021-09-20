@@ -38,9 +38,8 @@ add_library(agent-ndk
         signal-utils.cpp
         jni/jni.cpp
         jni/jni-delegate.cpp
-        jni/native_context.cpp
+        jni/native-context.cpp
         serializer.cpp
-        backtrace.cpp
         )
 
 target_include_directories(agent-ndk PUBLIC include)
@@ -69,9 +68,8 @@ add_library(agent-ndk-a STATIC
         signal-utils.cpp
         jni/jni.cpp
         jni/jni-delegate.cpp
-        jni/native_context.cpp
+        jni/native-context.cpp
         serializer.cpp
-        backtrace.cpp
         )
 
 target_include_directories(agent-ndk-a PUBLIC include)
