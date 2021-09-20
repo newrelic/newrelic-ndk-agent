@@ -92,7 +92,7 @@ void record_crashing_thread(backtrace_state_t *state) {
 #if defined(__i386__)
     record_frame(mcontext->gregs[REG_EIP], state);
 
-#elif defined(__x86_64__)// Program counter (pc)/instruction pointer (ip) register contains the crash address.
+#elif defined(__x86_64__)
     record_frame(mcontext->gregs[REG_RIP], state);
 
 #elif defined(__arm__)
@@ -153,8 +153,7 @@ void transform_frame(size_t index, const uintptr_t address, backtrace_state_t *s
         }
     }
 
-    _LOGD("%s", frame.c_str());
-    _EMIT(state, "'%s'", frame.c_str());
+    _EMIT(state, "'%s',", frame.c_str());
 }
 
 
@@ -185,7 +184,7 @@ void collect_context(backtrace_state_t *state) {
     }
 
 #if defined(__i386__)
-    _EMIT(state, "'regs':{");
+    _EMIT(state, "'registers':{");
     for (int i = 0; i < NGREG; i++) {
         _EMIT(state, "'r%0d':'%08lu',", i, mcontext->gregs[i]);
     }
@@ -196,7 +195,7 @@ void collect_context(backtrace_state_t *state) {
     _EMIT(state, "'code':%d", mcontext->gregs[REG_ERR]);
 
 #elif defined(__x86_64__)
-    _EMIT(state, "'regs':{");
+    _EMIT(state, "'registers':{");
     for (int i = 0; i< NGREG; i++) {
         _EMIT(state, "'r%d':'%016ld',", i, mcontext->gregs[i]);
     }
@@ -207,7 +206,7 @@ void collect_context(backtrace_state_t *state) {
     _EMIT(state, "'code':%d", mcontext->gregs[REG_ERR]);
 
 #elif defined(__arm__)
-    _EMIT(state, "'regs':{");
+    _EMIT(state, "'registers':{");
     _EMIT(state, "'r0':%08x,", REG_R0, mcontext->arm_r0);
     _EMIT(state, "'r1':%08x,", REG_R1, mcontext->arm_r1);
     _EMIT(state, "'r2':%08x,", REG_R2, mcontext->arm_r2);
@@ -231,7 +230,7 @@ void collect_context(backtrace_state_t *state) {
     _EMIT(state, "'fault_address':'%p'", mcontext->fault_address);
 
 #elif defined(__aarch64__)
-    _EMIT(state, "'regs':{");
+    _EMIT(state, "'registers':{");
     for (int i = 0; i < NGREG; i++) {
         _EMIT(state, "r%d:%016x,", i, mcontext->regs[i]);
     }
@@ -247,73 +246,120 @@ void collect_context(backtrace_state_t *state) {
 #endif // defined(__arm__)
 }
 
-const char *trim_trailing_ws(const char *buff) {
-    char *buffEol = const_cast<char *>(&buff[std::strlen(buff) - 1]);
-    while ((buffEol > buff) && (std::strpbrk(buffEol, "\n\r\t ") != nullptr)) {
-        *buffEol-- = '\0';
-    }
-    return buff;
-}
-
-const char *parseThreadToken(const char *buff, const char *token) {
-    size_t tokenLen = std::strlen(token);
-    if (std::strncmp(buff, token, tokenLen) == 0) {
-        const char *value = &buff[tokenLen];
-        return trim_trailing_ws(value);
-    }
-    return nullptr;
-}
-
 void collect_thread_state(int tid, backtrace_state_t *state) {
     pid_t pid = getpid();
-    std::string threadName;
-    procfs::get_thread_name(pid, tid, threadName);
+    std::string cstr;
+    const char *tstat = procfs::get_thread_stat(pid, tid, cstr);
 
     _EMIT(state, "{");
 
-    std::string cstr;
-    FILE *fp = fopen(procfs::get_thread_status_path(pid, tid, cstr), "r");
-    if (fp != nullptr) {
-        char buff[1024];
-        while (fgets(buff, sizeof(buff), fp) != NULL) {
-            const char *value;
-            if ((value = parseThreadToken(buff, "Name:\t")) != nullptr) {
-                _EMIT(state, "'name':'%s',", value);
-            } else if ((value = parseThreadToken(buff, "State:\t")) != nullptr) {
-                _EMIT(state, "'state':'%s',", value);
+    // everything needed is in thread's /proc stat file
+    if (tstat && *tstat != '\0') {
+        char value[0x100];
+        const char *delim = " ";
+        char *ppos = const_cast<char *>(tstat);
+        char *token = strtok_r(ppos, delim, &ppos);
+        if (token) {
+            _EMIT(state, "'threadid':%s,", token);
+            token = strtok_r(nullptr, ")", &ppos);
+            if (token) {
+                if (std::sscanf(token, "(%[A-Za-z0-9 _.:-])", value) == 1) {
+                    _EMIT(state, "'name':'%s',", value);
+                }
             }
+            token = strtok_r(nullptr, delim, &ppos);
+            if (token) {
+                const char *rstate = "unknown";
+                switch (std::tolower(*token)) {
+                    case 'r':
+                        rstate = "running";
+                        break;
+                    case 's':
+                    case 'd':
+                        rstate = "sleeping";
+                        break;
+                    case 'z':
+                        rstate = "zombie";
+                        break;
+                    case 't':
+                        rstate = "traced/stopped";
+                        break;
+                    case 'x':
+                        rstate = "dead";
+                        break;
+                    case 'w':
+                        rstate = "waking";
+                        break;
+                    case 'k':
+                        rstate = "wake kill";
+                        break;
+                    case 'p':
+                        rstate = "parked";
+                        break;
+                };  // switch
+                _EMIT(state, "'state':'%s',", rstate);
+            }
+            token = strtok_r(nullptr, delim, &ppos);  // skip ppid
+            token = strtok_r(nullptr, delim, &ppos);  // skip pgrp
+            token = strtok_r(nullptr, delim, &ppos);  // skip session id
+            token = strtok_r(nullptr, delim, &ppos);  // skip tty_nr
+            token = strtok_r(nullptr, delim, &ppos);  // skip tty_pgrp
+            token = strtok_r(nullptr, delim, &ppos);  // skip flags
+            token = strtok_r(nullptr, delim, &ppos);  // skip min_fault
+            token = strtok_r(nullptr, delim, &ppos);  // skip cmin_fault
+            token = strtok_r(nullptr, delim, &ppos);  // skip maj_fault
+            token = strtok_r(nullptr, delim, &ppos);  // skip cmaj_fault
+            token = strtok_r(nullptr, delim, &ppos);  // skip utime
+            token = strtok_r(nullptr, delim, &ppos);  // skip stime
+            token = strtok_r(nullptr, delim, &ppos);  // skip cutime
+            token = strtok_r(nullptr, delim, &ppos);  // skip cstime
+            token = strtok_r(nullptr, " ", &ppos);  // prior
+            if (token) {
+                _EMIT(state, "'priority':%s,", token);
+            }
+            token = strtok_r(nullptr, delim, &ppos);  // skip nice
+            token = strtok_r(nullptr, delim, &ppos);  // skip num threads
+            token = strtok_r(nullptr, delim, &ppos);  // skip itrealvalue
+            token = strtok_r(nullptr, delim, &ppos);  // skip start time
+            token = strtok_r(nullptr, delim, &ppos);  // skip vsize
+            token = strtok_r(nullptr, delim, &ppos);  // skip rss mem
+            token = strtok_r(nullptr, delim, &ppos);  // skip rss lim
+            token = strtok_r(nullptr, delim, &ppos);  // skip start code
+            token = strtok_r(nullptr, delim, &ppos);  // skip end code
+            token = strtok_r(nullptr, delim, &ppos);  // start stack
+            if (token) {
+                uint64_t stack = std::strtoull(token, nullptr, 10);
+                _EMIT(state, "'stack': %p,", stack);
+            }
+
+            // ignore the rest, the values tend to be the same for all threads anyway
         }
-        fclose(fp);
     }
 
     _EMIT(state, "'crashed':'%s',", tid == gettid() ? "true" : "false");
-    _EMIT(state, "'priority':%d,", getpriority(PRIO_PROCESS, tid));
-    _EMIT(state, "'schedstat':'%s',", procfs::get_thread_schedstat(pid, tid, cstr));
-    _EMIT(state, "'threadid':%d", tid);
-
-
     _EMIT(state, "},");
 }
 
 void collect_threadinfo(backtrace_state_t *state) {
-    struct dirent *_dirent;
     std::string path;
     const char *taskPath = procfs::get_task_path(getpid(), path);
-    DIR *dir = opendir(taskPath);
 
     _EMIT(state, "'threads':[");
-
-    // iterate through this process' threads gathering info on each thread
-    while ((_dirent = readdir(dir)) != nullptr) {
-        // only interested in numeric directories (representing thread ids)
-        if (isdigit(_dirent->d_name[0])) {
-            // convert dir entry name to thread id
-            pid_t tid = std::strtol(_dirent->d_name, nullptr, 10);
-            collect_thread_state(tid, state);
+    DIR *dir = opendir(taskPath);
+    if (dir != nullptr) {
+        // iterate through this process' threads gathering info on each thread
+        struct dirent *_dirent;
+        while ((_dirent = readdir(dir)) != nullptr) {
+            // only interested in numeric directories (representing thread ids)
+            if (isdigit(_dirent->d_name[0])) {
+                // convert dir entry name to thread id
+                pid_t tid = std::strtol(_dirent->d_name, nullptr, 10);
+                collect_thread_state(tid, state);
+            }
         }
+        state->cbuffer.pop_back();  // remove trailing comma
+        closedir(dir);
     }
-    state->cbuffer.pop_back();  // remove trailing comma
-    closedir(dir);
 
     _EMIT(state, "]");  // 'threads')
 }
@@ -338,8 +384,8 @@ void collect_stackframes(backtrace_state_t *state) {
 
         // translate each stack frame
         transform_frame(i, ip, state);
-        _EMIT(state, "%s", (i + 1 < state->frame_cnt) ? "," : "");
     }
+    state->cbuffer.pop_back();  // remove training comma
 
     _EMIT(state, "]");  // stackframes: [
 }

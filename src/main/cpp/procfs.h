@@ -22,7 +22,7 @@ namespace procfs {
 
     const char *get_task_path(pid_t, std::string &);
 
-    const char *get_thread_schedstat(pid_t, pid_t, std::string &);
+    const char *get_thread_stat(pid_t, pid_t, std::string &);
 
 }   // namespace procfs
 

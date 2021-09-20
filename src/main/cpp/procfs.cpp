@@ -4,6 +4,7 @@
  */
 
 #include <unistd.h>
+#include <errno.h>
 #include <string>
 
 #include <agent-ndk.h>
@@ -33,6 +34,8 @@ namespace procfs {
                 processName = trim_trailing_ws(buff);
             }
             fclose(fp);
+        } else {
+            _LOGE("get_process_name: error[%d]: %s", errno, strerror(errno));
         }
 
         return processName.c_str();
@@ -50,6 +53,8 @@ namespace procfs {
                 threadName = trim_trailing_ws(buff);
             }
             fclose(fp);
+        } else {
+            _LOGE("get_thread_name: error[%d]: %s", errno, strerror(errno));
         }
 
         return threadName.c_str();
@@ -63,20 +68,22 @@ namespace procfs {
         return threadStatus.c_str();
     }
 
-    const char *get_thread_schedstat(pid_t pid, pid_t tid, std::string &schedstat) {
+    const char *get_thread_stat(pid_t pid, pid_t tid, std::string &stat) {
         char path[PATH_MAX];
-        std::snprintf(path, sizeof(path), "/proc/%d/task/%d/schedstat", pid, tid);
+        std::snprintf(path, sizeof(path), "/proc/%d/task/%d/stat", pid, tid);
 
         FILE *fp = fopen(path, "r");
         if (fp != nullptr) {
             char buff[1024];
             if (fgets(buff, sizeof(buff), fp) != nullptr) {
-                schedstat = trim_trailing_ws(buff);
+                stat = trim_trailing_ws(buff);
             }
             fclose(fp);
+        } else {
+            _LOGE("get_thread_stat: error[%d]: %s", errno, strerror(errno));
         }
 
-        return schedstat.c_str();
+        return stat.c_str();
     }
 
     const char *get_task_path(pid_t pid, std::string &taskPath) {
