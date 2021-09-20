@@ -3,67 +3,46 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  */
+
 package com.newrelic.agent.android.ndk
 
-import com.newrelic.agent.android.agentdata.AgentDataController
-import com.newrelic.agent.android.analytics.AnalyticsAttribute
-import com.newrelic.agent.android.analytics.AnalyticsControllerImpl
-import com.newrelic.agent.android.crash.Crash
-import com.newrelic.agent.android.crash.CrashReporter
-import com.newrelic.agent.android.logging.AgentLogManager
 import java.util.*
 
-class JVMDelegate() : AgentNDKListener {
+class JVMDelegate() {
 
-    /**
-     * Delegated classes:
-     * com.newrelic.agent.android.crash.Crash
-     * com.newrelic.agent.android.agentdata.AgentDataController
-     */
+    var listener: AgentNDKListener? = AgentNDK.getInstance().managedContext?.nativeReportListener
 
     /**
      * A native crash has been detected and forwarded to this method
      */
-    override fun onNativeCrash(crashAsString: String?) {
-        val crash = Crash(
-            Throwable(),
-            analyticsController.sessionAttributes,
-            analyticsController.eventManager.queuedEvents,
-            true
-        )
-        CrashReporter.getInstance().storeAndReportCrash(crash)
+    fun onNativeCrash(crashAsString: String?) {
+        AgentNDK.log.debug("onNativeCrash: $crashAsString")
+        listener?.run {
+            onNativeCrash(crashAsString)
+        }
     }
 
     /**
      * A native runtime exception has been detected and forwarded to this method
      */
-    override fun onNativeException(exceptionAsString: String?) {
-        val exceptionAttributes: HashMap<String?, Any?> = object : HashMap<String?, Any?>() {
-            init {
-                put(AnalyticsAttribute.APPLICATION_PLATFORM_ATTRIBUTE, "native")
-            }
+    fun onNativeException(exceptionAsString: String?) {
+        AgentNDK.log.debug("onNativeException: $exceptionAsString")
+        listener?.run {
+            onNativeException(exceptionAsString)
         }
-        val exceptionToHandle: Exception = RuntimeException("FIXME: native")
-        AgentDataController.sendAgentData(exceptionToHandle, exceptionAttributes)
     }
 
     /**
      * ANR condition has been detected and forwarded to this method
      */
-    override fun onApplicationNotResponding(stackTraceAsString: String?) {
-        val exceptionAttributes: HashMap<String?, Any?> = object : HashMap<String?, Any?>() {
-            init {
-                put(AnalyticsAttribute.APPLICATION_PLATFORM_ATTRIBUTE, "native")
-                put("ANR", "true")
-            }
+    fun onApplicationNotResponding(anrAsString: String?) {
+        AgentNDK.log.debug("onApplicationNotResponding: $anrAsString")
+        listener?.run {
+            onApplicationNotResponding(anrAsString)
         }
-        val exceptionToHandle: Exception = InterruptedException("Application not responding")
-        AgentDataController.sendAgentData(exceptionToHandle, exceptionAttributes)
     }
 
     companion object {
-        private val analyticsController = AnalyticsControllerImpl.getInstance()
-
         var delegateMethods: HashMap<String?, String?> = object : HashMap<String?, String?>() {
             init {
                 put("onNativeCrash", "(Ljava/lang/String;)V")

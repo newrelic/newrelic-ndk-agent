@@ -175,12 +175,12 @@ namespace jni {
         if (env != nullptr) {
             if (_jobject != nullptr && _jmethodID != nullptr) {
                 va_list args;
-                va_start(args, method_id);
-                env->CallVoidMethodV(class_name, method_id, args);
-                va_end(args);
+                va_start(args, _jmethodID);
+                env->CallVoidMethodV(_jobject, _jmethodID, args);
                 env_check_and_clear_ex(env);
+                va_end(args);
             } else {
-                _LOGE("env_call_void_method: class name or method ID is null");
+                _LOGE("env_call_void_method: class or method ID is null");
             }
         } else {
             _LOGE("env_call_void_method: JNIEnv is null");
@@ -193,11 +193,11 @@ namespace jni {
                 va_list args;
                 va_start(args, _jmethodID);
                 jobject result = env->CallObjectMethod(_jobject, _jmethodID, args);
-                va_end(args);
                 env_check_and_clear_ex(env);
+                va_end(args);
                 return result;
             } else {
-                _LOGE("env_call_object_method: class name or method ID is null");
+                _LOGE("env_call_object_method: class or method ID is null");
             }
         } else {
             _LOGE("env_call_object_method: JNIEnv is null");
@@ -205,14 +205,32 @@ namespace jni {
         return nullptr;
     }
 
-    jobject env_new_object(JNIEnv *env, jclass _jclass, jmethodID _jmethodID, ...) {
+    jboolean env_call_bool_method(JNIEnv *env, jobject _jobject, jmethodID _jmethodID, ...) {
         if (env != nullptr) {
-            if (_jclass != nullptr && _jmethodID != nullptr) {
+            if (_jobject != nullptr && _jmethodID != nullptr) {
                 va_list args;
                 va_start(args, _jmethodID);
-                jobject result = env->NewObjectV(_jclass, _jmethodID, args);
-                va_end(args);
+                jboolean result = env->CallBooleanMethodV(_jobject, _jmethodID, args);
                 env_check_and_clear_ex(env);
+                va_end(args);
+                return result;
+            } else {
+                _LOGE("env_call_bool_method: class or method ID is null");
+            }
+        } else {
+            _LOGE("env_call_bool_method: JNIEnv is null");
+        }
+        return false;
+    }
+
+    jobject env_new_object(JNIEnv *env, jclass _jobject, jmethodID _jmethodID, ...) {
+        if (env != nullptr) {
+            if (_jobject != nullptr && _jmethodID != nullptr) {
+                va_list args;
+                va_start(args, _jmethodID);
+                jobject result = env->NewObjectV(_jobject, _jmethodID, args);
+                env_check_and_clear_ex(env);
+                va_end(args);
                 return result;
             } else {
                 _LOGE("env_new_object: class name or method ID is null");

@@ -16,10 +16,6 @@
 
 namespace jni {
 
-    /**
-     * https://developer.android.com/training/articles/perf-jni#general-tips
-     */
-
     static const char *delegate_class = "com/newrelic/agent/android/ndk/JVMDelegate";
     static const char *on_native_crash_method = "onNativeCrash";
     static const char *on_native_exception_method = "onNativeException";
@@ -97,10 +93,6 @@ namespace jni {
     /**
      * Worker thread for payload exchange
      *
-     * https://developer.android.com/training/articles/perf-jni#general-tips
-     * "Avoid asynchronous communication between code written in a managed
-     * programming language and code written in C++ when possible"
-     *
      * @param arg global ref to passed jstring instance, should be freed on completion.
      */
 
@@ -131,6 +123,7 @@ namespace jni {
                 }
                 jni_attached = true;
                 jni::env_check_and_clear_ex(env);
+                jni_attached = true;
                 break;
             default:
                 _LOGE("delegate_worker_thread:: Unsupported JNI version");
@@ -139,7 +132,7 @@ namespace jni {
 
         // invoke the delegate method passing the backtrace as a string
         jni::env_call_void_method(env,
-                                  native_context.jniDelegateObject,
+                                  delegate_args->delegate,
                                   delegate_args->method,
                                   delegate_args->backtrace);
 
@@ -169,7 +162,7 @@ namespace jni {
             return false;
         }
 
-        bool jniAttached = false;
+        bool jni_attached = false;
         JNIEnv *env = nullptr;
         int jrc = native_context.jvm->GetEnv((void **) &env, JNI_VERSION_1_6);
         switch (jrc) {
@@ -182,7 +175,7 @@ namespace jni {
                           strerror(jrc));
                     return false;
                 }
-                jniAttached = true;
+                jni_attached = true;
                 break;
             default:
                 _LOGE("delegate_worker_thread:: Unsupported JNI version");
@@ -225,7 +218,7 @@ namespace jni {
         _LOGD("threaded_delegate_call: delegate running on thread [%p]", (void *) threadInfo);
         pthread_attr_destroy(&threadAttr);
 
-        if (jniAttached) {
+        if (jni_attached) {
             native_context.jvm->DetachCurrentThread();
         }
 
@@ -234,8 +227,7 @@ namespace jni {
 
 
     /**
-     * Serialize a flattened crash report and
-     * pass to delegate in agent on a JVM-bound thread
+     * Pass a flattened crash report to delegate in agent on a JVM-bound thread
      *
      * @param backtrace
      */
@@ -252,8 +244,7 @@ namespace jni {
 
 
     /**
-     * Serialize a flattened handled exception report and
-     * pass to delegate in agent on a JVM-bound thread
+     * Pass a flattened native exception report to delegate in agent on a JVM-bound thread
      *
      * @param backtrace
      */
@@ -268,8 +259,7 @@ namespace jni {
     }
 
     /**
-     * Serialize a flattened ANR report and
-     * pass to delegate in agent on a JVM-bound thread
+     * Pass a flattened ANR report to delegate in agent on a JVM-bound thread
      *
      * @param backtrace
      */

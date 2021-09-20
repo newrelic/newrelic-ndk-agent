@@ -8,16 +8,22 @@ package com.newrelic.agent.android.ndk
 interface AgentNDKListener {
     /**
      * A native crash has been detected and forwarded to this method
+     * @param String containing backtrace
+     * @return true if data has been consumed
      */
-    fun onNativeCrash(crashAsString: String?)
+    fun onNativeCrash(crashAsString: String?) : Boolean
 
     /**
      * A native runtime exception has been detected and forwarded to this method
+     * @param String containing backtrace
+     * @return true if data has been consumed
      */
-    fun onNativeException(exceptionAsString: String?)
+    fun onNativeException(exceptionAsString: String?) : Boolean
 
     /**
      * ANR condition has been detected and forwarded to this method
+     * @param String containing backtrace
+     * @return true if data has been consumed
      */
-    fun onApplicationNotResponding(stackTraceAsString: String?)
+    fun onApplicationNotResponding(anrAsString: String?) : Boolean
 }

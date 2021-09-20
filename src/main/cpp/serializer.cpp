@@ -21,7 +21,7 @@ namespace serializer {
 
     void from_crash(const char *buffer, size_t buffsz) {
         to_storage("crash-", buffer, buffsz);
-        // TODO crashes may be best left on stprage and processed
+        // TODO crashes may be best left on storage and processed
         // on the next app launch
         jni::on_native_crash(buffer);
     }
@@ -42,14 +42,14 @@ namespace serializer {
      * @param payload
      * @param payloadSize
      */
-    bool to_storage(const char *filepath, const char *payload, size_t payloadSize) {
+    bool to_storage(const char *filepath, const char *payload, size_t payload_size) {
         std::string storagePath = generateTmpFilename(filepath).c_str();
         std::ofstream os{storagePath.c_str(), std::ios::out | std::ios::binary};
 
         if (!os) {
             _LOGE("serializer::to_storage error %d: %s", errno, strerror(errno));
         } else {
-            os.write(payload, payloadSize);
+            os.write(payload, payload_size);
             os.flush();
             os.close();
             _LOGD("Report saved to [%s]", storagePath.c_str());

@@ -56,8 +56,9 @@ jboolean JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStart(JNIEnv
 
     jni::native_context_t &native_context = jni::set_native_context(env, managedContext);
 
-    if (native_context.jvm == nullptr) {
-        native_context.initialized = bind_delegate(env, native_context);
+    native_context.initialized = bind_delegate(env, native_context);
+    if (!native_context.initialized) {
+        _LOGE("Could not bind to JVM delegates. Reports will cached until the next app launch.");
     }
 
     if (!signal_handler_initialize()) {

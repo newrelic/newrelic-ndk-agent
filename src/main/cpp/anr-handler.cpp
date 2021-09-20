@@ -83,7 +83,7 @@ void anr_interceptor(__unused int signo, siginfo_t *_siginfo, void *ucontext) {
     sigutils::block_signal(SIGQUIT);
 
     if (enabled) {
-        _LOGE("Notify the JVM delegate an ANR has occurred (1)");
+        _LOGD("Notify the JVM delegate an ANR has occurred");
         char buffer[BACKTRACE_SZ_MAX];
         const ucontext_t *_ucontext = static_cast<const ucontext_t *>(ucontext);
 

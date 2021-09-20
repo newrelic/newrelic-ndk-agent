@@ -103,7 +103,9 @@ task install(type: Upload) {
 /**
  * kudos: https://sureshjoshi.com/mobile/android-junit-native-libraries/
  */
-def osxDir = projectDir.absolutePath + '/.externalNativeBuild/cmake/debug/osx/'
+
+/*
+def osxDir = projectDir.absolutePath + '/.cxx/cmake/debug/osx/'
 
 task createBuildDir() {
     def folder = new File(osxDir)
@@ -141,3 +143,4 @@ project.afterEvaluate {
     javaPreCompileDebugAndroidTest.dependsOn make
     // }
 }
+*/

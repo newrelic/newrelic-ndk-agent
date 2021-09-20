@@ -7,8 +7,6 @@ package com.newrelic.agent.android.ndk
 
 import android.content.Context
 import com.newrelic.agent.android.logging.AgentLog
-import com.newrelic.agent.android.logging.AgentLogManager
-import com.newrelic.agent.android.logging.ConsoleAgentLog
 import com.newrelic.agent.android.metric.MetricNames
 import com.newrelic.agent.android.stats.StatsEngine
 import java.io.File
@@ -16,9 +14,8 @@ import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 
 open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
-    var log = AgentLogManager.getAgentLog()
     val lock = ReentrantLock()
-    var managedContext = managedContext
+    var managedContext: ManagedContext? = managedContext
 
     /**
      * API methods callable from agent
@@ -31,7 +28,7 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
     external fun isRootedDevice(): Boolean
 
     companion object {
-        val log: AgentLog = ConsoleAgentLog()
+        var log: AgentLog = NativeLogger()
 
         @Volatile
         private var agentNdk: AgentNDK? = null
@@ -96,18 +93,21 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
     fun flushPendingReports() {
         lock.lock()
         try {
-            val reportsDir = managedContext?.reportsDir!!
-            if (reportsDir.exists() && reportsDir.canRead()) {
-                val reportslist = reportsDir.listFiles()
-                if (reportslist != null) {
-                    for (report in reportslist) {
-                        if (postReport(report)) {
-                            // LOG it
+            managedContext?.reportsDir?.run {
+                log.info("Flushing reports from [${absolutePath}]")
+                if (exists() && canRead()) {
+                    listFiles()?.let {
+                        for (report in it) {
+                            if (postReport(report)) {
+                                log.debug("Report [${report.absolutePath}] submitted to New Relic")
+                            }
                         }
                     }
+                } else {
+                    log.warning("Report directory [${absolutePath}] does not exist or not readable")
                 }
-            } else {
-                log.warning("Report directory [${reportsDir}] does not exist or not readable")
+            } ?: run {
+                log.warning("Report directory has not been provided")
             }
         } catch (ex: Exception) {
             log.warning("Failed to parse/write pending reports: $ex")
@@ -118,17 +118,29 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
 
     private fun postReport(report: File): Boolean {
         if (report.exists()) {
-            log.info("Posting native report data: " + report.absolutePath)
+            log.info("Posting native report data from [${report.absolutePath}]")
             managedContext?.nativeReportListener?.apply {
-                if (report.name.startsWith("crash-", true)) {
-                    onNativeCrash(report.readText(Charsets.UTF_8))
-                } else if (report.name.startsWith("ex-", true)) {
-                    onNativeException(report.readText(Charsets.UTF_8))
-                } else if (report.name.startsWith("anr-", true)) {
-                    onApplicationNotResponding(report.readText(Charsets.UTF_8))
+                var consumed = false
+
+                when {
+                    report.name.startsWith("crash-", true) -> {
+                        consumed = onNativeCrash(report.readText(Charsets.UTF_8))
+                    }
+                    report.name.startsWith("ex-", true) -> {
+                        consumed = onNativeException(report.readText(Charsets.UTF_8))
+                    }
+                    report.name.startsWith("anr-", true) -> {
+                        consumed = onApplicationNotResponding(report.readText(Charsets.UTF_8))
+                    }
                 }
-                log.info("Deleting native report data: " + report.absolutePath)
-                report.delete()
+
+                if (consumed) {
+                    if (report.delete()) {
+                        log.info("Deleted native report data [${report.absolutePath}")
+                    } else {
+                        log.error("Failed to delete report [${report.absolutePath}]")
+                    }
+                }
             }
             return !report.exists()
         }
@@ -164,6 +176,11 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
 
         fun withManagedContext(managedContext: ManagedContext): Builder {
             this.managedContext = managedContext
+            return this
+        }
+
+        fun withLogger(agentLog: AgentLog): Builder {
+            AgentNDK.log = agentLog
             return this
         }
 
