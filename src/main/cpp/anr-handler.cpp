@@ -84,12 +84,14 @@ void anr_interceptor(__unused int signo, siginfo_t *_siginfo, void *ucontext) {
 
     if (enabled) {
         _LOGD("Notify the JVM delegate an ANR has occurred");
-        char buffer[BACKTRACE_SZ_MAX];
+        char *buffer = new char[BACKTRACE_SZ_MAX];
         const ucontext_t *_ucontext = static_cast<const ucontext_t *>(ucontext);
 
-        if (unwind_backtrace(buffer, sizeof(buffer), _siginfo, _ucontext)) {
-            serializer::from_anr(buffer, sizeof(buffer));
+        if (unwind_backtrace(buffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
+            serializer::from_anr(buffer, std::strlen(buffer));
         }
+
+        // delete [] buffer;
     }
 
     // set the trigger flag for the poll loop if a semaphore was not created
@@ -196,8 +198,9 @@ bool anr_handler_initialize() {
         _LOGW("Failed to init semaphore, revert to polling");
     }
 
-    // Install the ANR handler
-    if (!sigutils::install_handler(SIGQUIT, anr_interceptor)) {
+    // Install the new SIGQUIT (ANR) handler. The previous SIGQUIT
+    // handler must not be called, so no need to save it
+    if (!sigutils::install_handler(SIGQUIT, anr_interceptor, nullptr, 0)) {
         _LOGE("Could not install SIGQUIT handler: ANR reported won't be collected.");
     }
 
@@ -223,7 +226,6 @@ void anr_handler_shutdown() {
     }
 
     if (watchdog_thread != 0) {
-        // pthread_kill(watchdog_thread, SIGQUIT);
         pthread_join(watchdog_thread, nullptr);
         watchdog_thread = (pthread_t) nullptr;
     }

@@ -18,9 +18,12 @@ namespace sigutils {
 
     bool unblock_signal(int signo);
 
-    bool install_handler(int signo, void sig_action(int, siginfo_t *, void *));
+    bool install_handler(int signo, void sig_action(int, siginfo_t *, void *),
+                         const struct sigaction *, int);
 
-}   // namespace sigutils
+    const char *get_signal_description(int signo, int code);
+
+    }   // namespace sigutils
 
 #ifdef __cplusplus
 }

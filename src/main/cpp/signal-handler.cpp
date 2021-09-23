@@ -3,15 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
 #include <cstring>
-#include <csignal>
 #include <pthread.h>
 #include <malloc.h>
-#include <stdbool.h>
 
 #include <agent-ndk.h>
 #include "signal-utils.h"
@@ -40,9 +34,6 @@ void uninstall_handler();
 /* replacement stack */
 static stack_t _stack = {};
 
-/* the replacement signal handler */
-static struct sigaction signalHandler = {};
-
 /* Module-wide mutex */
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -58,73 +49,75 @@ static observed_signal_t observedSignals[] = {
 
 static size_t observedSignalCnt = sizeof(observedSignals) / sizeof(observedSignals[0]);
 
-static bool initialized = false;
-
+static volatile sig_atomic_t initialized = 0;
+static volatile sig_atomic_t intercepting = 0;
 
 /**
  * Intercept a raised signal
  */
 void interceptor(int signo, siginfo_t *_siginfo, void *ucontext) {
     const ucontext_t *_ucontext = static_cast<const ucontext_t *>(ucontext);
-    char buffer[BACKTRACE_SZ_MAX];
 
-    // Uninstall the custom handler to prevent recursion
-    uninstall_handler();
+    if (!intercepting++) {
+        char *buffer = new char[BACKTRACE_SZ_MAX];
 
-    for (size_t i = 0; i < observedSignalCnt; i++) {
-        if (observedSignals[i].signo == signo) {
-            const observed_signal_t *signal = &observedSignals[i];
+        for (size_t i = 0; i < observedSignalCnt; i++) {
+            if (observedSignals[i].signo == signo) {
+                const observed_signal_t *signal = &observedSignals[i];
 
-            _LOGD("Signal %d raised: %s", signal->signo, signal->description);
+                _LOGD("Signal %d intercepted: %s", signal->signo, signal->description);
+                switch (signo) {
+                    case SIGILL:
+                    case SIGTRAP:
+                    case SIGABRT:
+                    case SIGFPE:
+                    case SIGBUS:
+                    case SIGSEGV:
+                        if (unwind_backtrace(buffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
+                            serializer::from_crash(buffer, std::strlen(buffer));
+                        }
+                        break;
 
-            switch (signo) {
-                case SIGQUIT:
-                    _LOGE("ANR detected");
-                    break;
-
-                case SIGILL:
-                case SIGTRAP:
-                case SIGABRT:
-                case SIGFPE:
-                case SIGBUS:
-                case SIGSEGV:
-                    _LOGE("Signal %d intercepted", signo);
-                    if (unwind_backtrace(buffer, sizeof(buffer), _siginfo, _ucontext)) {
-                        serializer::from_crash(buffer, sizeof(buffer));
-                    }
-                    break;
-
-                default:
-                    _LOGE("Unsupported signal %d intercepted!", signo);
-                    break;
+                    default:
+                        _LOGE("Unsupported signal %d intercepted!", signo);
+                        break;
+                }
+                break;
             }
-
-            break;
         }
+
+        delete [] buffer;
+
+        // Uninstall the custom handler prior to calling the previous sigaction (to prevent recursion)
+        uninstall_handler();
+
+        // chain to previous signo handler for abend
+        invoke_previous_sigaction(signo, _siginfo, ucontext);
     }
 
-    // chain to previous signo handler for abend
-    invoke_previous_sigaction(signo, _siginfo, ucontext);
+    intercepting--;
 }
 
 /**
  * Install observed signals
  */
 void *install_handler(__unused void *unused) {
-    pthread_setname_np(pthread_self(), "NR-Signal-Monitor");
 
-    if (!initialized) {
+    if (!initialized++) {
+        pthread_setname_np(pthread_self(), "NR-Signal-Monitor");
         for (size_t i = 0; i < observedSignalCnt; i++) {
             const observed_signal_t *signal = &observedSignals[i];
-                if (0 != sigaction(signal->signo, &signalHandler,
-                                   (struct sigaction *) &signal->sa_previous)) {
-                    _LOGE("Unable to install signal %d handler", signal->signo);
-                } else {
-                    _LOGI("Signal %d [%s] handler installed", signal->signo, signal->description);
-                }
+            // SA_ONSTACK: handle the signal on separate stack
+            if (sigutils::install_handler(signal->signo, interceptor,
+                                          &signal->sa_previous, SA_ONSTACK)) {
+                _LOGI("Signal %d [%s] handler installed", signal->signo, signal->description);
+            } else {
+                _LOGE("Unable to install signal %d handler", signal->signo);
             }
+        }
 
-        initialized = true;
+        intercepting = 0;
+
         _LOGI("Signal handler initialized");
     }
 
@@ -135,7 +128,6 @@ void *install_handler(__unused void *unused) {
  * Remove all installed signal interceptors
  */
 void uninstall_handler() {
-
     if (initialized) {
         for (size_t i = 0; i < observedSignalCnt; i++) {
             observed_signal_t signal = observedSignals[i];
@@ -143,10 +135,9 @@ void uninstall_handler() {
             memset(&signal.sa_previous, 0, sizeof(struct sigaction));
         }
 
-        signalHandler.sa_handler = SIG_DFL;         // the default handler
-        signalHandler.sa_flags = SA_RESETHAND;      // default signal flags
+        initialized--;
+        intercepting = 0;
 
-        initialized = false;
         _LOGI("Signal handler uninstalled");
     }
 }
@@ -155,6 +146,7 @@ void uninstall_handler() {
  * release all alloc'd heap:
  */
 void dealloc() {
+    _LOGE("dealloc called");
 
     if (_stack.ss_sp != nullptr) {
         free(_stack.ss_sp);
@@ -164,8 +156,6 @@ void dealloc() {
 }
 
 bool signal_handler_initialize() {
-    pthread_t handlerThread = (pthread_t) nullptr;
-
     pthread_mutex_lock(&mutex);
 
     if (!sigutils::set_sigstack(&_stack, SIGSTKSZ * 2)) {
@@ -173,35 +163,22 @@ bool signal_handler_initialize() {
         return false;
     }
 
-    // the replacement signal handler
-    memset(&signalHandler, 0, sizeof(struct sigaction));
-    sigemptyset(&signalHandler.sa_mask);                    // clear the action mask
-    signalHandler.sa_sigaction = interceptor;               // set the action intercept handler
-    signalHandler.sa_flags = (SA_SIGINFO | SA_ONSTACK);     // set the action signal flags
-
     // Main thread does not block SIGQUIT by default.
     // Block it and start a new thread to handle all signals,
     // using the signal mask of the parent thread.
 
-    sigset_t _sigset = {};
-    sigemptyset(&_sigset);
-    sigaddset(&_sigset, SIGQUIT);
+    if (sigutils::block_signal(SIGQUIT)) {
+        pthread_t handlerThread = (pthread_t) nullptr;
 
-    if (pthread_sigmask(SIG_BLOCK, &_sigset, nullptr) == 0) {
+        // new thread will inherit the sigmask of the parent
         if (pthread_create(&handlerThread, nullptr, install_handler, nullptr) != 0) {
             _LOGE("Unable to create watchdog thread");
         }
 
-        // reset defaults on the main thread
-        if (pthread_sigmask(SIG_UNBLOCK, &_sigset, nullptr) != 0) {
-            _LOGE("Unable to restore mask on SIGQUIT");
-        }
-
-    } else {
-        _LOGE("Unable to mask SIGQUIT");
+        // restore SIGQUIT on this thread
+        sigutils::unblock_signal(SIGQUIT);
     }
 
-    pthread_join(handlerThread, nullptr);
     pthread_mutex_unlock(&mutex);
 
     return true;
@@ -222,19 +199,17 @@ void signal_handler_shutdown() {
 /**
  * Invoke the proper handler for a passed signal
  */
-void
-invoke_sigaction(int signo, struct sigaction *_sigaction, siginfo_t *_siginfo, void *ucontext) {
-
+void invoke_sigaction(int signo, struct sigaction *_sigaction, siginfo_t *_siginfo, void *ucontext) {
     if (_sigaction->sa_flags & SA_SIGINFO) {
-        _LOGI("Signal %d rcvd: calling sigaction w/siginfo", signo);
+        _LOGD("Signal %d: calling sigaction w/siginfo", signo);
         _sigaction->sa_sigaction(signo, _siginfo, ucontext);
 
     } else if (_sigaction->sa_handler == SIG_DFL) {
-        _LOGI("Signal %d rcvd: calling default handler", signo);
+        _LOGD("Signal %d: calling default handler", signo);
         raise(signo);
 
     } else if (_sigaction->sa_handler != SIG_IGN) {
-        _LOGI("Signal %d rcvd: ignored", signo);
+        _LOGD("Signal %d: ignored", signo);
         void (*handler)(int) = _sigaction->sa_handler;
         handler(signo);
     }
@@ -249,7 +224,7 @@ void invoke_previous_sigaction(int signo, siginfo_t *_siginfo, void *ucontext) {
     for (size_t i = 0; i < observedSignalCnt; ++i) {
         observed_signal_t signal = observedSignals[i];
         if (signal.signo == signo) {
-            _LOGD("Invoking previous handler for signal %d", signal.signo);
+            _LOGI("Invoking previous handler for signal %d", signal.signo);
             invoke_sigaction(signo, &signal.sa_previous, _siginfo, ucontext);
         }
     }

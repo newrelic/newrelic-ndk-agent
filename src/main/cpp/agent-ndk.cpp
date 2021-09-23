@@ -50,9 +50,10 @@ jboolean JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStart(JNIEnv
     (void) env;
     (void) thz;
     std::string cstr;
+    const char *procName = procfs::get_process_name(getpid(), cstr);
 
     _LOGD("Starting NewRelic native reporting: %s", AGENT_VERSION);
-    _LOGD("    pid: %d ppid: %d tid: %d", getpid(), getppid(), gettid());
+    _LOGD("    Process[%s] pid: %d ppid: %d tid: %d", procName, getpid(), getppid(), gettid());
 
     jni::native_context_t &native_context = jni::set_native_context(env, managedContext);
 
@@ -69,7 +70,7 @@ jboolean JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStart(JNIEnv
     if (!anr_handler_initialize()) {
         _LOGE("Error: Failed to initialize ANR detection!");
     }
-    _LOGD("ANR signal handler installed");
+    _LOGD("ANR handler installed");
 
     if (!terminate_handler_initialize()) {
         _LOGE("Error: Failed to initialize exception handlers!");
@@ -98,11 +99,13 @@ JNIEXPORT jstring JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_dumpStack
     (void) env;
     (void) thiz;
 
-    char buffer[BACKTRACE_SZ_MAX];
+    char *buffer = new char[BACKTRACE_SZ_MAX];
     siginfo_t _siginfo = {};
     ucontext_t _sa_ucontext = {};
-        if (unwind_backtrace(buffer, sizeof(buffer), &_siginfo, &_sa_ucontext)) {
-        return env->NewStringUTF(buffer);      // FIXME leak
+        if (unwind_backtrace(buffer, BACKTRACE_SZ_MAX, &_siginfo, &_sa_ucontext)) {
+        jstring result = env->NewStringUTF(buffer);
+        delete [] buffer;
+        return result;       // FIXME leak
     }
 
     return nullptr;

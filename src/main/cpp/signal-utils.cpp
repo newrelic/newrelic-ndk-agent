@@ -60,19 +60,131 @@ namespace sigutils {
         return true;
     }
 
-    bool install_handler(int signo, void sig_action(int, siginfo_t *, void *)) {
-        _LOGD("sigutils::install_handler(%d, %p) on thread [%d]", signo, sig_action, gettid());
+    bool install_handler(int signo,
+                         void sig_action(int, siginfo_t *, void *),
+                         const struct sigaction *current_sig_action, int sa_flags) {
+        _LOGD("sigutils::install_handler(%d, %p, %p) on thread [%d]",
+              signo, sig_action, current_sig_action, gettid());
 
-        struct sigaction handler;
+        struct sigaction handler = {};
         sigemptyset(&handler.sa_mask);
+        handler.sa_flags = SA_SIGINFO | sa_flags;
         handler.sa_sigaction = sig_action;
-        handler.sa_flags = SA_SIGINFO;
-        if (sigaction(signo, &handler, NULL) != 0) {
-            _LOGE("Could not install signal[%d] handler: %s.", signo, strerror(errno));
+
+        if (sigaction(signo, &handler, const_cast<struct sigaction *>(current_sig_action)) != 0) {
+            _LOGD("Could not install signal[%d] handler: %s.", signo, strerror(errno));
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * Signal descriptions: <http://pubs.opengroup.org/onlinepubs/009696699/basedefs/signal.h.html>
+     */
+    const char *get_signal_description(int signo, int code) {
+        switch (signo) {
+            case SIGILL:
+                switch (code) {
+                    case ILL_ILLOPC:
+                        return "Illegal opcode";
+                    case ILL_ILLOPN:
+                        return "Illegal operand";
+                    case ILL_ILLADR:
+                        return "Illegal addressing mode";
+                    case ILL_ILLTRP:
+                        return "Illegal trap";
+                    case ILL_PRVOPC:
+                        return "Privileged opcode";
+                    case ILL_PRVREG:
+                        return "Privileged register";
+                    case ILL_COPROC:
+                        return "Coprocessor error";
+                    case ILL_BADSTK:
+                        return "Internal stack error";
+                    default:
+                        return "Illegal operation";
+                }
+                break;
+            case SIGTRAP:
+                switch (code) {
+                    case TRAP_BRKPT:
+                        return "Process breakpoint";
+                    case TRAP_TRACE:
+                        return "Process trace trap";
+                    default:
+                        return "Trap";
+                }
+                break;
+            case SIGABRT:
+                return "Process abort signal";
+            case SIGSEGV:
+                switch (code) {
+                    case SEGV_MAPERR:
+                        return "Address not mapped to object";
+                    case SEGV_ACCERR:
+                        return "Invalid permissions for mapped object";
+                    default:
+                        return "Segmentation violation";
+                }
+                break;
+            case SIGFPE:
+                switch (code) {
+                    case FPE_INTDIV:
+                        return "Integer divide by zero";
+                    case FPE_INTOVF:
+                        return "Integer overflow";
+                    case FPE_FLTDIV:
+                        return "Floating-point divide by zero";
+                    case FPE_FLTOVF:
+                        return "Floating-point overflow";
+                    case FPE_FLTUND:
+                        return "Floating-point underflow";
+                    case FPE_FLTRES:
+                        return "Floating-point inexact result";
+                    case FPE_FLTINV:
+                        return "Invalid floating-point operation";
+                    case FPE_FLTSUB:
+                        return "Subscript out of range";
+                    default:
+                        return "Floating-point";
+                }
+                break;
+            case SIGBUS:
+                switch (code) {
+                    case BUS_ADRALN:
+                        return "Invalid address alignment";
+                    case BUS_ADRERR:
+                        return "Nonexistent physical address";
+                    case BUS_OBJERR:
+                        return "Object-specific hardware error";
+                    default:
+                        return "Bus error";
+                }
+                break;
+            case SIGINT:
+                return "Terminal interrupt signal";
+            case SIGKILL:
+                return "Kill";
+            case SIGQUIT:
+                return "Terminal quit signal (ANR)";
+            default:
+                switch (code) {
+                    case SI_USER:
+                        return "Signal sent by kill()";
+                    case SI_QUEUE:
+                        return "Signal sent by the sigqueue()";
+                    case SI_TIMER:
+                        return "Signal generated by expiration of a timer set by timer_settime()";
+                    case SI_ASYNCIO:
+                        return "Signal generated by completion of an asynchronous I/O request";
+                    case SI_MESGQ:
+                        return "Signal generated by arrival of a message on an empty message queue";
+                    default:
+                        return "Unknown signal";
+                }
+                break;
+        }
     }
 
 }   // namespace sigutils
