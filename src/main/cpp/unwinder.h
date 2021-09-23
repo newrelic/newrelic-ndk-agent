@@ -8,22 +8,9 @@
 
 #include <agent-ndk.h>
 
-#ifdef _DEMANGLE_CXX
-#define IN_LIBGCC2 1    // define __cxxabiv1::__cxa_demangle
-namespace __cxxabiv1 {
-    extern "C" {
-#include "demangle/cp-demangle.c"
-    }
-}
-#endif // _DEMANGLE_CXX
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#ifdef _DEMANGLE_CXX
-char* __cxa_demangle(const char* mangled, char* demangled, size_t* buffsz, int* status);
-#endif  // _DEMANGLE_CXX
 
 bool unwind_backtrace(char *, size_t, const siginfo_t *, const ucontext_t *);
 

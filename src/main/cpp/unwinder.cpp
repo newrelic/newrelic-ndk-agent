@@ -15,6 +15,7 @@
 #include <sys/ucontext.h>
 #include <asm/sigcontext.h>
 #include <sys/resource.h>
+#include <cxxabi.h>
 
 #include <agent-ndk.h>
 #include "unwinder.h"
