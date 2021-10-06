@@ -1,0 +1,220 @@
+{
+  "backtrace": {
+    "ABI": "x86_64",
+    "pid": 24104,
+    "ppid": 293,
+    "uid": 10156,
+    "platform": "native",
+    "timestamp": 1633718749,
+    "name": "com.newrelic.agent.android.ndk.test",
+    "registers": {
+      "r0": "0000000000000000",
+      "r1": "0000000000000000",
+      "r2": "0131692862082553",
+      "r3": "0000000000000535",
+      "r4": "0131680331627880",
+      "r5": "0131680331627912",
+      "r6": "0131680331627760",
+      "r7": "0131692862770416",
+      "r8": "0000000000024104",
+      "r9": "0000000000024141",
+      "r10": "0131680331627648",
+      "r11": "0131680331627760",
+      "r12": "0000000000000004",
+      "r13": "0000000000000000",
+      "r14": "0131692862321320",
+      "r15": "0131680331627576",
+      "r16": "0131692862321320",
+      "r17": "0000000000000535",
+      "r18": "12103423998558259",
+      "r19": "0000000000000000",
+      "r20": "0000000000000000",
+      "r21": "0000002147488256",
+      "r22": "0000000000000000",
+      "pc": "00000000224732a8",
+      "sp": "000000003763fc38"
+    },
+    "signal": 0,
+    "code": 0,
+    "threads": [
+      {
+        "threadid": 24104,
+        "name": "ndroid.ndk.test",
+        "state": "running",
+        "priority": 10,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24114,
+        "name": "Signal Catcher",
+        "state": "sleeping",
+        "priority": 0,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24115,
+        "name": "perfetto_hprof_",
+        "state": "sleeping",
+        "priority": 0,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24116,
+        "name": "ADB-JDWP Connec",
+        "state": "sleeping",
+        "priority": 0,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24117,
+        "name": "Jit thread pool",
+        "state": "running",
+        "priority": 20,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24118,
+        "name": "HeapTaskDaemon",
+        "state": "sleeping",
+        "priority": 24,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24119,
+        "name": "ReferenceQueueD",
+        "state": "sleeping",
+        "priority": 24,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24120,
+        "name": "FinalizerDaemon",
+        "state": "sleeping",
+        "priority": 24,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24121,
+        "name": "FinalizerWatchd",
+        "state": "sleeping",
+        "priority": 24,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24122,
+        "name": "Binder:24104_1",
+        "state": "sleeping",
+        "priority": 20,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24123,
+        "name": "Binder:24104_2",
+        "state": "sleeping",
+        "priority": 20,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24124,
+        "name": "Binder:24104_3",
+        "state": "sleeping",
+        "priority": 20,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24125,
+        "name": "Binder:24104_4",
+        "state": "sleeping",
+        "priority": 20,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24126,
+        "name": "Profile Saver",
+        "state": "sleeping",
+        "priority": 29,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24127,
+        "name": "RenderThread",
+        "state": "sleeping",
+        "priority": 10,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24130,
+        "name": "pool-2-thread-1",
+        "state": "sleeping",
+        "priority": 20,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24132,
+        "name": "NR-ANR-Monitor",
+        "state": "sleeping",
+        "priority": 10,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24140,
+        "name": "ndroid.ndk.test",
+        "state": "sleeping",
+        "priority": 10,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24141,
+        "name": "ndroid.ndk.test",
+        "state": "running",
+        "priority": 10,
+        "stack": 0x7ffffc9730f0,
+        "crashed": true
+      },
+      {
+        "threadid": 24142,
+        "name": "ndroid.ndk.test",
+        "state": "sleeping",
+        "priority": 10,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      },
+      {
+        "threadid": 24143,
+        "name": "ndroid.ndk.test",
+        "state": "sleeping",
+        "priority": 10,
+        "stack": 0x7ffffc9730f0,
+        "crashed": false
+      }
+    ],
+    "stackframes": [
+      "native: #00 pc 0131692862321320 /apex/com.android.runtime/lib64/bionic/libc.so syscall + 0x131692861952000 (0x369320)",
+      "native: #01 pc 0131680336420494 /data/app/~~D0gNT_-aiEinavgEEOAU2A==/com.newrelic.agent.android.ndk.test-jRKU0BpCJj9OpI9IvcxpIg==/base.apk!/lib/x86_64/libagent-ndk.so + 0x131680336146432 (0x274062)",
+      "native: #02 pc 0131692862320880 /apex/com.android.runtime/lib64/bionic/libc.so + 0x131692861952000 (0x368880)",
+      "native: #03 pc 0131692862321319 /apex/com.android.runtime/lib64/bionic/libc.so syscall + 0x131692861952000 (0x369319)",
+      "native: #04 pc 0131680337198456 /data/app/~~D0gNT_-aiEinavgEEOAU2A==/com.newrelic.agent.android.ndk.test-jRKU0BpCJj9OpI9IvcxpIg==/base.apk!/lib/x86_64/libnative-lib.so crashBySignal(int) + 0x131680337137664 (0x60792)",
+      "native: #05 pc 0131680337201265 /data/app/~~D0gNT_-aiEinavgEEOAU2A==/com.newrelic.agent.android.ndk.test-jRKU0BpCJj9OpI9IvcxpIg==/base.apk!/lib/x86_64/libnative-lib.so crashing_thread(void*) + 0x131680337137664 (0x63601)",
+      "native: #06 pc 0131692862770475 /apex/com.android.runtime/lib64/bionic/libc.so + 0x131692861952000 (0x818475)",
+      "native: #07 pc 0131692862341320 /apex/com.android.runtime/lib64/bionic/libc.so + 0x131692861952000 (0x389320)"
+    ]
+  }
+}

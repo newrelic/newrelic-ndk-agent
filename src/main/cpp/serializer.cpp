@@ -17,6 +17,7 @@
 #include "serializer.h"
 
 namespace serializer {
+
     static std::string generateTmpFilename(const char *);
 
     void from_crash(const char *buffer, size_t buffsz) {
@@ -26,12 +27,12 @@ namespace serializer {
         jni::on_native_crash(buffer);
     }
 
-    void from_exception(const char *buffer, __unused size_t buffsz) {
+    void from_exception(const char *buffer, size_t buffsz) {
         to_storage("ex-", buffer, buffsz);
         jni::on_native_exception(buffer);
     }
 
-    void from_anr(const char *buffer, __unused size_t buffsz) {
+    void from_anr(const char *buffer, size_t buffsz) {
         to_storage("anr-", buffer, buffsz);
         jni::on_application_not_responding(buffer);
     }
@@ -40,7 +41,7 @@ namespace serializer {
      * Write the payload locally using MT thread-safe functions
 
      * @param payload
-     * @param payloadSize
+     * @param payload_size
      */
     bool to_storage(const char *filepath, const char *payload, size_t payload_size) {
         std::string storagePath = generateTmpFilename(filepath).c_str();
@@ -52,7 +53,7 @@ namespace serializer {
             os.write(payload, payload_size);
             os.flush();
             os.close();
-            _LOGD("Report saved to [%s]", storagePath.c_str());
+            _LOGD("Native report written to [%s]", storagePath.c_str());
             return true;
         }
 
@@ -62,7 +63,6 @@ namespace serializer {
     static std::string generateTmpFilename(const char *filePrefix) {
         jni::native_context_t &native_context = jni::get_native_context();
         std::ostringstream oss;
-        std::string report_path = native_context.reportPathAbsolute;
         using namespace std::chrono;
         auto now = system_clock::now();
         auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;

@@ -100,7 +100,7 @@ namespace jni {
         if (env != nullptr) {
             if (env->ExceptionCheck()) {
                 env->ExceptionClear();
-                _LOGD("env_check_and_clear_ex: JEnv exception cleared");
+                _LOGD("env_check_and_clear_ex: JNIEnv exception cleared");
                 return true;
             }
         } else {

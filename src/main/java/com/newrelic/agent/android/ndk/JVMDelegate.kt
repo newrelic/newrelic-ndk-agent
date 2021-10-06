@@ -10,14 +10,12 @@ import java.util.*
 
 class JVMDelegate() {
 
-    var listener: AgentNDKListener? = AgentNDK.getInstance().managedContext?.nativeReportListener
-
     /**
      * A native crash has been detected and forwarded to this method
      */
     fun onNativeCrash(crashAsString: String?) {
         AgentNDK.log.debug("onNativeCrash: $crashAsString")
-        listener?.run {
+        AgentNDK.getInstance().managedContext?.nativeReportListener?.run {
             onNativeCrash(crashAsString)
         }
     }
@@ -27,7 +25,7 @@ class JVMDelegate() {
      */
     fun onNativeException(exceptionAsString: String?) {
         AgentNDK.log.debug("onNativeException: $exceptionAsString")
-        listener?.run {
+        AgentNDK.getInstance().managedContext?.nativeReportListener?.run {
             onNativeException(exceptionAsString)
         }
     }
@@ -37,22 +35,8 @@ class JVMDelegate() {
      */
     fun onApplicationNotResponding(anrAsString: String?) {
         AgentNDK.log.debug("onApplicationNotResponding: $anrAsString")
-        listener?.run {
+        AgentNDK.getInstance().managedContext?.nativeReportListener?.run {
             onApplicationNotResponding(anrAsString)
-        }
-    }
-
-    companion object {
-        var delegateMethods: HashMap<String?, String?> = object : HashMap<String?, String?>() {
-            init {
-                put("onNativeCrash", "(Ljava/lang/String;)V")
-                put("onNativeException", "(Ljava/lang/String;)V")
-                put("onApplicationNotRespondingMethod", "(Ljava/lang/String;)V")
-            }
-        }
-
-        fun getSignature(methodName: String): String {
-            return delegateMethods[methodName] ?: "()V"
         }
     }
 }

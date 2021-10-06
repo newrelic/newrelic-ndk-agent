@@ -330,14 +330,14 @@ void collect_thread_state(int tid, backtrace_state_t *state) {
             token = strtok_r(nullptr, delim, &ppos);  // start stack
             if (token) {
                 uint64_t stack = std::strtoull(token, nullptr, 10);
-                _EMIT(state, "'stack': %p,", stack);
+                _EMIT(state, "'stack': '%p',", stack);
             }
 
             // ignore the rest, the values tend to be the same for all threads anyway
         }
     }
 
-    _EMIT(state, "'crashed':'%s',", tid == gettid() ? "true" : "false");
+    _EMIT(state, "'crashed':%s", tid == gettid() ? "true" : "false");
     _EMIT(state, "},");
 }
 

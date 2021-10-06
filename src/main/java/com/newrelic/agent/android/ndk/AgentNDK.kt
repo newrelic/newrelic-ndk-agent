@@ -73,12 +73,7 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
             ANRMonitor.getInstance().startMonitor()
         }
 
-        try {
-            lock.lock()
-            flushPendingReports()
-        } finally {
-            lock.unlock()
-        }
+        flushPendingReports()
 
         return nativeStart(managedContext!!)
     }
@@ -94,23 +89,30 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
         lock.lock()
         try {
             managedContext?.reportsDir?.run {
-                log.info("Flushing reports from [${absolutePath}]")
+                log.info("Flushing native reports from [${absolutePath}]")
                 if (exists() && canRead()) {
                     listFiles()?.let {
                         for (report in it) {
-                            if (postReport(report)) {
-                                log.debug("Report [${report.absolutePath}] submitted to New Relic")
+                            if (report.lastModified() < (System.currentTimeMillis() - managedContext?.reportTTL!!)) {
+                                log.error("Report [${report.name}] is too old, deleting...")
+                                report.deleteOnExit()
+                                continue;
+                            }
+                            try {
+                                if (postReport(report)) {
+                                    log.debug("Native report [${report.name}] submitted to New Relic")
+                                }
+                            } catch (e: Exception) {
+                                log.warning("Failed to parse/write native report [${report.name}: $e")
                             }
                         }
                     }
                 } else {
-                    log.warning("Report directory [${absolutePath}] does not exist or not readable")
+                    log.warning("Native report directory [${absolutePath}] does not exist or not readable")
                 }
             } ?: run {
                 log.warning("Report directory has not been provided")
             }
-        } catch (ex: Exception) {
-            log.warning("Failed to parse/write pending reports: $ex")
         } finally {
             lock.unlock()
         }
@@ -130,7 +132,7 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
                         consumed = onNativeException(report.readText(Charsets.UTF_8))
                     }
                     report.name.startsWith("anr-", true) -> {
-                        consumed = onApplicationNotResponding(report.readText(Charsets.UTF_8))
+                        consumed = onNativeCrash(report.readText(Charsets.UTF_8))
                     }
                 }
 
@@ -138,7 +140,7 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
                     if (report.delete()) {
                         log.info("Deleted native report data [${report.absolutePath}")
                     } else {
-                        log.error("Failed to delete report [${report.absolutePath}]")
+                        log.error("Failed to delete native report [${report.absolutePath}]")
                     }
                 }
             }

@@ -10,6 +10,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import java.io.File
 import java.nio.ByteBuffer
+import java.util.concurrent.TimeUnit
 
 class ManagedContext(context: Context? = null) {
 
@@ -18,9 +19,10 @@ class ManagedContext(context: Context? = null) {
     var buildId: String? = null
     var reportsDir: File? = getNativeReportsDir(context?.cacheDir)
     var libDir: File? = getNativeLibraryDir(context)
-    var ipc: ByteBuffer = ByteBuffer.allocateDirect(0x10000)
+    val ipc: ByteBuffer = ByteBuffer.allocateDirect(0x10000)
     var nativeReportListener: AgentNDKListener? = null
     var anrMonitor: Boolean = false
+    val reportTTL = TimeUnit.MILLISECONDS.convert(3, TimeUnit.HOURS)
 
     fun getNativeReportsDir(rootDir: File?): File {
         return File("${rootDir?.absolutePath}/newrelic/reports")
