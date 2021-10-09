@@ -18,12 +18,12 @@ class NativeThreadInfoTest : TestCase() {
 
     fun testFromJsonObject() {
         nativeThreadInfo = NativeThreadInfo().fromJsonObject(JSONObject(threadInfo))
-        Assert.assertEquals(9567, nativeThreadInfo.threadId)
+        Assert.assertEquals(12569, nativeThreadInfo.threadId)
     }
 
     fun testFromJson() {
         nativeThreadInfo = NativeThreadInfo().fromJson(threadInfo)
-        Assert.assertEquals(9567, nativeThreadInfo.threadId)
+        Assert.assertEquals(12569, nativeThreadInfo.threadId)
     }
 
     fun testAllThreads() {
@@ -33,6 +33,6 @@ class NativeThreadInfoTest : TestCase() {
     }
 
     fun testCrashingThread() {
-        Assert.assertFalse(nativeThreadInfo.isCrashingThread())
+        Assert.assertTrue(nativeThreadInfo.isCrashingThread())
     }
 }

@@ -29,9 +29,14 @@ class NativeStackTrace(val exception: Exception) {
                 getJSONObject("backtrace")?.apply {
                     try {
                         getJSONObject("exception")?.apply {
-                            exceptionMessage = "${getString("signalName")}: " +
-                                    "${getString("cause")} " +
-                                    "at ${getString("faultAddress")}"
+                            val cause = optString("cause", "")
+                            exceptionMessage = "${getString("name")}: ${cause}"
+                            getJSONObject("signalInfo")?.apply {
+                                exceptionMessage =
+                                    "${getString("signalName")} " +
+                                            "(code ${getInt("signalCode")}) ${cause} " +
+                                            "at ${getString("faultAddress")}"
+                            }
                         }
                     } catch (ignored: Exception) {
                         ignored.printStackTrace()

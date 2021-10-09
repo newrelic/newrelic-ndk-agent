@@ -27,7 +27,7 @@ android {
                 targets "agent-ndk" // , "agent-ndk-test"
 
                 // Passes optional arguments to CMake.
-                arguments "-DAGENT_VERSION=${project.version}"
+                arguments "-DAGENT_VERSION=${project.version}", "-DCMAKE_BUILD_TYPE=Debug"
             }
         }
 

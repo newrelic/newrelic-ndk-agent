@@ -24,8 +24,10 @@ endif ()
 add_compile_options(-Wall -Wextra -Wformat)
 add_compile_options(-fvisibility=hidden)
 
+message(STATUS "Cmake build type is ${DCMAKE_BUILD_TYPE}")
+
 set(PROJECT_TEST_DIR ${CMAKE_HOME_DIRECTORY}/../../test/cpp)
-message(STATUS "${PROJECT_TEST_DIR}")
+# message(STATUS "${PROJECT_TEST_DIR}")
 
 add_library(agent-ndk
         SHARED
@@ -40,6 +42,8 @@ add_library(agent-ndk
         jni/jni-delegate.cpp
         jni/native-context.cpp
         serializer.cpp
+        backtrace.cpp
+        emitter.cpp
         )
 
 target_include_directories(agent-ndk PUBLIC include)
@@ -70,6 +74,8 @@ add_library(agent-ndk-a STATIC
         jni/jni-delegate.cpp
         jni/native-context.cpp
         serializer.cpp
+        backtrace.cpp
+        emitter.cpp
         )
 
 target_include_directories(agent-ndk-a PUBLIC include)
@@ -78,3 +84,18 @@ target_link_libraries(agent-ndk-a ${log-lib})
 
 # Include testing framework(s) and test app
 ## FIXME include(UnitTests.cmake)
+
+set(GOOGLETEST_ROOT ${ANDROID_NDK}/sources/third_party/googletest/googletest)
+# add_library(gtest STATIC ${GOOGLETEST_ROOT}/src/gtest_main.cc ${GOOGLETEST_ROOT}/src/gtest-all.cc)
+# target_include_directories(gtest PRIVATE ${GOOGLETEST_ROOT})
+# target_include_directories(gtest PUBLIC ${GOOGLETEST_ROOT}/include)
+
+# add_executable(footesttest src/main/jni/foo_unittest.cc)
+# target_link_libraries(abi-test gtest)
+
+# find_program(ADB adb)
+# add_custom_command(TARGET abi-test POST_BUILD
+#        COMMAND ${ADB} shell mkdir -p /data/local/tmp/${ANDROID_ABI}
+#        COMMAND ${ADB} push $<TARGET_FILE:native-lib> /data/local/tmp/${ANDROID_ABI}/
+#        COMMAND ${ADB} push $<TARGET_FILE:footest> /data/local/tmp/${ANDROID_ABI}/
+#        COMMAND ${ADB} shell \"export LD_LIBRARY_PATH=/data/local/tmp/${ANDROID_ABI}\; /data/local/tmp/${ANDROID_ABI}/footest\")

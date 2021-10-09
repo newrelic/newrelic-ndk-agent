@@ -7,6 +7,7 @@
 #define _AGENT_NDK_BACKTRACE_H
 
 #include <agent-ndk.h>
+#include <vector>
 
 #ifndef PATH_MAX
 #define PATH_MAX 1024
@@ -14,11 +15,6 @@
 
 #define CLASS_NAME_MAX  255
 #define METHOD_NAME_MAX 255
-
-#ifndef THREAD_MAX
-#define THREAD_MAX BACKTRACE_THREADS_MAX
-#endif  // !_THREAD_MAX
-
 
 /**
  * Supported ABIs: https://developer.android.com/ndk/guides/abis
@@ -47,39 +43,79 @@
 #endif  // defined(__arm__)
 #endif  // !NGREG
 
+
+/**
+ * Unwinder backtrace metadata
+ */
+
+typedef struct backtrace_state {
+    uintptr_t frames[BACKTRACE_FRAMES_MAX];
+    size_t frame_cnt;
+    int skip_frames;
+    const ucontext_t *sa_ucontext;
+    const siginfo_t *siginfo;
+
+} backtrace_state_t;
+
+
+/**
+ * Metadata about the signal that caused the violation
+ */
+typedef struct violation {
+    char cause[32];             // translation of signal
+    char signal_name[16];       // literal name of signal
+    int signal_code;            // signal sub-code
+    uintptr_t fault_address;    // address (ip) of violation
+
+} violation_t;
+
+/**
+ * A stackframe represents the resolved address data for a single calling frame
+ */
 typedef struct stackframe {
-    const char platform[32];    // native or jvm
-    const char filename[PATH_MAX];
-    const char classname[CLASS_NAME_MAX];
-    const char methodname[METHOD_NAME_MAX];
-    const int linenumber;
+    size_t index;               // 0-based index of this frame in stack (top down)
+    uintptr_t ip;               // Instruction pointer value (address)
+    char so_path[PATH_MAX];     // Pathname of shared object containing ip
+    char sym_name[255];         // Name of symbol whose definition overlaps ip
+    uintptr_t so_base;          // Base address of shared object
+    uintptr_t sym_addr;         // Address of nearest symbol
+    uintptr_t sym_addr_offset;  // Offset from symbol
 
 } stackframe_t;
 
+/**
+ * Thread state metadata
+ */
 typedef struct threadinfo {
-    const char platform[32];    // native or jvm
-    const bool crashing_thread;
-    const char thread_state[32];
-    const int priority;
-    const int tid;
-    const stackframe_t stackframes[BACKTRACE_FRAMES_MAX];
+    int tid;                    // Thread ID
+    char thread_name[32];       // Name of thread, if set (as reported in /procfs)
+    bool crashed;               // True if this thread caused the violation
+    char thread_state[16];      // State of thread (as reported in /procfs)
+    int priority;               // Priority of thread (as reported in /procfs)
+    uintptr_t stack;            // Stack address (base)
+    uintptr_t frames[BACKTRACE_FRAMES_MAX]; // TBA
 
 } threadinfo_t;
 
+
 /**
- * A backtrace represents the state of the machine at crash:
+ * A backtrace represents the state of the machine at the point of violation:
  */
 typedef struct backtrace {
-    const char platform[32];    // native or jvm
-    const char arch[16];
+    backtrace_state_t state;
+
+    char description[128];
     long timestamp;
-    const char description[128];
+    char arch[8];
     int pid;
-    int tid;
+    int ppid;
     int uid;
-    threadinfo_t threads[THREAD_MAX];
-    uint64_t registers[NGREG];
+
+    std::vector<threadinfo_t> threads;
 
 } backtrace_t;
+
+
+bool collect_backtrace(char *, size_t, const siginfo_t *, const ucontext_t *);
 
 #endif // _AGENT_NDK_BACKTRACE_H

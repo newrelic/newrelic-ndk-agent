@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-present New Relic Corporation. All rights reserved.
+ * Copyright (c) 2021-present New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -7,7 +7,7 @@ package com.newrelic.agent.android.ndk
 
 class NativeException() : Exception("NativeException") {
 
-    var nativeStackTrace: NativeStackTrace = NativeStackTrace(this)
+    var nativeStackTrace: NativeStackTrace = NativeStackTrace()
 
     constructor(stackTraceAsJson: String) : this() {
         nativeStackTrace = NativeStackTrace(stackTraceAsJson)

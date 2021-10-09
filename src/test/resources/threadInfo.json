@@ -1,7 +1,8 @@
 {
-  "threadid": 9567,
-  "name": "Signal Catcher",
-  "state": "sleeping",
-  "priority": 0,
-  "crashed": "false"
+  "threadNumber": 12569,
+  "threadId": "ndroid.ndk.test",
+  "state": "RUNNING",
+  "priority": 10,
+  "crashed": true,
+  "stack": []
 }

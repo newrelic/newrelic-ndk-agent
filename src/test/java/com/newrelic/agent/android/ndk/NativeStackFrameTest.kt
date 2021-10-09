@@ -65,13 +65,13 @@ class NativeStackFrameTest : TestCase() {
         val stackFrames = JSONObject(backtrace).getJSONObject("backtrace").getJSONArray("stackframes")
         val allFrames = NativeStackFrame.allFrames(stackFrames)
         Assert.assertTrue(allFrames[0] is StackTraceElement)
-        Assert.assertEquals(8, allFrames.size)
+        Assert.assertEquals(5, allFrames.size)
     }
 
     fun testAllNativeFrames() {
         val stackFrames = JSONObject(backtrace).getJSONObject("backtrace").getJSONArray("stackframes")
         val allFrames = NativeStackFrame.allNativeFrames(stackFrames)
         Assert.assertTrue(allFrames[0] is NativeStackFrame)
-        Assert.assertEquals(8, allFrames.size)
+        Assert.assertEquals(5, allFrames.size)
     }
 }

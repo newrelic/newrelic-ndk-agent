@@ -25,8 +25,8 @@ class NativeThreadInfo(throwable: Throwable? = NativeException()) : ThreadInfo(t
             try {
                 crashed = jsonObject.optBoolean("crashed", false)
                 state = jsonObject.optString("state", "")
-                threadId = jsonObject.optLong("threadid", 0)
-                threadName = jsonObject.optString("name", "")
+                threadId = jsonObject.optLong("threadNumber", 0)
+                threadName = jsonObject.optString("threadId", "")
                 threadPriority = jsonObject.optInt("priority", -1)
                 stackTrace = stackTraceFromJson(jsonObject.optJSONArray("stack"))
 
@@ -58,9 +58,7 @@ class NativeThreadInfo(throwable: Throwable? = NativeException()) : ThreadInfo(t
                             val methodName = frame.optString("methodName", ukn)
                             val lineNumber = frame.optInt("lineNumber", -2)
 
-                            stack.set(
-                                i,
-                                StackTraceElement(className, methodName, fileName, lineNumber)
+                            stack.set(i,  StackTraceElement(className, methodName, fileName, lineNumber)
                             )
                         } catch (e: Exception) {
                             stack.set(i, StackTraceElement(ukn, ukn, ukn, -2));

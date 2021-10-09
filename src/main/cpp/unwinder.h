@@ -12,10 +12,13 @@
 extern "C" {
 #endif
 
-bool unwind_backtrace(char *, size_t, const siginfo_t *, const ucontext_t *);
+bool unwind_backtrace(backtrace_state_t &);
 
 #ifdef __cplusplus
 }
 #endif
+
+void transform_addr_to_stackframe(size_t, uintptr_t, stackframe_t &);
+
 
 #endif // _AGENT_NDK_UNWINDER_H

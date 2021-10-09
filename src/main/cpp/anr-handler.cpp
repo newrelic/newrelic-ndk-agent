@@ -11,7 +11,7 @@
 #include <agent-ndk.h>
 #include "procfs.h"
 #include "signal-utils.h"
-#include "unwinder.h"
+#include "backtrace.h"
 #include "serializer.h"
 #include "anr-handler.h"
 
@@ -87,7 +87,7 @@ void anr_interceptor(__unused int signo, siginfo_t *_siginfo, void *ucontext) {
         char *buffer = new char[BACKTRACE_SZ_MAX];
         const ucontext_t *_ucontext = static_cast<const ucontext_t *>(ucontext);
 
-        if (unwind_backtrace(buffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
+        if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
             serializer::from_anr(buffer, std::strlen(buffer));
         }
 
@@ -179,16 +179,14 @@ void reset_android_anr_handler() {
  */
 bool anr_handler_initialize() {
 
-    _LOGD("anr_handler_initialize: starting");
-
     // detect the Android runtime's ANR signal handler
     if (!detect_android_anr_handler()) {
-        _LOGE("Failed to detect Google ANR monitor thread. ANR report won't be sent to Google.");
+        _LOGE("Failed to detect Google ANR monitor thread. ANR report will not be sent to Google.");
     }
 
     // Start a watchdog thread
     if (pthread_create(&watchdog_thread, nullptr, anr_monitor_thread, nullptr) != 0) {
-        _LOGE("Could not create ANR watchdog thread. ANR reports won't be collected.");
+        _LOGE("Could not create ANR watchdog thread. ANR reports will not be collected.");
         return false;
     }
 
@@ -201,7 +199,7 @@ bool anr_handler_initialize() {
     // Install the new SIGQUIT (ANR) handler. The previous SIGQUIT
     // handler must not be called, so no need to save it
     if (!sigutils::install_handler(SIGQUIT, anr_interceptor, nullptr, 0)) {
-        _LOGE("Could not install SIGQUIT handler: ANR reported won't be collected.");
+        _LOGE("Could not install SIGQUIT handler: ANR reports will not be collected.");
     }
 
     // Unblock SIGQUIT to allow the ANR handler to run
@@ -209,8 +207,7 @@ bool anr_handler_initialize() {
 
     enabled = true;
 
-    _LOGD("anr_handler_initialize: enabled[%d] watchdog sem [%d]",
-          (int) enabled, (int) !watchdog_must_poll);
+    _LOGD("anr_handler_initialize: watchdog sem [%p]", &watchdog_semaphore);
 
     return enabled;
 }

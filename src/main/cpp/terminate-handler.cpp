@@ -9,7 +9,7 @@
 #include <cxxabi.h>
 
 #include <agent-ndk.h>
-#include "unwinder.h"
+#include "backtrace.h"
 #include "serializer.h"
 #include "terminate-handler.h"
 
@@ -33,10 +33,10 @@ static void terminateHandler() {
 
         if (exc != nullptr) {
             char *buffer = new char[BACKTRACE_SZ_MAX];
-            if (unwind_backtrace(buffer, BACKTRACE_SZ_MAX, nullptr, nullptr)) {
+            if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, nullptr, nullptr)) {
                 serializer::from_exception(buffer, std::strlen(buffer));
             }
-            delete [] buffer;
+            delete[] buffer;
 
             _LOGI("Unknown current exception, rethrowing: %s", buffer);
             std::rethrow_exception(exc);
@@ -45,20 +45,20 @@ static void terminateHandler() {
         }
     } catch (const std::exception &e) {
         char *buffer = new char[BACKTRACE_SZ_MAX];
-        if (unwind_backtrace(buffer, BACKTRACE_SZ_MAX, nullptr, nullptr)) {
+        if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, nullptr, nullptr)) {
             serializer::from_exception(buffer, std::strlen(buffer));
         }
-        delete [] buffer;
+        delete[] buffer;
 
         _LOGI("Unexpected exception: %s %s", e.what(), buffer);
         throw e;
 
     } catch (...) {
         char *buffer = new char[BACKTRACE_SZ_MAX];
-        if (unwind_backtrace(buffer, BACKTRACE_SZ_MAX, nullptr, nullptr)) {
+        if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, nullptr, nullptr)) {
             serializer::from_exception(buffer, std::strlen(buffer));
         }
-        delete [] buffer;
+        delete[] buffer;
 
         _LOGI("Unknown exception: %s", buffer);
         throw;
@@ -83,7 +83,11 @@ static void terminateHandler() {
 std::unexpected_handler currentUnexpectedHandler;
 
 void unexpectedHandler() {
-    // TODO
+    char *buffer = new char[BACKTRACE_SZ_MAX];
+    if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, nullptr, nullptr)) {
+        serializer::from_exception(buffer, std::strlen(buffer));
+    }
+    delete[] buffer;
 }
 
 #endif // _LIBCPP_STD_VER <= 14

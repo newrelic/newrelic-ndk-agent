@@ -9,7 +9,7 @@
 
 #include <agent-ndk.h>
 #include "signal-utils.h"
-#include "unwinder.h"
+#include "backtrace.h"
 #include "serializer.h"
 #include "signal-handler.h"
 
@@ -73,7 +73,7 @@ void interceptor(int signo, siginfo_t *_siginfo, void *ucontext) {
                     case SIGFPE:
                     case SIGBUS:
                     case SIGSEGV:
-                        if (unwind_backtrace(buffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
+                        if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
                             serializer::from_crash(buffer, std::strlen(buffer));
                         }
                         break;

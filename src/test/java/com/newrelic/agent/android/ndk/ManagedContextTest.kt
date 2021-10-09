@@ -1,18 +1,26 @@
 package com.newrelic.agent.android.ndk
 
+import android.app.Application
+import junit.framework.Assert
 import junit.framework.TestCase
 
 class ManagedContextTest : TestCase() {
 
+    private lateinit var managedContext: ManagedContext
+
     public override fun setUp() {
-        super.setUp()
+        managedContext = ManagedContext()
     }
 
-    fun testGetContext() {}
+    fun testGetContext() {
+        Assert.assertEquals(managedContext.context, null)
+    }
 
     fun testSetContext() {}
 
-    fun testGetSessionId() {}
+    fun testGetSessionId() {
+        Assert.assertNull(managedContext.sessionId)
+    }
 
     fun testSetSessionId() {}
 

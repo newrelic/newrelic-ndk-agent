@@ -155,6 +155,10 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
     class Builder(val context: Context) {
         var managedContext = ManagedContext(context)
 
+        init {
+            loadAgent()
+        }
+
         fun withBuildId(buildId: UUID): Builder {
             managedContext.buildId = buildId.toString()
             return this

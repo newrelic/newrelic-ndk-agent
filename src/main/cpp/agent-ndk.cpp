@@ -11,12 +11,13 @@
 #include <unistd.h>
 #include <sys/ucontext.h>
 #include <sys/syscall.h>
+#include <exception>
 
 #include <agent-ndk.h>
 #include "signal-handler.h"
 #include "anr-handler.h"
 #include "terminate-handler.h"
-#include "unwinder.h"
+#include "backtrace.h"
 #include "jni/jni.h"
 #include "jni/native-context.h"
 #include "jni/jni-delegate.h"
@@ -44,9 +45,8 @@ bool arch_is_32b() {
 
 volatile bool initialized = false;
 
-extern "C" JNIEXPORT
-jboolean JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStart(JNIEnv *env,jobject thz,
-                                        jobject managedContext) {
+extern "C"
+JNIEXPORT jboolean JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStart(JNIEnv *env,jobject thz, jobject managedContext) {
     (void) env;
     (void) thz;
     std::string cstr;
@@ -102,7 +102,7 @@ JNIEXPORT jstring JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_dumpStack
     char *buffer = new char[BACKTRACE_SZ_MAX];
     siginfo_t _siginfo = {};
     ucontext_t _sa_ucontext = {};
-        if (unwind_backtrace(buffer, BACKTRACE_SZ_MAX, &_siginfo, &_sa_ucontext)) {
+    if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, &_siginfo, &_sa_ucontext)) {
         jstring result = env->NewStringUTF(buffer);
         delete [] buffer;
         return result;       // FIXME leak
@@ -112,12 +112,11 @@ JNIEXPORT jstring JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_dumpStack
 }
 
 extern "C"
-JNIEXPORT void JNICALL
-Java_com_newrelic_agent_android_ndk_AgentNDK_crashNow(JNIEnv *env, jobject thiz, jstring cause) {
+JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_crashNow(JNIEnv *env, jobject thiz, jstring cause) {
     (void) env;
     (void) thiz;
-    (void) cause;
-    syscall(SYS_tgkill, getpid(), gettid(), SIGQUIT);
+
+    throw std::runtime_error(env->GetStringUTFChars(cause, nullptr));
 }
 
 extern "C"
@@ -132,9 +131,7 @@ Java_com_newrelic_agent_android_ndk_AgentNDK_isRootedDevice(JNIEnv * env, jobjec
 }
 
 extern "C"
-JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_setNativeContext(JNIEnv *env,
-                                                                           jobject thiz,
-                                                                           jobject managedContext) {
+JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_setNativeContext(JNIEnv *env, jobject thiz, jobject managedContext) {
     (void) thiz;
     jni::set_native_context(env, managedContext);
 }
