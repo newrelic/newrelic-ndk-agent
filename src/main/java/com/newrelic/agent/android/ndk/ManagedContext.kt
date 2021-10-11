@@ -22,7 +22,7 @@ class ManagedContext(context: Context? = null) {
     val ipc: ByteBuffer = ByteBuffer.allocateDirect(0x10000)
     var nativeReportListener: AgentNDKListener? = null
     var anrMonitor: Boolean = false
-    val reportTTL = TimeUnit.MILLISECONDS.convert(3, TimeUnit.HOURS)
+    val reportTTL = DEFAULT_TTL
 
     fun getNativeReportsDir(rootDir: File?): File {
         return File("${rootDir?.absolutePath}/newrelic/reports")
@@ -33,11 +33,18 @@ class ManagedContext(context: Context? = null) {
         val packageManager = context?.packageManager
         context?.apply {
             val ainfo: ApplicationInfo? = packageManager?.getApplicationInfo(
-                packageName, PackageManager.GET_SHARED_LIBRARY_FILES)
-            return File(ainfo?.nativeLibraryDir)
+                packageName, PackageManager.GET_SHARED_LIBRARY_FILES
+            )
+            ainfo?.nativeLibraryDir?.apply {
+                return File(this)
+            }
         }
 
         return File("./")
+    }
+
+    companion object {
+        val DEFAULT_TTL = TimeUnit.MILLISECONDS.convert(3, TimeUnit.DAYS)
     }
 
 }

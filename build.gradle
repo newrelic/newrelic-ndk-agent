@@ -61,8 +61,15 @@ android {
 
     testOptions {
         unitTests {
+            returnDefaultValues = true
+            includeAndroidResources = true
             all {
                 environment 'LD_LIBRARY_PATH', "${buildDir}/intermediates/cmake/debug/obj/x86_64/"
+                testLogging {
+                    events "passed", "skipped", "failed", "standardOut", "standardError"
+                    outputs.upToDateWhen { false }
+                    showStandardStreams = true
+                }
             }
         }
     }
@@ -71,8 +78,6 @@ android {
 dependencies {
     implementation project(path: ':agent-core', configuration: 'default')
     implementation "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin.plugin}"
-
-    // implementation "com.google.code.gson:gson:${versions.java.gson}"
 
     // https://android-developers.googleblog.com/2020/02/native-dependencies-in-android-studio-40.html
     if (withThirdPartySupport) {
@@ -84,6 +89,9 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:' + project.versions.test.mockitoCore
     testImplementation 'org.mockito.kotlin:mockito-kotlin:' + project.versions.kotlin.mockito
     testImplementation 'org.json:json:20190722'
+
+    testImplementation 'androidx.test:core:' + project.versions.test.androidxCore
+    testImplementation 'androidx.test.ext:junit-ktx:1.1.3'
 }
 
 apply plugin: 'maven'

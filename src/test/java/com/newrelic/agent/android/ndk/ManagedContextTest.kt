@@ -1,42 +1,92 @@
 package com.newrelic.agent.android.ndk
 
-import android.app.Application
+import android.content.Context
+import com.newrelic.agent.android.SpyContext
 import junit.framework.Assert
 import junit.framework.TestCase
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import java.io.File
+import java.nio.ByteBuffer
+import java.util.concurrent.TimeUnit
 
-class ManagedContextTest : TestCase() {
+@RunWith(RobolectricTestRunner::class)
+class ManagedContextTest : TestCase(), AgentNDKListener {
 
-    private lateinit var managedContext: ManagedContext
+    var context: Context? = null
+    var managedContext: ManagedContext? = null
 
+    @Before
     public override fun setUp() {
-        managedContext = ManagedContext()
+        context = SpyContext().getContext()
+        managedContext = ManagedContext(context)
     }
 
+    @Test
     fun testGetContext() {
-        Assert.assertEquals(managedContext.context, null)
+        Assert.assertNotNull(managedContext?.context)
     }
 
-    fun testSetContext() {}
+    @Test
+    fun testSetContext() {
+        Assert.assertEquals(context, managedContext?.context)
+    }
 
+    @Test
     fun testGetSessionId() {
-        Assert.assertNull(managedContext.sessionId)
+        Assert.assertNull(managedContext?.sessionId)
     }
 
-    fun testSetSessionId() {}
+    @Test
+    fun testGetBuildId() {
+        Assert.assertNull(managedContext?.buildId)
+    }
 
-    fun testGetBuildId() {}
+    @Test
+    fun testGetReportDirectory() {
+        val target = File("${context?.cacheDir?.absolutePath}/newrelic/reports")
+        Assert.assertEquals(target.absolutePath, managedContext?.reportsDir?.absolutePath)
+    }
 
-    fun testSetBuildId() {}
+    @Test
+    fun testGetIpc() {
+        Assert.assertTrue(managedContext?.ipc is ByteBuffer)
+    }
 
-    fun testGetReportDirectory() {}
+    @Test
+    fun testGetNdkListener() {
+        Assert.assertNull(managedContext?.nativeReportListener)
+    }
 
-    fun testSetReportDirectory() {}
+    @Test
+    fun testSetNdkListener() {
+        managedContext?.nativeReportListener = this
+        Assert.assertNotNull(managedContext?.nativeReportListener)
+        Assert.assertEquals(this, managedContext?.nativeReportListener)
+    }
 
-    fun testGetIpc() {}
+    @Test
+    fun testGetANRMonitor() {
+        Assert.assertFalse(managedContext?.anrMonitor == true)
+    }
 
-    fun testSetIpc() {}
+    @Test
+    fun testGetTTL() {
+        Assert.assertEquals(managedContext?.reportTTL, ManagedContext.DEFAULT_TTL)
+        Assert.assertEquals(managedContext?.reportTTL, TimeUnit.MILLISECONDS.convert(72, TimeUnit.HOURS))
+    }
 
-    fun testGetNdkListener() {}
+    override fun onNativeCrash(crashAsString: String?): Boolean {
+        TODO("Not yet implemented")
+    }
 
-    fun testSetNdkListener() {}
+    override fun onNativeException(exceptionAsString: String?): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun onApplicationNotResponding(anrAsString: String?): Boolean {
+        TODO("Not yet implemented")
+    }
 }

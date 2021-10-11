@@ -14,6 +14,7 @@ import com.newrelic.agent.android.util.NamedThreadFactory
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 
 /**
  * An secondary approach to detecting ANR conditions during runtime
@@ -45,7 +46,8 @@ open class ANRMonitor {
 
                     if (!runner.signaled) {
                         if (disableWhileDebugging &&
-                            (Debug.isDebuggerConnected() || Debug.waitingForDebugger())) {
+                            (Debug.isDebuggerConnected() || Debug.waitingForDebugger())
+                        ) {
                             return@synchronized
                         }
                         val attributes: HashMap<String?, Any?> = object : HashMap<String?, Any?>() {
@@ -54,8 +56,9 @@ open class ANRMonitor {
                                 put("ANR", "true")
                             }
                         }
-                        val exceptionToHandle: Exception = InterruptedException("Application not responding")
-                        if( !AgentDataController.sendAgentData(exceptionToHandle, attributes)) {
+                        val exceptionToHandle: Exception =
+                            InterruptedException("Application not responding")
+                        if (!AgentDataController.sendAgentData(exceptionToHandle, attributes)) {
                             AgentNDK.log.error("AgentDataController not initialized")
                             stopMonitor()
                         }
@@ -74,7 +77,7 @@ open class ANRMonitor {
     /**
      * Ignore detected ANRs when debugging
      */
-    fun disableWhileDebugging() : ANRMonitor {
+    fun disableWhileDebugging(): ANRMonitor {
         disableWhileDebugging = true
         return this
     }
@@ -87,12 +90,22 @@ open class ANRMonitor {
 
     fun stopMonitor() {
         future?.cancel(true)
-        future?.get().apply { future = null }
+        when (future?.isDone) {
+            false -> future?.get()
+        }
+        future?.apply { future = null }
         AgentNDK.log.debug("ANR monitor stopped")
     }
 
+    fun isRunning(): Boolean {
+        future?.apply {
+            return !(this.isCancelled || this.isDone)
+        }
+        return false
+    }
+
     companion object {
-        val DEFAULT_ANR_TIMEOUT = 5000L
+        val DEFAULT_ANR_TIMEOUT = TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS)
 
         @Volatile
         var anrMonitor: ANRMonitor? = null
