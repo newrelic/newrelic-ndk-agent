@@ -155,3 +155,24 @@ project.afterEvaluate {
     // }
 }
 */
+
+
+/* TODO
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                // The following applies a component to this publication
+                // which results in publishing an app bundle.
+                from components.paidRelease_aab
+
+                groupId = 'com.newrelic.android'
+                artifactId = 'agent-ndk'
+                version = '1.0'
+            }
+        }
+    }
+}
+
+/* TODO */
