@@ -51,10 +51,10 @@
 typedef struct backtrace_state {
     uintptr_t frames[BACKTRACE_FRAMES_MAX];
     size_t frame_cnt;
-    int skip_frames;
+    int skipped_frames;
+    uintptr_t crash_ip;
     const ucontext_t *sa_ucontext;
     const siginfo_t *siginfo;
-
 } backtrace_state_t;
 
 
@@ -74,7 +74,8 @@ typedef struct violation {
  */
 typedef struct stackframe {
     size_t index;               // 0-based index of this frame in stack (top down)
-    uintptr_t ip;               // Instruction pointer value (address)
+    uintptr_t address;          // Instruction pointer value (address)
+    uintptr_t pc;               // Program counter
     char so_path[PATH_MAX];     // Pathname of shared object containing ip
     char sym_name[255];         // Name of symbol whose definition overlaps ip
     uintptr_t so_base;          // Base address of shared object
@@ -106,7 +107,7 @@ typedef struct backtrace {
 
     char description[128];
     long timestamp;
-    char arch[8];
+    char arch[16];
     int pid;
     int ppid;
     int uid;
@@ -115,7 +116,5 @@ typedef struct backtrace {
 
 } backtrace_t;
 
-
-bool collect_backtrace(char *, size_t, const siginfo_t *, const ucontext_t *);
 
 #endif // _AGENT_NDK_BACKTRACE_H

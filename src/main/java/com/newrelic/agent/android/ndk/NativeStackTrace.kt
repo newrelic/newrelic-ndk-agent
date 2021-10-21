@@ -35,7 +35,7 @@ class NativeStackTrace(val exception: Exception) {
                                 exceptionMessage =
                                     "${getString("signalName")} " +
                                             "(code ${getInt("signalCode")}) ${cause} " +
-                                            "at ${getString("faultAddress")}"
+                                            "at 0x${getLong("faultAddress").toString(16)}"
                             }
                         }
                     } catch (ignored: Exception) {

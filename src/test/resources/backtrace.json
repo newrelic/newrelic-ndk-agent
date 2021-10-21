@@ -1,154 +1,111 @@
 {
   "backtrace": {
     "name": "com.newrelic.agent.android.ndk.test",
-    "description": "Illegal operation",
-    "timestamp": 1634316139,
-    "abi": "arm64-v8a",
-    "pid": 16875,
-    "ppid": 992,
-    "uid": 10306,
-    "platform": "native",
+    "description": "Thread killed",
+    "timestamp": 1634795826,
+    "abi": "x86_64",
+    "pid": 4096,
+    "ppid": 293,
+    "uid": 10163,
+    "platform": "android",
     "registers": {
-      "x0": "0000000000000000",
-      "x1": "0000000000004242",
-      "x2": "0000000000000004",
-      "x3": "0000000000000030",
-      "x4": "0000000000000000",
-      "x5": "0000000031353835",
-      "x6": "0000000031353835",
-      "x7": "000000007f7f7f7f",
-      "x8": "0000000000000083",
-      "x9": "000000002474ec00",
-      "x10": "00000000fffe43e0",
-      "x11": "0000000000000001",
-      "x12": "000000001cbc4440",
-      "x13": "0000000000000033",
-      "x14": "000000001cbc5788",
-      "x15": "000000007de10a83",
-      "x16": "0000000024777d38",
-      "x17": "000000003331d280",
-      "x18": "000000001b9ce000",
-      "x19": "000000001cbc5cb0",
-      "x20": "0000000033394000",
-      "x21": "000000001cbc5cb0",
-      "x22": "00000000000041eb",
-      "x23": "00000000000041eb",
-      "x24": "000000001cbc5cb0",
-      "x25": "000000001cbc5cb0",
-      "x26": "000000001cbc5ff8",
-      "x27": "00000000000fc000",
-      "x28": "000000001cacd000",
-      "x29": "000000001cbc5bd0",
-      "lr": "000000002474ec28",
-      "sp": "000000001cbc5ba0",
-      "pc": "000000003331d2a0",
-      "pst": "0000000000000000",
-      "fault_address": "0x00000000000000"
+      "r0": "0140734691709096",
+      "r1": "0128939413129008",
+      "r2": "0140734691709056",
+      "r3": "0000000000000531",
+      "r4": "0128939413130600",
+      "r5": "0128939413130632",
+      "r6": "0128939413130480",
+      "r7": "0128951943286000",
+      "r8": "0000000000004096",
+      "r9": "0000000000004150",
+      "r10": "0128939413130336",
+      "r11": "0128939413130480",
+      "r12": "0000000000000004",
+      "r13": "0000000000000000",
+      "r14": "0128951942836904",
+      "r15": "0128939413130264",
+      "r16": "0128951942836904",
+      "r17": "0000000000000531",
+      "r18": "12103423998558259",
+      "r19": "0000000000000004",
+      "r20": "0000000000000014",
+      "r21": "0000002147488256",
+      "r22": "0128939441647648",
+      "rip": "00000000f6bef2a8",
+      "rsp": "000000000beacc18",
+      "trapno": 14,
+      "error_code": 4
     },
     "exception": {
       "name": "Native exception",
-      "cause": "Illegal operation",
+      "cause": "Thread killed",
       "signalInfo": {
         "signalName": "SIGILL",
         "signalCode": -6,
-        "faultAddress": 44263932969451
+        "faultAddress": 43649752633344
       }
     },
     "stackframes": [
       {
-        "cstr": "#00 pc 000000000004c2a0 /apex/com.android.runtime/lib64/bionic/libc.so (syscall + 32)",
+        "cstr": "#00 pc 000000000005a2a8 /apex/com.android.runtime/lib64/bionic/libc.so (syscall + 24)",
         "index": 0,
-        "pc": 311968,
+        "address": 128951942836904,
+        "pc": 369320,
         "so_path": "/apex/com.android.runtime/lib64/bionic/libc.so",
         "sym_name": "syscall",
-        "so_base": 481894928384,
-        "sym_addr": 481895240320,
-        "sym_addr_offset": 32
+        "so_base": 128951942467584,
+        "sym_addr": 128951942836880,
+        "sym_addr_offset": 24
       },
       {
-        "cstr": "#01 pc 000000000004c7d0 /data/app/~~KmDf7__EknXYY5rI2fmCyg==/com.newrelic.agent.android.ndk.test-74ie4iaQ6Lz4WHnIUcjr2Q==/base.apk!/lib/arm64-v8a/libagent-ndk.so",
+        "cstr": "#01 pc 000000000000ee18 /data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so (crashBySignal(int) + 136)",
         "index": 1,
-        "pc": 313296,
-        "so_path": "/data/app/~~KmDf7__EknXYY5rI2fmCyg==/com.newrelic.agent.android.ndk.test-74ie4iaQ6Lz4WHnIUcjr2Q==/base.apk!/lib/arm64-v8a/libagent-ndk.so",
-        "sym_name": "",
-        "so_base": 468744003584,
-        "sym_addr": 0,
-        "sym_addr_offset": 0
-      },
-      {
-        "cstr": "#02 pc 000000000003e760 /data/app/~~KmDf7__EknXYY5rI2fmCyg==/com.newrelic.agent.android.ndk.test-74ie4iaQ6Lz4WHnIUcjr2Q==/base.apk!/lib/arm64-v8a/libagent-ndk.so",
-        "index": 2,
-        "pc": 255840,
-        "so_path": "/data/app/~~KmDf7__EknXYY5rI2fmCyg==/com.newrelic.agent.android.ndk.test-74ie4iaQ6Lz4WHnIUcjr2Q==/base.apk!/lib/arm64-v8a/libagent-ndk.so",
-        "sym_name": "",
-        "so_base": 468744003584,
-        "sym_addr": 0,
-        "sym_addr_offset": 0
-      },
-      {
-        "cstr": "#03 pc 00000000000008ac [vdso]",
-        "index": 3,
-        "pc": 2220,
-        "so_path": "[vdso]",
-        "sym_name": "",
-        "so_base": 482330853376,
-        "sym_addr": 0,
-        "sym_addr_offset": 0
-      },
-      {
-        "cstr": "#04 pc 000000000004c29b /apex/com.android.runtime/lib64/bionic/libc.so (syscall + 27)",
-        "index": 4,
-        "pc": 311963,
-        "so_path": "/apex/com.android.runtime/lib64/bionic/libc.so",
-        "sym_name": "syscall",
-        "so_base": 481894928384,
-        "sym_addr": 481895240320,
-        "sym_addr_offset": 27
-      },
-      {
-        "cstr": "#05 pc 000000000000ec24 /data/app/~~KmDf7__EknXYY5rI2fmCyg==/com.newrelic.agent.android.ndk.test-74ie4iaQ6Lz4WHnIUcjr2Q==/base.apk!/lib/arm64-v8a/libnative-lib.so (crashBySignal(int) + 160)",
-        "index": 5,
-        "pc": 60452,
-        "so_path": "/data/app/~~KmDf7__EknXYY5rI2fmCyg==/com.newrelic.agent.android.ndk.test-74ie4iaQ6Lz4WHnIUcjr2Q==/base.apk!/lib/arm64-v8a/libnative-lib.so",
+        "address": 128939423493656,
+        "pc": 60952,
+        "so_path": "/data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so",
         "sym_name": "crashBySignal(int)",
-        "so_base": 468763017216,
-        "sym_addr": 468763077508,
-        "sym_addr_offset": 160
+        "so_base": 128939423432704,
+        "sym_addr": 128939423493520,
+        "sym_addr_offset": 136
       },
       {
-        "cstr": "#06 pc 000000000000f604 /data/app/~~KmDf7__EknXYY5rI2fmCyg==/com.newrelic.agent.android.ndk.test-74ie4iaQ6Lz4WHnIUcjr2Q==/base.apk!/lib/arm64-v8a/libnative-lib.so (crashing_thread(void*) + 204)",
-        "index": 6,
-        "pc": 62980,
-        "so_path": "/data/app/~~KmDf7__EknXYY5rI2fmCyg==/com.newrelic.agent.android.ndk.test-74ie4iaQ6Lz4WHnIUcjr2Q==/base.apk!/lib/arm64-v8a/libnative-lib.so",
+        "cstr": "#02 pc 000000000000f97c /data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so (crashing_thread(void*) + 156)",
+        "index": 2,
+        "address": 128939423496572,
+        "pc": 63868,
+        "so_path": "/data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so",
         "sym_name": "crashing_thread(void*)",
-        "so_base": 468763017216,
-        "sym_addr": 468763079992,
-        "sym_addr_offset": 204
+        "so_base": 128939423432704,
+        "sym_addr": 128939423496416,
+        "sym_addr_offset": 156
       },
       {
-        "cstr": "#07 pc 00000000000b191c /apex/com.android.runtime/lib64/bionic/libc.so",
-        "index": 7,
-        "pc": 727324,
+        "cstr": "#03 pc 00000000000c7d2b /apex/com.android.runtime/lib64/bionic/libc.so",
+        "index": 3,
+        "address": 128951943286059,
+        "pc": 818475,
         "so_path": "/apex/com.android.runtime/lib64/bionic/libc.so",
         "sym_name": "",
-        "so_base": 481894928384,
+        "so_base": 128951942467584,
         "sym_addr": 0,
         "sym_addr_offset": 0
       },
       {
-        "cstr": "#08 pc 00000000000513cc /apex/com.android.runtime/lib64/bionic/libc.so",
-        "index": 8,
-        "pc": 332748,
+        "cstr": "#04 pc 000000000005f0c8 /apex/com.android.runtime/lib64/bionic/libc.so",
+        "index": 4,
+        "address": 128951942856904,
+        "pc": 389320,
         "so_path": "/apex/com.android.runtime/lib64/bionic/libc.so",
         "sym_name": "",
-        "so_base": 481894928384,
+        "so_base": 128951942467584,
         "sym_addr": 0,
         "sym_addr_offset": 0
       }
     ],
     "threads": [
       {
-        "threadNumber": 16875,
+        "threadNumber": 4096,
         "threadId": "ndroid.ndk.test",
         "state": "SLEEPING",
         "priority": 10,
@@ -158,17 +115,7 @@
         ]
       },
       {
-        "threadNumber": 16922,
-        "threadId": "Metrics Backgro",
-        "state": "SLEEPING",
-        "priority": 0,
-        "crashed": false,
-        "stack": [
-
-        ]
-      },
-      {
-        "threadNumber": 16923,
+        "threadNumber": 4106,
         "threadId": "Signal Catcher",
         "state": "SLEEPING",
         "priority": 0,
@@ -178,7 +125,7 @@
         ]
       },
       {
-        "threadNumber": 16924,
+        "threadNumber": 4107,
         "threadId": "perfetto_hprof_",
         "state": "SLEEPING",
         "priority": 0,
@@ -188,7 +135,7 @@
         ]
       },
       {
-        "threadNumber": 16925,
+        "threadNumber": 4108,
         "threadId": "ADB-JDWP Connec",
         "state": "SLEEPING",
         "priority": 0,
@@ -198,17 +145,17 @@
         ]
       },
       {
-        "threadNumber": 16926,
+        "threadNumber": 4109,
         "threadId": "Jit thread pool",
         "state": "SLEEPING",
-        "priority": 29,
+        "priority": 20,
         "crashed": false,
         "stack": [
 
         ]
       },
       {
-        "threadNumber": 16927,
+        "threadNumber": 4110,
         "threadId": "HeapTaskDaemon",
         "state": "SLEEPING",
         "priority": 24,
@@ -218,7 +165,7 @@
         ]
       },
       {
-        "threadNumber": 16928,
+        "threadNumber": 4111,
         "threadId": "ReferenceQueueD",
         "state": "SLEEPING",
         "priority": 24,
@@ -228,7 +175,7 @@
         ]
       },
       {
-        "threadNumber": 16929,
+        "threadNumber": 4112,
         "threadId": "FinalizerDaemon",
         "state": "SLEEPING",
         "priority": 24,
@@ -238,7 +185,7 @@
         ]
       },
       {
-        "threadNumber": 16930,
+        "threadNumber": 4113,
         "threadId": "FinalizerWatchd",
         "state": "SLEEPING",
         "priority": 24,
@@ -248,8 +195,8 @@
         ]
       },
       {
-        "threadNumber": 16931,
-        "threadId": "Binder:16875_1",
+        "threadNumber": 4114,
+        "threadId": "Binder:4096_1",
         "state": "SLEEPING",
         "priority": 20,
         "crashed": false,
@@ -258,8 +205,8 @@
         ]
       },
       {
-        "threadNumber": 16933,
-        "threadId": "Binder:16875_2",
+        "threadNumber": 4116,
+        "threadId": "Binder:4096_2",
         "state": "SLEEPING",
         "priority": 20,
         "crashed": false,
@@ -268,8 +215,8 @@
         ]
       },
       {
-        "threadNumber": 16940,
-        "threadId": "Binder:16875_3",
+        "threadNumber": 4118,
+        "threadId": "Binder:4096_3",
         "state": "SLEEPING",
         "priority": 20,
         "crashed": false,
@@ -278,7 +225,7 @@
         ]
       },
       {
-        "threadNumber": 16947,
+        "threadNumber": 4122,
         "threadId": "Profile Saver",
         "state": "SLEEPING",
         "priority": 29,
@@ -288,7 +235,7 @@
         ]
       },
       {
-        "threadNumber": 16948,
+        "threadNumber": 4123,
         "threadId": "RenderThread",
         "state": "SLEEPING",
         "priority": 10,
@@ -298,7 +245,7 @@
         ]
       },
       {
-        "threadNumber": 16951,
+        "threadNumber": 4126,
         "threadId": "pool-2-thread-1",
         "state": "SLEEPING",
         "priority": 20,
@@ -308,7 +255,47 @@
         ]
       },
       {
-        "threadNumber": 16953,
+        "threadNumber": 4131,
+        "threadId": "NR_TaskQueue-1",
+        "state": "SLEEPING",
+        "priority": 20,
+        "crashed": false,
+        "stack": [
+
+        ]
+      },
+      {
+        "threadNumber": 4132,
+        "threadId": "NR_NR-PayloadWo",
+        "state": "SLEEPING",
+        "priority": 20,
+        "crashed": false,
+        "stack": [
+
+        ]
+      },
+      {
+        "threadNumber": 4134,
+        "threadId": "NR_NR-PayloadWo",
+        "state": "SLEEPING",
+        "priority": 20,
+        "crashed": false,
+        "stack": [
+
+        ]
+      },
+      {
+        "threadNumber": 4135,
+        "threadId": "NR_Harvester-1",
+        "state": "SLEEPING",
+        "priority": 20,
+        "crashed": false,
+        "stack": [
+
+        ]
+      },
+      {
+        "threadNumber": 4137,
         "threadId": "NR-ANR-Monitor",
         "state": "SLEEPING",
         "priority": 10,
@@ -318,28 +305,8 @@
         ]
       },
       {
-        "threadNumber": 16954,
-        "threadId": "hwuiTask0",
-        "state": "SLEEPING",
-        "priority": 18,
-        "crashed": false,
-        "stack": [
-
-        ]
-      },
-      {
-        "threadNumber": 16955,
-        "threadId": "hwuiTask1",
-        "state": "SLEEPING",
-        "priority": 18,
-        "crashed": false,
-        "stack": [
-
-        ]
-      },
-      {
-        "threadNumber": 16961,
-        "threadId": "Binder:16875_3",
+        "threadNumber": 4139,
+        "threadId": "OkHttp Connecti",
         "state": "SLEEPING",
         "priority": 20,
         "crashed": false,
@@ -348,8 +315,8 @@
         ]
       },
       {
-        "threadNumber": 16962,
-        "threadId": "Worker-16962-4",
+        "threadNumber": 4150,
+        "threadId": "Worker-4150-4",
         "state": "RUNNING",
         "priority": 10,
         "crashed": true,
@@ -358,8 +325,8 @@
         ]
       },
       {
-        "threadNumber": 16963,
-        "threadId": "Worker-16963-4",
+        "threadNumber": 4151,
+        "threadId": "Worker-4151-4",
         "state": "RUNNING",
         "priority": 10,
         "crashed": false,
@@ -368,8 +335,8 @@
         ]
       },
       {
-        "threadNumber": 16964,
-        "threadId": "Worker-16964-4",
+        "threadNumber": 4152,
+        "threadId": "Worker-4152-4",
         "state": "RUNNING",
         "priority": 10,
         "crashed": false,
@@ -378,8 +345,8 @@
         ]
       },
       {
-        "threadNumber": 16965,
-        "threadId": "Worker-16965-4",
+        "threadNumber": 4153,
+        "threadId": "Worker-4153-4",
         "state": "RUNNING",
         "priority": 10,
         "crashed": false,

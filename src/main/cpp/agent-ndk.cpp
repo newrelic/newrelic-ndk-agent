@@ -4,14 +4,8 @@
  */
 
 #include <jni.h>
-#include <string>
-#include <cerrno>
-#include <android/log.h>
-#include <android/api-level.h>
 #include <unistd.h>
 #include <sys/ucontext.h>
-#include <sys/syscall.h>
-#include <exception>
 
 #include <agent-ndk.h>
 #include "signal-handler.h"
@@ -27,7 +21,11 @@
 
 const char *get_arch() {
 #if defined(__arm__)
+#if defined(ANDROID_ARM_NEON)
+    return "armabi-v7a NEON";
+#else
     return "armabi-v7a";
+#endif // defined(ANDROID_ARM_NEON)
 #elif defined(__aarch64__)
     return "arm64-v8a";
 #elif defined(__i386__)
@@ -83,8 +81,7 @@ JNIEXPORT jboolean JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeSt
 }
 
 extern "C"
-JNIEXPORT void JNICALL
-Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStop(JNIEnv *env, jobject thiz, jboolean hard_kill) {
+JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStop(JNIEnv *env, jobject thiz, jboolean hard_kill) {
     (void) env;
     (void) thiz;
     (void) hard_kill;

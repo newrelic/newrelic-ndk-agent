@@ -46,23 +46,23 @@ class NativeStackFrameTest : TestCase() {
     fun testFromJson() {
         nativeStackFrame.fromJson(stackframe)
         val element = nativeStackFrame.asStackTraceElement()
-        Assert.assertEquals(element.className, "com.newrelic.android.test.NativeStackFrame")
-        Assert.assertEquals(element.methodName, "<init>")
-        Assert.assertEquals(element.fileName, "NativeStackFrame.kt")
+        Assert.assertEquals(element.className, "")
+        Assert.assertEquals(element.methodName, "crashBySignal(int)")
+        Assert.assertEquals(element.fileName, "/data/app/~~==/base.apk!/lib/x86_64/libnative-lib.so")
         Assert.assertEquals(element.lineNumber, -2)
     }
 
     fun testFromJsonObj() {
         nativeStackFrame.fromJson(JSONObject(stackframe))
         val element = nativeStackFrame.asStackTraceElement()
-        Assert.assertEquals(element.className, "com.newrelic.android.test.NativeStackFrame")
-        Assert.assertEquals(element.methodName, "<init>")
-        Assert.assertEquals(element.fileName, "NativeStackFrame.kt")
+        Assert.assertEquals(element.className, "")
+        Assert.assertEquals(element.methodName, "crashBySignal(int)")
+        Assert.assertEquals(element.fileName, "/data/app/~~==/base.apk!/lib/x86_64/libnative-lib.so")
         Assert.assertEquals(element.lineNumber, -2)
     }
 
     fun testAllFrames() {
-        val stackFrames = JSONObject(backtrace).getJSONObject("backtrace").getJSONArray("stack")
+        val stackFrames = JSONObject(backtrace).getJSONObject("backtrace").getJSONArray("stackframes")
         val allFrames = NativeStackFrame.allFrames(stackFrames)
         Assert.assertTrue(allFrames[0] is StackTraceElement)
         Assert.assertTrue(allFrames.size > 1)

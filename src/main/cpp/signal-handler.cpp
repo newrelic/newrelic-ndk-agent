@@ -5,7 +5,6 @@
 
 #include <cstring>
 #include <pthread.h>
-#include <malloc.h>
 
 #include <agent-ndk.h>
 #include "signal-utils.h"

@@ -5,9 +5,14 @@
 
 #include <string>
 #include <cerrno>
+#include <unistd.h>
 
 #include <agent-ndk.h>
 #include "signal-utils.h"
+
+#ifndef SI_TKILL
+#define SI_TKILL -6
+#endif
 
 namespace sigutils {
 
@@ -79,6 +84,14 @@ namespace sigutils {
         return true;
     }
 
+    const char *get_subcode_description(int code, const char *default_description) {
+        switch (code) {
+            case SI_TKILL:
+                return "SIG_TKILL";
+        };
+        return default_description;
+    }
+
     /**
      * Signal descriptions: <http://pubs.opengroup.org/onlinepubs/009696699/basedefs/signal.h.html>
      * @param signo The integer signal number
@@ -107,7 +120,7 @@ namespace sigutils {
                     case ILL_BADSTK:
                         return "Internal stack error";
                     default:
-                        return "Illegal operation";
+                        return get_subcode_description(code, "Illegal operation");
                 }
                 break;
             case SIGTRAP:
@@ -119,7 +132,7 @@ namespace sigutils {
                     case TRAP_TRACE:
                         return "Process trace trap";
                     default:
-                        return "Trap";
+                        return get_subcode_description(code, "Trap");
                 }
                 break;
             case SIGABRT:
@@ -127,7 +140,7 @@ namespace sigutils {
                     case -1:
                         return "SIGABRT";
                     default:
-                        return "Process abort signal";
+                        return get_subcode_description(code, "Process abort signal");
                 }
             case SIGSEGV:
                 switch (code) {
@@ -138,7 +151,7 @@ namespace sigutils {
                     case SEGV_ACCERR:
                         return "Invalid permissions for mapped object";
                     default:
-                        return "Segmentation violation";
+                        return get_subcode_description(code, "Segmentation violation");
                 }
                 break;
             case SIGFPE:
@@ -162,7 +175,7 @@ namespace sigutils {
                     case FPE_FLTSUB:
                         return "Subscript out of range";
                     default:
-                        return "Floating-point";
+                        return get_subcode_description(code, "Floating-point");
                 }
                 break;
             case SIGBUS:
@@ -176,7 +189,7 @@ namespace sigutils {
                     case BUS_OBJERR:
                         return "Object-specific hardware error";
                     default:
-                        return "Bus error";
+                        return get_subcode_description(code, "Bus error");
                 }
                 break;
             case SIGINT:
@@ -184,7 +197,7 @@ namespace sigutils {
                     case -1:
                         return "SIGINT";
                     default:
-                        return "Terminal interrupt signal";
+                        return get_subcode_description(code, "Terminal interrupt signal");
                 }
                 break;
             case SIGKILL:
@@ -192,7 +205,7 @@ namespace sigutils {
                     case -1:
                         return "SIGKILL";
                     default:
-                        return "Killed";
+                        return get_subcode_description(code, "Killed");
                 }
                 break;
             case SIGQUIT:
@@ -200,7 +213,7 @@ namespace sigutils {
                     case -1:
                         return "SIGQUIT";
                     default:
-                        return "Terminal quit signal (ANR)";
+                        return get_subcode_description(code, "Terminal quit signal (ANR)");
                 }
                 break;
             default:

@@ -9,18 +9,6 @@ project("agent-ndk")   ## VERSION ${AGENT_VERSION} LANGUAGES CXX)
 
 include(FetchContent)
 
-if (0)
-    # abi's don't have JNI?
-    find_package(JNI REQUIRED)
-    if (JNI_FOUND)
-        message(STATUS "JNI_INCLUDE_DIRS=${JNI_INCLUDE_DIRS}")
-        message(STATUS "JNI_LIBRARIES=${JNI_LIBRARIES}")
-        include_directories(${JAVA_INCLUDE_PATH})
-    else ()
-        message(STATUS "JNI NOT FOUND")
-    endif ()
-endif ()
-
 add_compile_options(-Wall -Wextra -Wformat)
 add_compile_options(-fvisibility=hidden)
 

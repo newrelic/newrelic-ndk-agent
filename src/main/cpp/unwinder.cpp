@@ -6,26 +6,19 @@
 
 #include <unwind.h>
 #include <dlfcn.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <dirent.h>
-#include <string>
 #include <sys/ucontext.h>
 #include <asm/sigcontext.h>
-#include <sys/resource.h>
 #include <cxxabi.h>
-#include <sstream>
 
 #include <agent-ndk.h>
 #include "backtrace.h"
 #include "unwinder.h"
 #include "procfs.h"
-#include "signal-utils.h"
 
 /**
- * Get the program counter, given a pointer to a ucontext_t context.
+ * Get the crash ip, given a pointer to a ucontext_t context.
  **/
-static uintptr_t pc_from_mcontext(const mcontext_t *mcontext) {
+static uintptr_t crash_ip_from_mcontext(const mcontext_t *mcontext) {
 
 #if defined(__i386)
     return mcontext->gregs[REG_EIP];
@@ -43,7 +36,7 @@ static uintptr_t pc_from_mcontext(const mcontext_t *mcontext) {
 static bool record_frame(uintptr_t ip, backtrace_state_t *state) {
 
     if (state->frame_cnt >= BACKTRACE_FRAMES_MAX) {
-        _LOGE("record_frame: stack is full");
+        _LOGE("record_frame[%zu]: stack is full", state->frame_cnt);
         return false;
     }
 
@@ -54,46 +47,39 @@ static bool record_frame(uintptr_t ip, backtrace_state_t *state) {
 #endif  // __thumb__
 
     if (state->frame_cnt > 0) {
-        // ignore null or duplicate frames
-        if (ip == (uintptr_t) nullptr || ip == state->frames[state->frame_cnt - 1]) {
+        // ignore null frames
+        if (ip == (uintptr_t) nullptr ) {
+            _LOGW("record_frame[%zu]: Ignoring null ip", state->frame_cnt);
+            state->skipped_frames++;
+            return true;
+        }
+
+        // ignore duplicate frames
+        if (ip == state->frames[state->frame_cnt - 1]) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat"
-            _LOGE("record_frame: ip is null or duplicate of frame[%lu]", state->frame_cnt - 1);
+            _LOGW("record_frame[%zu]: ip[%zu] duplicate of frame[%lu]: ip[%zu]",
+                  state->frame_cnt, ip, state->frame_cnt - 1, state->frames[state->frame_cnt - 1]);
 #pragma clang diagnostic pop
+            state->skipped_frames++;
             return true;
         }
     }
 
-    // Finally add the address to the storage.
+    // Finally add the address to the storage
+    _LOGI("record_frame[%zu]: adding address[%zu]", state->frame_cnt, ip);
     state->frames[state->frame_cnt++] = ip;
 
     return true;
-}
-
-static void record_crashing_thread(backtrace_state_t *state) {
-
-    if (state->sa_ucontext == nullptr) {
-        _LOGE("record_crashing_thread: sa_ucontext is null");
-        return;
-    }
-
-    // get pointer to machine specific context
-    const mcontext_t *mcontext = &(state->sa_ucontext->uc_mcontext);
-    if (mcontext == nullptr) {
-        _LOGE("record_crashing_thread: uc_mcontext is null");
-        return;
-    }
-
-    // Program counter (pc)/instruction pointer (ip) register contains the crash address.
-    record_frame(pc_from_mcontext(mcontext), state);
 }
 
 void transform_addr_to_stackframe(size_t index, uintptr_t address, stackframe_t &stackframe) {
     Dl_info info = {};
 
     stackframe.index = index;
-    stackframe.ip = address;
+    stackframe.address = address;
 
+    _LOGE("Resolving frame[%zu]: addr[%zu]", index, address);
     if (dladdr(reinterpret_cast<void *>(address), &info)) {
 
         if (info.dli_fname) {
@@ -110,40 +96,52 @@ void transform_addr_to_stackframe(size_t index, uintptr_t address, stackframe_t 
             std::strncpy(stackframe.sym_name, symbol, sizeof(stackframe.sym_name));
         }
 
-        if (info.dli_fbase) {
-            // Relative addresses appear when code is compiled with
-            // _position-independent code_ (-fPIC, -pie) options.
-            // Android requires position-independent code since Android 5.0.
-            stackframe.so_base = reinterpret_cast<uintptr_t>(info.dli_fbase);
-            stackframe.sym_addr = reinterpret_cast<uintptr_t>(info.dli_saddr);
-            stackframe.sym_addr_offset = reinterpret_cast<uintptr_t>(stackframe.sym_addr -
-                                                                     stackframe.so_base);
+        // Relative addresses appear when code is compiled with
+        // _position-independent code_ (-fPIC, -pie) options.
+        // Android requires position-independent code since Android 5.0.
+        stackframe.so_base = reinterpret_cast<uintptr_t>(info.dli_fbase);
+        stackframe.sym_addr = reinterpret_cast<uintptr_t>(info.dli_saddr);
+        if (stackframe.sym_addr != 0) {
+            stackframe.sym_addr_offset = reinterpret_cast<uintptr_t>(address - stackframe.sym_addr);
         }
+
+        stackframe.pc = address - stackframe.so_base;
     }
 }
 
 _Unwind_Reason_Code unwinder_cb(struct _Unwind_Context *ucontext, void *arg) {
     backtrace_state_t *state = static_cast<backtrace_state_t *>(arg);
 
+    /*
     if (state->frame_cnt == 0) {
-        record_crashing_thread(state);
+        record_crashing_frame(state);
         return _URC_NO_REASON;
     }
 
     // Skip any frames that belong to the signal handler frame.
     if (state->skip_frames > 0) {
+        _LOGI("unwinder_cb[%zu]: Address skipped", state->frame_cnt);
         state->skip_frames--;
         return _URC_NO_REASON;
     }
+    */
 
-    // Sets ip_before_insn flag indicating whether that IP is before or
-    // after first not yet fully executed instruction.
     int ip_before = 0;
     _Unwind_Ptr ip = _Unwind_GetIPInfo(ucontext, &ip_before);
     if (ip_before != 0) {
-        if (ip > 0) {
-            ip--;
-        }
+        // IP is before or after first not yet fully executed instruction
+        _LOGI("unwinder_cb[%zu]: ip_before[%d]: address[%zu]", state->frame_cnt, ip_before, ip);
+    }
+
+    if (ip == state->crash_ip) {
+        _LOGI("unwinder_cb[%zu]: crash address[%zu]", state->frame_cnt, ip);
+        state->skipped_frames = state->frame_cnt;
+        state->frame_cnt = 0;   // reset the index
+    } else if (ip > 0) {
+#if defined(__aarch64__)
+        // TODO find out why we need this adjustment to match Android offset values
+        ip -= sizeof(u_int32_t);
+#endif  // __aarch64__
     }
 
     return record_frame(ip, state) ? _URC_NO_REASON : _URC_END_OF_STACK;
@@ -151,14 +149,27 @@ _Unwind_Reason_Code unwinder_cb(struct _Unwind_Context *ucontext, void *arg) {
 
 bool unwind_backtrace(backtrace_state_t &state) {
 
-    state.skip_frames = 0;
+    if (state.sa_ucontext == nullptr) {
+        _LOGE("unwind_backtrace: sa_ucontext is null");
+        return 0;
+    }
+
+    // get pointer to machine specific context
+    const mcontext_t *mcontext = &(state.sa_ucontext->uc_mcontext);
+    if (mcontext == nullptr) {
+        _LOGE("unwind_backtrace: uc_mcontext is null");
+        return 0;
+    }
+
+    state.skipped_frames = 0;
     state.frame_cnt = 0;
+    state.crash_ip = crash_ip_from_mcontext(mcontext);
 
     // unwinds the backtrace and fills the buffer with stack frame addresses
     _Unwind_Backtrace(unwinder_cb, &state);
 
     _LOGD("[%s] unwind_backtrace: frames[%zu] skipped[%d] context[%p]",
-          get_arch(), state.frame_cnt, state.skip_frames, state.sa_ucontext);
+          get_arch(), state.frame_cnt, state.skipped_frames, state.sa_ucontext);
 
     return true;
 }

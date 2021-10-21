@@ -35,7 +35,7 @@ class NativeStackTraceTest : TestCase() {
 
     fun testGetExceptionMessage() {
         Assert.assertNotNull(nativeCrashStack?.exceptionMessage)
-        Assert.assertTrue(nativeCrashStack?.exceptionMessage!!.startsWith("SIGILL (code -6) Illegal operation at "))
+        Assert.assertTrue(nativeCrashStack?.exceptionMessage!!.startsWith("SIGILL (code -6)"))
     }
 
 }

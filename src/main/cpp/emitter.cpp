@@ -116,21 +116,11 @@ static std::string _EMIT_A(std::string &state, const char *name, const char *cst
 }
 
 __unused static const char *frame_to_string(stackframe_t &stackframe, std::string &frame) {
-    _EMIT_F(frame, "#%02zu pc ", stackframe.index);
-    _EMIT_F(frame, "%016zu", stackframe.ip);
-    if (*stackframe.so_path != '\0') {
-        _EMIT_F(frame, " %s", stackframe.so_path);
-    }
+    _EMIT_F(frame, "#%02zu pc %016x %s", stackframe.index, stackframe.pc, stackframe.so_path);
     if (*stackframe.sym_name != '\0') {
-        _EMIT_F(frame, " %s", stackframe.sym_name);
+        _EMIT_F(frame, " (%s + %d)", stackframe.sym_name, stackframe.sym_addr_offset);
     }
-    if (stackframe.so_base != 0) {
-        // Relative addresses appear when code is compiled with
-        // _position-independent code_ (-fPIC, -pie) options.
-        // Android requires position-independent code since Android 5.0.
-        _EMIT_F(frame, " + 0x%zu (0x%zu)", stackframe.so_base, stackframe.sym_addr_offset);
-    }
-
+    // _LOGE("%s", frame.c_str());
     return frame.c_str();
 }
 
@@ -139,11 +129,13 @@ static const char *frame_to_json(stackframe_t &stackframe, std::string &state) {
 
     _EMIT_F(frame, "'cstr':'%s',", frame_to_string(stackframe, cstr));
     _EMIT_F(frame, "'index':%d,", stackframe.index);
-    _EMIT_F(frame, "'ip':'%p',", stackframe.ip);
+    _EMIT_F(frame, "'address':%zu,", stackframe.address);
+    _EMIT_F(frame, "'pc':%zu,", stackframe.pc);
     _EMIT_F(frame, "'so_path':'%s',", stackframe.so_path);
     _EMIT_F(frame, "'sym_name':'%s',", stackframe.sym_name);
-    _EMIT_F(frame, "'so_base':'%p',", stackframe.so_base);
-    _EMIT_F(frame, "'sym_addr_offset':'%p'", stackframe.sym_addr_offset);
+    _EMIT_F(frame, "'so_base':%zu,", stackframe.so_base);
+    _EMIT_F(frame, "'sym_addr':%zu,", stackframe.sym_addr);
+    _EMIT_F(frame, "'sym_addr_offset':%zu", stackframe.sym_addr_offset);
 
     _EMIT_E(state, nullptr, frame.c_str(), nullptr);
 
@@ -169,32 +161,21 @@ const char *emit_stackframe(stackframe_t &stackframe, std::string &frame) {
 const char *emit_signal_context(const siginfo_t *siginfo, std::string &state) {
     std::string exception;
 
-    _EMIT_F(exception, "'name':'%s',", "NewRelic native exception");
+    _EMIT_F(exception, "'name':'%s',", "Native exception");
     if (siginfo != nullptr) {
-        _EMIT_F(exception, "'cause':'%s',", sigutils::get_signal_description(siginfo->si_signo, siginfo->si_code));
+        _EMIT_F(exception, "'cause':'%s',",
+                sigutils::get_signal_description(siginfo->si_signo, siginfo->si_code));
 
         std::string csiginfo;
-        _EMIT_F(csiginfo, "'signalName':'%s',", sigutils::get_signal_description(siginfo->si_signo, -1));
+        _EMIT_F(csiginfo, "'signalName':'%s',",
+                sigutils::get_signal_description(siginfo->si_signo, -1));
         _EMIT_F(csiginfo, "'signalCode':%d,", siginfo->si_code);
-        _EMIT_F(csiginfo, "'faultAddress':'%p',", siginfo->si_addr);
+        _EMIT_F(csiginfo, "'faultAddress':%zu", siginfo->si_addr);
 
         _EMIT_E(exception, "signalInfo", csiginfo.c_str(), nullptr);
     }
 
     _EMIT_E(state, "exception", exception.c_str(), nullptr);
-
-    return state.c_str();
-}
-
-__unused const char *emit_violation(violation_t &violation, std::string &state) {
-    std::string vstate;
-
-    _EMIT_F(vstate, "'cause':'%s',", violation.cause);
-    _EMIT_F(vstate, "'signalName':'%s',", violation.signal_name);
-    _EMIT_F(vstate, "'signalCode':%d,", violation.signal_code);
-    _EMIT_F(vstate, "'faultAddress':'%p'", violation.fault_address);
-
-    _EMIT_E(state, "exception", vstate.c_str(), nullptr);
 
     return state.c_str();
 }
@@ -223,20 +204,24 @@ const char *emit_registers(const ucontext_t *sa_ucontext, std::string &state) {
     std::string registers;
 
 #if defined(__i386__)
-    for (int i = 0; i < NGREG; i++) {
-        _EMIT_F(registers, "'r%0d':'%08lu',", i, mcontext->gregs[i]);
-    }
-    _EMIT_F(registers, "'pc':'%08x',", mcontext->gregs[REG_EIP]);
-    _EMIT_F(registers, "'sp':'%08x',", mcontext->gregs[REG_ESP]);
+    _EMIT_F(registers, "'eax':'%08lu',", mcontext->gregs[REG_EAX]);
+    _EMIT_F(registers, "'ebx':'%08lu',", mcontext->gregs[REG_EBX]);
+    _EMIT_F(registers, "'ecx':'%08lu',", mcontext->gregs[REG_ECX]);
+    _EMIT_F(registers, "'edx':'%08lu',", mcontext->gregs[REG_EAX]);
+    _EMIT_F(registers, "'edi':'%08lu',", mcontext->gregs[REG_EDI]);
+    _EMIT_F(registers, "'esi':'%08lu',", mcontext->gregs[REG_ESI]);
+    _EMIT_F(registers, "'ebp':'%08lu',", mcontext->gregs[REG_EBP]);
+    _EMIT_F(registers, "'esp':'%08x',", mcontext->gregs[REG_ESP]);
+    _EMIT_F(registers, "'eip':'%08x',", mcontext->gregs[REG_EIP]);
     _EMIT_F(registers, "'trapno':%d,", mcontext->gregs[REG_TRAPNO]);
     _EMIT_F(registers, "'error_code':%d", mcontext->gregs[REG_ERR]);
 
 #elif defined(__x86_64__)
-    for (int i = 0; i< NGREG-2; i++) {
+    for (int i = 0; i< NGREG; i++) {
         _EMIT_F(registers, "'r%d':'%016ld',", i, mcontext->gregs[i]);
     }
-    _EMIT_F(registers, "'pc':'%016x',", mcontext->gregs[REG_RIP]);
-    _EMIT_F(registers, "'sp':'%016x',", mcontext->gregs[REG_RSP]);
+    _EMIT_F(registers, "'rip':'%016x',", mcontext->gregs[REG_RIP]);
+    _EMIT_F(registers, "'rsp':'%016x',", mcontext->gregs[REG_RSP]);
     _EMIT_F(registers, "'trapno':%d,", mcontext->gregs[REG_TRAPNO]);
     _EMIT_F(registers, "'error_code':%d", mcontext->gregs[REG_ERR]);
 
@@ -263,12 +248,13 @@ const char *emit_registers(const ucontext_t *sa_ucontext, std::string &state) {
     _EMIT_F(registers, "'fault_address':'%p'", mcontext->fault_address);
 
 #elif defined(__aarch64__)
-    for (int i = 0; i < NGREG-3; i++) {
-        _EMIT_F(registers, "r%d:'%016x',", i, mcontext->regs[i]);
+    for (int i = 0; i < 30; i++) {
+        _EMIT_F(registers, "'x%d':'%016x',", i, mcontext->regs[i]);
     }
-    _EMIT_F(registers, "'sp':'%016x',", mcontext->sp);                // == r31
-    _EMIT_F(registers, "'pc':'%016x',", mcontext->pc);                // == r32
-    _EMIT_F(registers, "'pstate':'%016x',", mcontext->pstate);        // == r33
+    _EMIT_F(registers, "'lr':'%016x',", mcontext->regs[30]);        // == r30
+    _EMIT_F(registers, "'sp':'%016x',", mcontext->sp);              // == r31
+    _EMIT_F(registers, "'pc':'%016x',", mcontext->pc);              // == r32
+    _EMIT_F(registers, "'pst':'%016x',", mcontext->pstate);         // == r33
     _EMIT_F(registers, "'fault_address':'%016p'", mcontext->fault_address);
 
 #else
@@ -295,7 +281,7 @@ const char *emit_context(backtrace_t &backtrace, std::string &state) {
     _EMIT_F(state, "'pid':%d,", backtrace.pid);
     _EMIT_F(state, "'ppid':%d,", backtrace.ppid);
     _EMIT_F(state, "'uid':%d,", backtrace.uid);
-    _EMIT_F(state, "'platform':'%s'", "native");
+    _EMIT_F(state, "'platform':'%s'", "android");
 
     return state.c_str();
 }
@@ -396,7 +382,7 @@ const char *emit_backtrace(backtrace_t &backtrace, std::string &state) {
     // translate single to double quotes
     std::replace(state.begin(), state.end(), '\'', '"');
 
-    _LOGE("_EMIT_F[%s]", state.c_str());
+    // _LOGE("_EMIT_F[%s]", state.c_str());
 
     return state.c_str();
 }

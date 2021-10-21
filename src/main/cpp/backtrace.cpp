@@ -139,7 +139,7 @@ bool collect_backtrace(char *backtrace_buffer,
                        const siginfo_t *siginfo,
                        const ucontext_t *sa_ucontext) {
 
-    std::string state; // , cstr;
+    std::string state;
     backtrace_t backtrace = {};
 
     backtrace.state.sa_ucontext = sa_ucontext;
@@ -156,6 +156,8 @@ bool collect_backtrace(char *backtrace_buffer,
     backtrace.ppid = getppid();
     backtrace.threads.clear();
 
+    state.reserve(BACKTRACE_SZ_MAX);
+
     unwind_backtrace(backtrace.state);
     collect_thread_state(backtrace.threads);
 
@@ -165,7 +167,7 @@ bool collect_backtrace(char *backtrace_buffer,
     size_t copy_size = std::min(str_size, max_size - 2);
     memcpy(backtrace_buffer, emitted.data(), copy_size);
     backtrace_buffer[copy_size] = '\0';
-    _LOGD("buffer[%zu]: %s", copy_size, backtrace_buffer);
+    // _LOGD("buffer[%zu]: %s", copy_size, backtrace_buffer);
 
     return copy_size == str_size;
 }

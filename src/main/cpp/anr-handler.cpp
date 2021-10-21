@@ -6,6 +6,7 @@
 #include <dirent.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <semaphore.h>
 
 #include <agent-ndk.h>

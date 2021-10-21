@@ -6,20 +6,6 @@
 #ifndef _AGENT_NDK_AGENT_NDK_H
 #define _AGENT_NDK_AGENT_NDK_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <jni.h>
-#include <string.h>
-#include <signal.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <fcntl.h>
-#include <pthread.h>
-#include <sys/cdefs.h>
-#include <sys/system_properties.h>
-#include <sys/types.h>
-
 #pragma once
 
 #ifndef AGENT_VERSION
@@ -40,11 +26,22 @@ static const size_t BACKTRACE_THREADS_MAX = 100;
 // Limit backtrace to 1Mb
 static const size_t BACKTRACE_SZ_MAX = 0x100000;
 
-// Return label representing  current architecture
+
+/**
+ * Return a literal string representing the current architecture
+ */
 const char *get_arch();
 
-// return true if cpu is 32bit
+/**
+ * return true if cpu is 32bit
+ */
 bool arch_is_32b();
+
+/**
+ * Collect and return a complete backtrace report into the provided buffer
+ */
+bool collect_backtrace(char *, size_t, const siginfo_t *, const ucontext_t *);
+
 
 #include <android/log.h>
 

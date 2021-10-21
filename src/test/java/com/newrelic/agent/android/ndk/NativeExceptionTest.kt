@@ -18,7 +18,7 @@ class NativeExceptionTest : TestCase() {
     }
 
     fun testGetMessage() {
-        Assert.assertTrue(nativeException.message!!.startsWith("SIGILL (code -6) Illegal operation at"))
+        Assert.assertTrue(nativeException.message!!.startsWith("SIGILL (code -6)"))
     }
 
     fun testGetNativeStackFrames() {
