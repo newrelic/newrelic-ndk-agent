@@ -60,6 +60,10 @@ void interceptor(int signo, siginfo_t *_siginfo, void *ucontext) {
     if (!intercepting++) {
         char *buffer = new char[BACKTRACE_SZ_MAX];
 
+        if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
+            serializer::from_crash(buffer, std::strlen(buffer));
+        }
+        /*
         for (size_t i = 0; i < observedSignalCnt; i++) {
             if (observedSignals[i].signo == signo) {
                 const observed_signal_t *signal = &observedSignals[i];
@@ -84,6 +88,7 @@ void interceptor(int signo, siginfo_t *_siginfo, void *ucontext) {
                 break;
             }
         }
+        */
 
         delete [] buffer;
 

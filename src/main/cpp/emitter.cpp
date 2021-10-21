@@ -118,7 +118,7 @@ static std::string _EMIT_A(std::string &state, const char *name, const char *cst
 __unused static const char *frame_to_string(stackframe_t &stackframe, std::string &frame) {
     _EMIT_F(frame, "#%02zu pc %016x %s", stackframe.index, stackframe.pc, stackframe.so_path);
     if (*stackframe.sym_name != '\0') {
-        _EMIT_F(frame, " (%s + %d)", stackframe.sym_name, stackframe.sym_addr_offset);
+        _EMIT_F(frame, " (%s+%d)", stackframe.sym_name, stackframe.sym_addr_offset);
     }
     // _LOGE("%s", frame.c_str());
     return frame.c_str();
@@ -307,7 +307,7 @@ const char *emit_callstack(backtrace_t &backtrace, std::string &state) {
         callstack.pop_back();  // remove trailing comma
     }
 
-    _EMIT_A(state, "stackframes", callstack.c_str(), nullptr);
+    _EMIT_A(state, "stack", callstack.c_str(), nullptr);
 
     return state.c_str();
 }

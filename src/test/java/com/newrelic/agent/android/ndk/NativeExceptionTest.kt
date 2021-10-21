@@ -37,10 +37,6 @@ class NativeExceptionTest : TestCase() {
         Assert.assertTrue(nativeException.nativeStackTrace!!.threads.size > 1)
     }
 
-    fun testGetCrashedThreadId() {
-        Assert.assertTrue(nativeException.nativeStackTrace?.crashedThreadId!! > 0)
-    }
-
     fun testReportsOnlyNativeFrames() {
         val frames = nativeException.stackTrace
         Assert.assertNull(frames.find() { it.lineNumber != -2 })

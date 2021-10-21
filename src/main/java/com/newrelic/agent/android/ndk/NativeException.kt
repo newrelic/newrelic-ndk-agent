@@ -5,9 +5,6 @@
 
 package com.newrelic.agent.android.ndk
 
-import java.io.PrintStream
-import java.io.PrintWriter
-
 class NativeException() : Exception("Native") {
 
     var nativeStackTrace: NativeStackTrace? = null
@@ -31,17 +28,5 @@ class NativeException() : Exception("Native") {
             return toTypedArray()
         }
         return mutableListOf<StackTraceElement>().toTypedArray()
-    }
-
-    override fun printStackTrace() {
-        super.printStackTrace()
-    }
-
-    override fun printStackTrace(s: PrintStream?) {
-        super.printStackTrace(s)
-    }
-
-    override fun printStackTrace(s: PrintWriter?) {
-        super.printStackTrace(s)
     }
 }

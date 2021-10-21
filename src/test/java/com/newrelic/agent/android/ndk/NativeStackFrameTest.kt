@@ -48,7 +48,7 @@ class NativeStackFrameTest : TestCase() {
         val element = nativeStackFrame.asStackTraceElement()
         Assert.assertEquals(element.className, "")
         Assert.assertEquals(element.methodName, "crashBySignal(int)")
-        Assert.assertEquals(element.fileName, "/data/app/~~==/base.apk!/lib/x86_64/libnative-lib.so")
+        Assert.assertTrue(element.fileName.startsWith("/data/app/~~"))
         Assert.assertEquals(element.lineNumber, -2)
     }
 
@@ -57,19 +57,19 @@ class NativeStackFrameTest : TestCase() {
         val element = nativeStackFrame.asStackTraceElement()
         Assert.assertEquals(element.className, "")
         Assert.assertEquals(element.methodName, "crashBySignal(int)")
-        Assert.assertEquals(element.fileName, "/data/app/~~==/base.apk!/lib/x86_64/libnative-lib.so")
+        Assert.assertTrue(element.fileName.startsWith("/data/app/~~"))
         Assert.assertEquals(element.lineNumber, -2)
     }
 
     fun testAllFrames() {
-        val stackFrames = JSONObject(backtrace).getJSONObject("backtrace").getJSONArray("stackframes")
+        val stackFrames = JSONObject(backtrace).getJSONObject("backtrace").getJSONArray("stack")
         val allFrames = NativeStackFrame.allFrames(stackFrames)
         Assert.assertTrue(allFrames[0] is StackTraceElement)
         Assert.assertTrue(allFrames.size > 1)
     }
 
     fun testAllNativeFrames() {
-        val stackFrames = JSONObject(backtrace).getJSONObject("backtrace").getJSONArray("stackframes")
+        val stackFrames = JSONObject(backtrace).getJSONObject("backtrace").getJSONArray("stack")
         val allFrames = NativeStackFrame.allNativeFrames(stackFrames)
         Assert.assertTrue(allFrames[0] is NativeStackFrame)
         Assert.assertTrue(allFrames.size > 1)

@@ -9,12 +9,27 @@ import com.newrelic.agent.android.harvest.crash.ThreadInfo
 import org.json.JSONArray
 import org.json.JSONObject
 
-/**
- * TODO Address dependency on agent-core
- */
+class NativeThreadInfo(val throwable: Throwable? = NativeException()) : ThreadInfo(throwable) {
 
+    init {
+        if (throwable is NativeException) {
+            val nativeException: NativeException = throwable
+            nativeException.nativeStackTrace?.apply {
+                this.crashedThread?.let {
+                    threadId = it.threadId
+                    threadName = it.threadName
+                    threadPriority = it.threadPriority
+                    crashed = it.crashed
+                    state = it.state
+                    stackTrace = it.stackTrace
+                }
+            }
+        }
+    }
 
-class NativeThreadInfo(throwable: Throwable? = NativeException()) : ThreadInfo(throwable) {
+    constructor(nativeException: NativeException) : this(nativeException as Throwable) {
+
+    }
 
     constructor(threadInfoAsJson: String?) : this() {
         fromJson(threadInfoAsJson)
@@ -47,19 +62,13 @@ class NativeThreadInfo(throwable: Throwable? = NativeException()) : ThreadInfo(t
         try {
             allFrames?.apply {
                 val ukn = "<unknown>"
-
                 stack = arrayOfNulls<StackTraceElement>(allFrames.length())
                 for (i in 0 until length()) {
                     if (!isNull(i)) {
                         try {
                             val frame = get(i) as JSONObject
-                            val fileName = frame.optString("filename", ukn)
-                            val className = frame.optString("className", ukn)
-                            val methodName = frame.optString("methodName", ukn)
-                            val lineNumber = frame.optInt("lineNumber", -2)
-
-                            stack.set(i,  StackTraceElement(className, methodName, fileName, lineNumber)
-                            )
+                            val nativeFrame = NativeStackFrame().fromJson(frame)
+                            stack.set(i, nativeFrame.asStackTraceElement());
                         } catch (e: Exception) {
                             stack.set(i, StackTraceElement(ukn, ukn, ukn, -2));
                         }
@@ -75,6 +84,24 @@ class NativeThreadInfo(throwable: Throwable? = NativeException()) : ThreadInfo(t
 
     fun isCrashingThread(): Boolean {
         return crashed;
+    }
+
+    override fun allThreads(): MutableList<ThreadInfo> {
+        if (throwable is NativeException) {
+            throwable.nativeStackTrace?.apply {
+                return this.threads as MutableList<ThreadInfo>
+            }
+        }
+
+        return super.allThreads()
+    }
+
+    fun setStackTrace(stackTrace: Array<StackTraceElement?>?) {
+        this.stackTrace = stackTrace
+    }
+
+    public fun getStackTrace() : Array<StackTraceElement?>? {
+        return stackTrace
     }
 
     companion object {
@@ -101,4 +128,5 @@ class NativeThreadInfo(throwable: Throwable? = NativeException()) : ThreadInfo(t
             return NativeThreadInfo().fromJsonObject(jsonObject)
         }
     }
+
 }

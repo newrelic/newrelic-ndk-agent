@@ -24,7 +24,15 @@ class NativeStackTraceTest : TestCase() {
 
     fun testGetCrashingThread() {
         Assert.assertNotNull(nativeCrashStack?.threads)
-        Assert.assertTrue(nativeCrashStack?.crashedThreadId!! > 0)
+        Assert.assertNotNull(nativeCrashStack?.crashedThread)
+        Assert.assertTrue(nativeCrashStack?.crashedThread?.isCrashingThread() == true)
+    }
+
+    fun testCrashingThreadHasStacktrace() {
+        Assert.assertNotNull(nativeCrashStack?.threads)
+        Assert.assertNotNull(nativeCrashStack?.crashedThread)
+        Assert.assertNotNull(nativeCrashStack?.crashedThread?.getStackTrace())
+        Assert.assertFalse(nativeCrashStack?.crashedThread?.getStackTrace()?.isEmpty() == true)
     }
 
     fun testGetStackFrames() {

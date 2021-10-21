@@ -46,7 +46,7 @@
         "faultAddress": 43649752633344
       }
     },
-    "stackframes": [
+    "stack": [
       {
         "cstr": "#00 pc 000000000005a2a8 /apex/com.android.runtime/lib64/bionic/libc.so (syscall + 24)",
         "index": 0,
@@ -321,7 +321,61 @@
         "priority": 10,
         "crashed": true,
         "stack": [
-
+          {
+            "cstr": "#00 pc 000000000005a2a8 /apex/com.android.runtime/lib64/bionic/libc.so (syscall + 24)",
+            "index": 0,
+            "address": 128951942836904,
+            "pc": 369320,
+            "so_path": "/apex/com.android.runtime/lib64/bionic/libc.so",
+            "sym_name": "syscall",
+            "so_base": 128951942467584,
+            "sym_addr": 128951942836880,
+            "sym_addr_offset": 24
+          },
+          {
+            "cstr": "#01 pc 000000000000ee18 /data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so (crashBySignal(int) + 136)",
+            "index": 1,
+            "address": 128939423493656,
+            "pc": 60952,
+            "so_path": "/data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so",
+            "sym_name": "crashBySignal(int)",
+            "so_base": 128939423432704,
+            "sym_addr": 128939423493520,
+            "sym_addr_offset": 136
+          },
+          {
+            "cstr": "#02 pc 000000000000f97c /data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so (crashing_thread(void*) + 156)",
+            "index": 2,
+            "address": 128939423496572,
+            "pc": 63868,
+            "so_path": "/data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so",
+            "sym_name": "crashing_thread(void*)",
+            "so_base": 128939423432704,
+            "sym_addr": 128939423496416,
+            "sym_addr_offset": 156
+          },
+          {
+            "cstr": "#03 pc 00000000000c7d2b /apex/com.android.runtime/lib64/bionic/libc.so",
+            "index": 3,
+            "address": 128951943286059,
+            "pc": 818475,
+            "so_path": "/apex/com.android.runtime/lib64/bionic/libc.so",
+            "sym_name": "",
+            "so_base": 128951942467584,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#04 pc 000000000005f0c8 /apex/com.android.runtime/lib64/bionic/libc.so",
+            "index": 4,
+            "address": 128951942856904,
+            "pc": 389320,
+            "so_path": "/apex/com.android.runtime/lib64/bionic/libc.so",
+            "sym_name": "",
+            "so_base": 128951942467584,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          }
         ]
       },
       {

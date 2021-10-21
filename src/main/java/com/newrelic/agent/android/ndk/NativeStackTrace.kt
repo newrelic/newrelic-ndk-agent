@@ -10,8 +10,8 @@ import org.json.JSONObject
 
 class NativeStackTrace(val exception: Exception) {
 
-    var crashedThreadId: Long = 0L
-    var stackFrames: MutableList<StackTraceElement> = mutableListOf()
+    val stackFrames: MutableList<StackTraceElement> = mutableListOf()
+    var crashedThread: NativeThreadInfo? = null
     var threads: MutableList<NativeThreadInfo> = mutableListOf()
     var exceptionMessage: String? = "Native exception"
 
@@ -43,8 +43,8 @@ class NativeStackTrace(val exception: Exception) {
                     }
 
                     try {
-                        getJSONArray("stackframes")?.apply {
-                            stackFrames = NativeStackFrame.allFrames(this)
+                        getJSONArray("stack")?.apply {
+                            stackFrames.addAll(NativeStackFrame.allFrames(this))
                         }
                     } catch (ignored: Exception) {
                         ignored.printStackTrace()
@@ -56,7 +56,8 @@ class NativeStackTrace(val exception: Exception) {
                             threads.find() {
                                 it.isCrashingThread()
                             }?.apply {
-                                crashedThreadId = threadId
+                                this.setStackTrace(stackFrames.toTypedArray())
+                                crashedThread = this
                             }
                         }
                     } catch (ignored: Exception) {

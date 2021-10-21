@@ -4,7 +4,7 @@ import junit.framework.Assert
 import junit.framework.TestCase
 import org.json.JSONObject
 
-class NativeThreadInfoTest : TestCase() {
+class NativeThreadInfoLegacyTest : TestCase() {
 
     val backtrace = this::class.java.classLoader.getResource("backtrace.json").readText()
     val threadInfo = this::class.java.classLoader.getResource("threadInfo.json").readText()
