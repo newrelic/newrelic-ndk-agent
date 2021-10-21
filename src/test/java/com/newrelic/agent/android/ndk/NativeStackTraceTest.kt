@@ -19,24 +19,23 @@ class NativeStackTraceTest : TestCase() {
     fun testGetThreads() {
         Assert.assertNotNull(nativeCrashStack?.threads)
         Assert.assertFalse(nativeCrashStack?.threads!!.isEmpty())
-        Assert.assertEquals(20, nativeCrashStack?.threads!!.size)
+        Assert.assertTrue(nativeCrashStack?.threads!!.size > 1)
     }
 
     fun testGetCrashingThread() {
         Assert.assertNotNull(nativeCrashStack?.threads)
-        Assert.assertEquals(8058, nativeCrashStack?.crashedThreadId!!)
+        Assert.assertTrue(nativeCrashStack?.crashedThreadId!! > 0)
     }
 
     fun testGetStackFrames() {
         Assert.assertNotNull(nativeCrashStack?.stackFrames)
         Assert.assertFalse(nativeCrashStack?.stackFrames!!.isEmpty())
-        Assert.assertEquals(5, nativeCrashStack?.stackFrames!!.size)
+        Assert.assertTrue(nativeCrashStack?.stackFrames!!.size > 1)
     }
 
     fun testGetExceptionMessage() {
         Assert.assertNotNull(nativeCrashStack?.exceptionMessage)
-        Assert.assertEquals("SIGILL (code -6) Illegal operation at 0x1f2d", nativeCrashStack?.exceptionMessage)
-
+        Assert.assertTrue(nativeCrashStack?.exceptionMessage!!.startsWith("SIGILL (code -6) Illegal operation at "))
     }
 
 }

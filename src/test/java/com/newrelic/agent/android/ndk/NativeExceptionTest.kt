@@ -18,27 +18,27 @@ class NativeExceptionTest : TestCase() {
     }
 
     fun testGetMessage() {
-        Assert.assertEquals("SIGILL (code -6) Illegal operation at 0x1f2d", nativeException.message)
+        Assert.assertTrue(nativeException.message!!.startsWith("SIGILL (code -6) Illegal operation at"))
     }
 
     fun testGetNativeStackFrames() {
-        Assert.assertNotNull(nativeException.nativeStackTrace.stackFrames)
-        Assert.assertEquals(5, nativeException.nativeStackTrace.stackFrames.size)
-        Assert.assertTrue(nativeException.nativeStackTrace.stackFrames[0] is StackTraceElement)
+        Assert.assertNotNull(nativeException.nativeStackTrace?.stackFrames)
+        Assert.assertTrue(nativeException.nativeStackTrace?.stackFrames?.size!! > 1)
+        Assert.assertTrue(nativeException.nativeStackTrace!!.stackFrames[0] is StackTraceElement)
     }
 
     fun testGetStackFrame() {
         Assert.assertNotNull(nativeException.stackTrace)
-        Assert.assertEquals(5, nativeException.stackTrace.size)
-        Assert.assertTrue(nativeException.stackTrace[0] is StackTraceElement)
+        Assert.assertTrue(nativeException?.stackTrace.size > 1)
+        Assert.assertTrue(nativeException!!.stackTrace[0] is StackTraceElement)
     }
 
     fun testGetAllThreads() {
-        Assert.assertEquals(20, nativeException.nativeStackTrace.threads.size)
+        Assert.assertTrue(nativeException.nativeStackTrace!!.threads.size > 1)
     }
 
     fun testGetCrashedThreadId() {
-        Assert.assertEquals(8058, nativeException.nativeStackTrace.crashedThreadId)
+        Assert.assertTrue(nativeException.nativeStackTrace?.crashedThreadId!! > 0)
     }
 
     fun testReportsOnlyNativeFrames() {
@@ -48,7 +48,7 @@ class NativeExceptionTest : TestCase() {
 
     fun testFillInStackTrace() {
         var frames = nativeException.fillInStackTrace()
-        Assert.assertEquals(5, frames.stackTrace.size)
+        Assert.assertTrue(frames.stackTrace.size > 1)
     }
 
 }
