@@ -73,7 +73,7 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
             ANRMonitor.getInstance().startMonitor()
         }
 
-        flushPendingReports()
+        // flushPendingReports()
 
         return nativeStart(managedContext!!)
     }
@@ -132,7 +132,7 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
                         consumed = onNativeException(report.readText(Charsets.UTF_8))
                     }
                     report.name.startsWith("anr-", true) -> {
-                        consumed = onNativeCrash(report.readText(Charsets.UTF_8))
+                        consumed = onApplicationNotResponding(report.readText(Charsets.UTF_8))
                     }
                 }
 

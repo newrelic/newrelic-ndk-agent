@@ -293,18 +293,19 @@ const char *emit_context(backtrace_t &backtrace, std::string &state) {
  * @param state
  * @return callstack appended to state
  */
-const char *emit_callstack(backtrace_t &backtrace, std::string &state) {
+const char *emit_callstack(backtrace_state_t *backtrace_state, std::string &state) {
     std::string callstack;
 
-    for (size_t i = 0; i < backtrace.state.frame_cnt; i++) {
-        std::string cstr;
-        stackframe_t stackframe = {};
-        transform_addr_to_stackframe(i, backtrace.state.frames[i], stackframe);
-        _EMIT_C(callstack, emit_stackframe(stackframe, cstr), ",", nullptr);
-    }
-
-    if (!callstack.empty()) {
-        callstack.pop_back();  // remove trailing comma
+    if (backtrace_state != nullptr) {
+        for (size_t i = 0; i < backtrace_state->frame_cnt; i++) {
+            std::string cstr;
+            stackframe_t stackframe = {};
+            transform_addr_to_stackframe(i, backtrace_state->frames[i], stackframe);
+            _EMIT_C(callstack, emit_stackframe(stackframe, cstr), ",", nullptr);
+        }
+        if (!callstack.empty()) {
+            callstack.pop_back();  // remove trailing comma
+        }
     }
 
     _EMIT_A(state, "stack", callstack.c_str(), nullptr);
@@ -319,15 +320,16 @@ const char *emit_callstack(backtrace_t &backtrace, std::string &state) {
  * @param thread Thread data
  * @return Thread data appended to state
  */
-const char *emit_thread_info(threadinfo_t &thread, std::string &state) {
-    std::string tstate;
+const char * emit_thread_info(threadinfo_t &thread, std::string &state) {
+    std::string tstate, callstack;
 
     _EMIT_F(tstate, "'threadNumber':%d,", thread.tid);
     _EMIT_F(tstate, "'threadId':'%s',", thread.thread_name);
     _EMIT_F(tstate, "'state':'%s',", thread.thread_state);
     _EMIT_F(tstate, "'priority':%d,", thread.priority);
     _EMIT_F(tstate, "'crashed':%s,", thread.crashed ? "true" : "false");
-    _EMIT_F(tstate, "'stack':[]");    // TBA
+
+    _EMIT_C(tstate, emit_callstack(thread.backtrace_state, callstack), nullptr);
 
     _EMIT_E(state, nullptr, tstate.c_str(), nullptr);
 
@@ -344,10 +346,9 @@ const char *emit_thread_state(backtrace_t &backtrace, std::string &state) {
     std::string threads;
 
     for (size_t i = 0; i < backtrace.threads.size(); i++) {
-        if (backtrace.threads[i].tid != 0) {
-            std::string cstr;
-            _EMIT_C(threads, emit_thread_info(backtrace.threads[i], cstr), ",", nullptr);
-        }
+        std::string tstr;
+        threadinfo_t &thread = backtrace.threads[i];
+        _EMIT_C(threads, emit_thread_info(thread, tstr), ",", nullptr);
     }
 
     if (!threads.empty()) {
@@ -366,7 +367,7 @@ const char *emit_thread_state(backtrace_t &backtrace, std::string &state) {
  * @return const char* to string in output buffer
  */
 const char *emit_backtrace(backtrace_t &backtrace, std::string &state) {
-    std::string context, callstack, threads, regs, sig;
+    std::string context, threads, regs, sig;
 
     state = "{";
 
@@ -374,7 +375,6 @@ const char *emit_backtrace(backtrace_t &backtrace, std::string &state) {
             emit_context(backtrace, context),
             emit_registers(backtrace.state.sa_ucontext, regs),
             emit_signal_context(backtrace.state.siginfo, sig),
-            emit_callstack(backtrace, callstack),
             emit_thread_state(backtrace, threads), nullptr);
 
     state.append("}");

@@ -9,27 +9,9 @@ import com.newrelic.agent.android.harvest.crash.ThreadInfo
 import org.json.JSONArray
 import org.json.JSONObject
 
-class NativeThreadInfo(val throwable: Throwable? = NativeException()) : ThreadInfo(throwable) {
+class NativeThreadInfo(nativeException: NativeException?) : ThreadInfo(nativeException) {
 
-    init {
-        if (throwable is NativeException) {
-            val nativeException: NativeException = throwable
-            nativeException.nativeStackTrace?.apply {
-                this.crashedThread?.let {
-                    threadId = it.threadId
-                    threadName = it.threadName
-                    threadPriority = it.threadPriority
-                    crashed = it.crashed
-                    state = it.state
-                    stackTrace = it.stackTrace
-                }
-            }
-        }
-    }
-
-    constructor(nativeException: NativeException) : this(nativeException as Throwable) {
-
-    }
+    constructor() : this(NativeException()) {}
 
     constructor(threadInfoAsJson: String?) : this() {
         fromJson(threadInfoAsJson)
@@ -86,21 +68,7 @@ class NativeThreadInfo(val throwable: Throwable? = NativeException()) : ThreadIn
         return crashed;
     }
 
-    override fun allThreads(): MutableList<ThreadInfo> {
-        if (throwable is NativeException) {
-            throwable.nativeStackTrace?.apply {
-                return this.threads as MutableList<ThreadInfo>
-            }
-        }
-
-        return super.allThreads()
-    }
-
-    fun setStackTrace(stackTrace: Array<StackTraceElement?>?) {
-        this.stackTrace = stackTrace
-    }
-
-    public fun getStackTrace() : Array<StackTraceElement?>? {
+    fun getStackTrace(): Array<StackTraceElement?>? {
         return stackTrace
     }
 
@@ -118,14 +86,6 @@ class NativeThreadInfo(val throwable: Throwable? = NativeException()) : ThreadIn
             }
 
             return threads
-        }
-
-        fun allThreads(allThreadsAsString: String?): MutableList<NativeThreadInfo> {
-            return allThreads(JSONArray(allThreadsAsString))
-        }
-
-        fun fromJson(jsonObject: JSONObject?): NativeThreadInfo {
-            return NativeThreadInfo().fromJsonObject(jsonObject)
         }
     }
 

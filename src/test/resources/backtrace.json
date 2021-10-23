@@ -1,152 +1,509 @@
 {
   "backtrace": {
     "name": "com.newrelic.agent.android.ndk.test",
-    "description": "Thread killed",
-    "timestamp": 1634795826,
-    "abi": "x86_64",
-    "pid": 4096,
-    "ppid": 293,
-    "uid": 10163,
+    "description": "Address not mapped to object",
+    "timestamp": 1634975199,
+    "abi": "x86",
+    "pid": 6905,
+    "ppid": 1786,
+    "uid": 10226,
     "platform": "android",
     "registers": {
-      "r0": "0140734691709096",
-      "r1": "0128939413129008",
-      "r2": "0140734691709056",
-      "r3": "0000000000000531",
-      "r4": "0128939413130600",
-      "r5": "0128939413130632",
-      "r6": "0128939413130480",
-      "r7": "0128951943286000",
-      "r8": "0000000000004096",
-      "r9": "0000000000004150",
-      "r10": "0128939413130336",
-      "r11": "0128939413130480",
-      "r12": "0000000000000004",
-      "r13": "0000000000000000",
-      "r14": "0128951942836904",
-      "r15": "0128939413130264",
-      "r16": "0128951942836904",
-      "r17": "0000000000000531",
-      "r18": "12103423998558259",
-      "r19": "0000000000000004",
-      "r20": "0000000000000014",
-      "r21": "0000002147488256",
-      "r22": "0128939441647648",
-      "rip": "00000000f6bef2a8",
-      "rsp": "000000000beacc18",
+      "eax": "3185810956",
+      "ebx": "3185810956",
+      "ecx": "3185759932",
+      "edx": "3185810956",
+      "edi": "00000011",
+      "esi": "00000000",
+      "ebp": "4292046664",
+      "esp": "ffd36f00",
+      "eip": "bde0c4f2",
       "trapno": 14,
-      "error_code": 4
+      "error_code": 6
     },
     "exception": {
       "name": "Native exception",
-      "cause": "Thread killed",
+      "cause": "Address not mapped to object",
       "signalInfo": {
-        "signalName": "SIGILL",
-        "signalCode": -6,
-        "faultAddress": 43649752633344
+        "signalName": "SIGSEGV",
+        "signalCode": 1,
+        "faultAddress": 0
       }
     },
-    "stack": [
-      {
-        "cstr": "#00 pc 000000000005a2a8 /apex/com.android.runtime/lib64/bionic/libc.so (syscall + 24)",
-        "index": 0,
-        "address": 128951942836904,
-        "pc": 369320,
-        "so_path": "/apex/com.android.runtime/lib64/bionic/libc.so",
-        "sym_name": "syscall",
-        "so_base": 128951942467584,
-        "sym_addr": 128951942836880,
-        "sym_addr_offset": 24
-      },
-      {
-        "cstr": "#01 pc 000000000000ee18 /data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so (crashBySignal(int) + 136)",
-        "index": 1,
-        "address": 128939423493656,
-        "pc": 60952,
-        "so_path": "/data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so",
-        "sym_name": "crashBySignal(int)",
-        "so_base": 128939423432704,
-        "sym_addr": 128939423493520,
-        "sym_addr_offset": 136
-      },
-      {
-        "cstr": "#02 pc 000000000000f97c /data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so (crashing_thread(void*) + 156)",
-        "index": 2,
-        "address": 128939423496572,
-        "pc": 63868,
-        "so_path": "/data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so",
-        "sym_name": "crashing_thread(void*)",
-        "so_base": 128939423432704,
-        "sym_addr": 128939423496416,
-        "sym_addr_offset": 156
-      },
-      {
-        "cstr": "#03 pc 00000000000c7d2b /apex/com.android.runtime/lib64/bionic/libc.so",
-        "index": 3,
-        "address": 128951943286059,
-        "pc": 818475,
-        "so_path": "/apex/com.android.runtime/lib64/bionic/libc.so",
-        "sym_name": "",
-        "so_base": 128951942467584,
-        "sym_addr": 0,
-        "sym_addr_offset": 0
-      },
-      {
-        "cstr": "#04 pc 000000000005f0c8 /apex/com.android.runtime/lib64/bionic/libc.so",
-        "index": 4,
-        "address": 128951942856904,
-        "pc": 389320,
-        "so_path": "/apex/com.android.runtime/lib64/bionic/libc.so",
-        "sym_name": "",
-        "so_base": 128951942467584,
-        "sym_addr": 0,
-        "sym_addr_offset": 0
-      }
-    ],
     "threads": [
       {
-        "threadNumber": 4096,
+        "threadNumber": 6905,
         "threadId": "ndroid.ndk.test",
-        "state": "SLEEPING",
+        "state": "RUNNING",
         "priority": 10,
-        "crashed": false,
+        "crashed": true,
         "stack": [
-
+          {
+            "cstr": "#00 pc 00000000000084f2 /data/app/com.newrelic.agent.android.ndk.test-8nbUwxUDVD3fiT9yAMQ91Q==/base.apk!/lib/x86/libnative-lib.so (crashBySignal(int)+82)",
+            "index": 0,
+            "address": 3185624306,
+            "pc": 34034,
+            "so_path": "/data/app/com.newrelic.agent.android.ndk.test-8nbUwxUDVD3fiT9yAMQ91Q==/base.apk!/lib/x86/libnative-lib.so",
+            "sym_name": "crashBySignal(int)",
+            "so_base": 3185590272,
+            "sym_addr": 3185624224,
+            "sym_addr_offset": 82
+          },
+          {
+            "cstr": "#01 pc 00000000000089f4 /data/app/com.newrelic.agent.android.ndk.test-8nbUwxUDVD3fiT9yAMQ91Q==/base.apk!/lib/x86/libnative-lib.so (Java_com_newrelic_agent_android_ndk_MainActivity_raiseSignal+52)",
+            "index": 1,
+            "address": 3185625588,
+            "pc": 35316,
+            "so_path": "/data/app/com.newrelic.agent.android.ndk.test-8nbUwxUDVD3fiT9yAMQ91Q==/base.apk!/lib/x86/libnative-lib.so",
+            "sym_name": "Java_com_newrelic_agent_android_ndk_MainActivity_raiseSignal",
+            "so_base": 3185590272,
+            "sym_addr": 3185625536,
+            "sym_addr_offset": 52
+          },
+          {
+            "cstr": "#02 pc 0000000000144f68 /apex/com.android.runtime/lib/libart.so",
+            "index": 2,
+            "address": 3830488936,
+            "pc": 1331048,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#03 pc 000000000013e7d3 /apex/com.android.runtime/lib/libart.so",
+            "index": 3,
+            "address": 3830462419,
+            "pc": 1304531,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#04 pc 0000000000149a6a /apex/com.android.runtime/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+282)",
+            "index": 4,
+            "address": 3830508138,
+            "pc": 1350250,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)",
+            "so_base": 3829157888,
+            "sym_addr": 3830507856,
+            "sym_addr_offset": 282
+          },
+          {
+            "cstr": "#05 pc 0000000000332503 /apex/com.android.runtime/lib/libart.so (art::interpreter::ArtInterpreterToCompiledCodeBridge(art::Thread*, art::ArtMethod*, art::ShadowFrame*, unsigned short, art::JValue*)+387)",
+            "index": 5,
+            "address": 3832509699,
+            "pc": 3351811,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "art::interpreter::ArtInterpreterToCompiledCodeBridge(art::Thread*, art::ArtMethod*, art::ShadowFrame*, unsigned short, art::JValue*)",
+            "so_base": 3829157888,
+            "sym_addr": 3832509312,
+            "sym_addr_offset": 387
+          },
+          {
+            "cstr": "#06 pc 000000000032c19d /apex/com.android.runtime/lib/libart.so (bool art::interpreter::DoCall<false, false>(art::ArtMethod*, art::Thread*, art::ShadowFrame&, art::Instruction const*, unsigned short, art::JValue*)+989)",
+            "index": 6,
+            "address": 3832484253,
+            "pc": 3326365,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "bool art::interpreter::DoCall<false, false>(art::ArtMethod*, art::Thread*, art::ShadowFrame&, art::Instruction const*, unsigned short, art::JValue*)",
+            "so_base": 3829157888,
+            "sym_addr": 3832483264,
+            "sym_addr_offset": 989
+          },
+          {
+            "cstr": "#07 pc 000000000068433d /apex/com.android.runtime/lib/libart.so (MterpInvokeDirect+701)",
+            "index": 7,
+            "address": 3835990845,
+            "pc": 6832957,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "MterpInvokeDirect",
+            "so_base": 3829157888,
+            "sym_addr": 3835990144,
+            "sym_addr_offset": 701
+          },
+          {
+            "cstr": "#08 pc 0000000000138922 /apex/com.android.runtime/lib/libart.so",
+            "index": 8,
+            "address": 3830438178,
+            "pc": 1280290,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#09 pc 0000000000684f6d /apex/com.android.runtime/lib/libart.so (MterpInvokeStatic+1261)",
+            "index": 9,
+            "address": 3835993965,
+            "pc": 6836077,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "MterpInvokeStatic",
+            "so_base": 3829157888,
+            "sym_addr": 3835992704,
+            "sym_addr_offset": 1261
+          },
+          {
+            "cstr": "#10 pc 00000000001389a2 /apex/com.android.runtime/lib/libart.so",
+            "index": 10,
+            "address": 3830438306,
+            "pc": 1280418,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#11 pc 0000000000684f6d /apex/com.android.runtime/lib/libart.so (MterpInvokeStatic+1261)",
+            "index": 11,
+            "address": 3835993965,
+            "pc": 6836077,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "MterpInvokeStatic",
+            "so_base": 3829157888,
+            "sym_addr": 3835992704,
+            "sym_addr_offset": 1261
+          },
+          {
+            "cstr": "#12 pc 00000000001389a2 /apex/com.android.runtime/lib/libart.so",
+            "index": 12,
+            "address": 3830438306,
+            "pc": 1280418,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#13 pc 00000000006837bd /apex/com.android.runtime/lib/libart.so (MterpInvokeInterface+1981)",
+            "index": 13,
+            "address": 3835987901,
+            "pc": 6830013,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "MterpInvokeInterface",
+            "so_base": 3829157888,
+            "sym_addr": 3835985920,
+            "sym_addr_offset": 1981
+          },
+          {
+            "cstr": "#14 pc 0000000000138a22 /apex/com.android.runtime/lib/libart.so",
+            "index": 14,
+            "address": 3830438434,
+            "pc": 1280546,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#15 pc 000000000068299d /apex/com.android.runtime/lib/libart.so (MterpInvokeSuper+2461)",
+            "index": 15,
+            "address": 3835984285,
+            "pc": 6826397,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "MterpInvokeSuper",
+            "so_base": 3829157888,
+            "sym_addr": 3835981824,
+            "sym_addr_offset": 2461
+          },
+          {
+            "cstr": "#16 pc 00000000001388a2 /apex/com.android.runtime/lib/libart.so",
+            "index": 16,
+            "address": 3830438050,
+            "pc": 1280162,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#17 pc 0000000000681add /apex/com.android.runtime/lib/libart.so (MterpInvokeVirtual+1613)",
+            "index": 17,
+            "address": 3835980509,
+            "pc": 6822621,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "MterpInvokeVirtual",
+            "so_base": 3829157888,
+            "sym_addr": 3835978896,
+            "sym_addr_offset": 1613
+          },
+          {
+            "cstr": "#18 pc 0000000000138822 /apex/com.android.runtime/lib/libart.so",
+            "index": 18,
+            "address": 3830437922,
+            "pc": 1280034,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#19 pc 00000000006845ad /apex/com.android.runtime/lib/libart.so (MterpInvokeDirect+1325)",
+            "index": 19,
+            "address": 3835991469,
+            "pc": 6833581,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "MterpInvokeDirect",
+            "so_base": 3829157888,
+            "sym_addr": 3835990144,
+            "sym_addr_offset": 1325
+          },
+          {
+            "cstr": "#20 pc 0000000000138922 /apex/com.android.runtime/lib/libart.so",
+            "index": 20,
+            "address": 3830438178,
+            "pc": 1280290,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#21 pc 0000000000684f6d /apex/com.android.runtime/lib/libart.so (MterpInvokeStatic+1261)",
+            "index": 21,
+            "address": 3835993965,
+            "pc": 6836077,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "MterpInvokeStatic",
+            "so_base": 3829157888,
+            "sym_addr": 3835992704,
+            "sym_addr_offset": 1261
+          },
+          {
+            "cstr": "#22 pc 00000000001389a2 /apex/com.android.runtime/lib/libart.so",
+            "index": 22,
+            "address": 3830438306,
+            "pc": 1280418,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#23 pc 00000000006837bd /apex/com.android.runtime/lib/libart.so (MterpInvokeInterface+1981)",
+            "index": 23,
+            "address": 3835987901,
+            "pc": 6830013,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "MterpInvokeInterface",
+            "so_base": 3829157888,
+            "sym_addr": 3835985920,
+            "sym_addr_offset": 1981
+          },
+          {
+            "cstr": "#24 pc 0000000000138a22 /apex/com.android.runtime/lib/libart.so",
+            "index": 24,
+            "address": 3830438434,
+            "pc": 1280546,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#25 pc 0000000000684f6d /apex/com.android.runtime/lib/libart.so (MterpInvokeStatic+1261)",
+            "index": 25,
+            "address": 3835993965,
+            "pc": 6836077,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "MterpInvokeStatic",
+            "so_base": 3829157888,
+            "sym_addr": 3835992704,
+            "sym_addr_offset": 1261
+          },
+          {
+            "cstr": "#26 pc 00000000001389a2 /apex/com.android.runtime/lib/libart.so",
+            "index": 26,
+            "address": 3830438306,
+            "pc": 1280418,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#27 pc 0000000000681add /apex/com.android.runtime/lib/libart.so (MterpInvokeVirtual+1613)",
+            "index": 27,
+            "address": 3835980509,
+            "pc": 6822621,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "MterpInvokeVirtual",
+            "so_base": 3829157888,
+            "sym_addr": 3835978896,
+            "sym_addr_offset": 1613
+          },
+          {
+            "cstr": "#28 pc 0000000000138822 /apex/com.android.runtime/lib/libart.so",
+            "index": 28,
+            "address": 3830437922,
+            "pc": 1280034,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#29 pc 0000000000684f6d /apex/com.android.runtime/lib/libart.so (MterpInvokeStatic+1261)",
+            "index": 29,
+            "address": 3835993965,
+            "pc": 6836077,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "MterpInvokeStatic",
+            "so_base": 3829157888,
+            "sym_addr": 3835992704,
+            "sym_addr_offset": 1261
+          },
+          {
+            "cstr": "#30 pc 00000000001389a2 /apex/com.android.runtime/lib/libart.so",
+            "index": 30,
+            "address": 3830438306,
+            "pc": 1280418,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#31 pc 00000000002f8e0b /apex/com.android.runtime/lib/libart.so",
+            "index": 31,
+            "address": 3832274443,
+            "pc": 3116555,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#32 pc 00000000002ffcc6 /apex/com.android.runtime/lib/libart.so (art::interpreter::EnterInterpreterFromEntryPoint(art::Thread*, art::CodeItemDataAccessor const&, art::ShadowFrame*)+182)",
+            "index": 32,
+            "address": 3832302790,
+            "pc": 3144902,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "art::interpreter::EnterInterpreterFromEntryPoint(art::Thread*, art::CodeItemDataAccessor const&, art::ShadowFrame*)",
+            "so_base": 3829157888,
+            "sym_addr": 3832302608,
+            "sym_addr_offset": 182
+          },
+          {
+            "cstr": "#33 pc 000000000066fbda /apex/com.android.runtime/lib/libart.so (artQuickToInterpreterBridge+1210)",
+            "index": 33,
+            "address": 3835907034,
+            "pc": 6749146,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "artQuickToInterpreterBridge",
+            "so_base": 3829157888,
+            "sym_addr": 3835905824,
+            "sym_addr_offset": 1210
+          },
+          {
+            "cstr": "#34 pc 000000000014503e /apex/com.android.runtime/lib/libart.so",
+            "index": 34,
+            "address": 3830489150,
+            "pc": 1331262,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#35 pc 000000000013e9a3 /apex/com.android.runtime/lib/libart.so",
+            "index": 35,
+            "address": 3830462883,
+            "pc": 1304995,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#36 pc 0000000000149a7b /apex/com.android.runtime/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+299)",
+            "index": 36,
+            "address": 3830508155,
+            "pc": 1350267,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)",
+            "so_base": 3829157888,
+            "sym_addr": 3830507856,
+            "sym_addr_offset": 299
+          },
+          {
+            "cstr": "#37 pc 000000000055a514 /apex/com.android.runtime/lib/libart.so",
+            "index": 37,
+            "address": 3834770708,
+            "pc": 5612820,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#38 pc 000000000055c330 /apex/com.android.runtime/lib/libart.so (art::InvokeMethod(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jobject*, _jobject*, unsigned int)+1328)",
+            "index": 38,
+            "address": 3834778416,
+            "pc": 5620528,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "art::InvokeMethod(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jobject*, _jobject*, unsigned int)",
+            "so_base": 3829157888,
+            "sym_addr": 3834777088,
+            "sym_addr_offset": 1328
+          },
+          {
+            "cstr": "#39 pc 00000000004c9154 /apex/com.android.runtime/lib/libart.so",
+            "index": 39,
+            "address": 3834175828,
+            "pc": 5017940,
+            "so_path": "/apex/com.android.runtime/lib/libart.so",
+            "sym_name": "",
+            "so_base": 3829157888,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          },
+          {
+            "cstr": "#40 pc 00000000000c6bf9 /system/framework/x86/boot.oat",
+            "index": 40,
+            "address": 1874480121,
+            "pc": 814073,
+            "so_path": "/system/framework/x86/boot.oat",
+            "sym_name": "",
+            "so_base": 1873666048,
+            "sym_addr": 0,
+            "sym_addr_offset": 0
+          }
         ]
       },
       {
-        "threadNumber": 4106,
-        "threadId": "Signal Catcher",
-        "state": "SLEEPING",
-        "priority": 0,
-        "crashed": false,
-        "stack": [
-
-        ]
-      },
-      {
-        "threadNumber": 4107,
-        "threadId": "perfetto_hprof_",
-        "state": "SLEEPING",
-        "priority": 0,
-        "crashed": false,
-        "stack": [
-
-        ]
-      },
-      {
-        "threadNumber": 4108,
-        "threadId": "ADB-JDWP Connec",
-        "state": "SLEEPING",
-        "priority": 0,
-        "crashed": false,
-        "stack": [
-
-        ]
-      },
-      {
-        "threadNumber": 4109,
+        "threadNumber": 6911,
         "threadId": "Jit thread pool",
+        "state": "RUNNING",
+        "priority": 20,
+        "crashed": false,
+        "stack": [
+
+        ]
+      },
+      {
+        "threadNumber": 6916,
+        "threadId": "Signal Catcher",
         "state": "SLEEPING",
         "priority": 20,
         "crashed": false,
@@ -155,7 +512,17 @@
         ]
       },
       {
-        "threadNumber": 4110,
+        "threadNumber": 6917,
+        "threadId": "ADB-JDWP Connec",
+        "state": "SLEEPING",
+        "priority": 20,
+        "crashed": false,
+        "stack": [
+
+        ]
+      },
+      {
+        "threadNumber": 6918,
         "threadId": "HeapTaskDaemon",
         "state": "SLEEPING",
         "priority": 24,
@@ -165,7 +532,7 @@
         ]
       },
       {
-        "threadNumber": 4111,
+        "threadNumber": 6919,
         "threadId": "ReferenceQueueD",
         "state": "SLEEPING",
         "priority": 24,
@@ -175,7 +542,7 @@
         ]
       },
       {
-        "threadNumber": 4112,
+        "threadNumber": 6920,
         "threadId": "FinalizerDaemon",
         "state": "SLEEPING",
         "priority": 24,
@@ -185,7 +552,7 @@
         ]
       },
       {
-        "threadNumber": 4113,
+        "threadNumber": 6921,
         "threadId": "FinalizerWatchd",
         "state": "SLEEPING",
         "priority": 24,
@@ -195,8 +562,8 @@
         ]
       },
       {
-        "threadNumber": 4114,
-        "threadId": "Binder:4096_1",
+        "threadNumber": 6922,
+        "threadId": "Binder:6905_1",
         "state": "SLEEPING",
         "priority": 20,
         "crashed": false,
@@ -205,8 +572,8 @@
         ]
       },
       {
-        "threadNumber": 4116,
-        "threadId": "Binder:4096_2",
+        "threadNumber": 6923,
+        "threadId": "Binder:6905_2",
         "state": "SLEEPING",
         "priority": 20,
         "crashed": false,
@@ -215,8 +582,8 @@
         ]
       },
       {
-        "threadNumber": 4118,
-        "threadId": "Binder:4096_3",
+        "threadNumber": 6928,
+        "threadId": "Binder:6905_3",
         "state": "SLEEPING",
         "priority": 20,
         "crashed": false,
@@ -225,7 +592,7 @@
         ]
       },
       {
-        "threadNumber": 4122,
+        "threadNumber": 6941,
         "threadId": "Profile Saver",
         "state": "SLEEPING",
         "priority": 29,
@@ -235,7 +602,7 @@
         ]
       },
       {
-        "threadNumber": 4123,
+        "threadNumber": 6942,
         "threadId": "RenderThread",
         "state": "SLEEPING",
         "priority": 10,
@@ -245,8 +612,8 @@
         ]
       },
       {
-        "threadNumber": 4126,
-        "threadId": "pool-2-thread-1",
+        "threadNumber": 6945,
+        "threadId": "pool-1-thread-1",
         "state": "SLEEPING",
         "priority": 20,
         "crashed": false,
@@ -255,7 +622,7 @@
         ]
       },
       {
-        "threadNumber": 4131,
+        "threadNumber": 6950,
         "threadId": "NR_TaskQueue-1",
         "state": "SLEEPING",
         "priority": 20,
@@ -265,7 +632,7 @@
         ]
       },
       {
-        "threadNumber": 4132,
+        "threadNumber": 6951,
         "threadId": "NR_NR-PayloadWo",
         "state": "SLEEPING",
         "priority": 20,
@@ -275,7 +642,7 @@
         ]
       },
       {
-        "threadNumber": 4134,
+        "threadNumber": 6952,
         "threadId": "NR_NR-PayloadWo",
         "state": "SLEEPING",
         "priority": 20,
@@ -285,7 +652,7 @@
         ]
       },
       {
-        "threadNumber": 4135,
+        "threadNumber": 6953,
         "threadId": "NR_Harvester-1",
         "state": "SLEEPING",
         "priority": 20,
@@ -295,7 +662,17 @@
         ]
       },
       {
-        "threadNumber": 4137,
+        "threadNumber": 6954,
+        "threadId": "NR_NR-PayloadWo",
+        "state": "SLEEPING",
+        "priority": 20,
+        "crashed": false,
+        "stack": [
+
+        ]
+      },
+      {
+        "threadNumber": 6956,
         "threadId": "NR-ANR-Monitor",
         "state": "SLEEPING",
         "priority": 10,
@@ -305,7 +682,7 @@
         ]
       },
       {
-        "threadNumber": 4139,
+        "threadNumber": 6957,
         "threadId": "OkHttp Connecti",
         "state": "SLEEPING",
         "priority": 20,
@@ -315,94 +692,10 @@
         ]
       },
       {
-        "threadNumber": 4150,
-        "threadId": "Worker-4150-4",
-        "state": "RUNNING",
-        "priority": 10,
-        "crashed": true,
-        "stack": [
-          {
-            "cstr": "#00 pc 000000000005a2a8 /apex/com.android.runtime/lib64/bionic/libc.so (syscall + 24)",
-            "index": 0,
-            "address": 128951942836904,
-            "pc": 369320,
-            "so_path": "/apex/com.android.runtime/lib64/bionic/libc.so",
-            "sym_name": "syscall",
-            "so_base": 128951942467584,
-            "sym_addr": 128951942836880,
-            "sym_addr_offset": 24
-          },
-          {
-            "cstr": "#01 pc 000000000000ee18 /data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so (crashBySignal(int) + 136)",
-            "index": 1,
-            "address": 128939423493656,
-            "pc": 60952,
-            "so_path": "/data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so",
-            "sym_name": "crashBySignal(int)",
-            "so_base": 128939423432704,
-            "sym_addr": 128939423493520,
-            "sym_addr_offset": 136
-          },
-          {
-            "cstr": "#02 pc 000000000000f97c /data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so (crashing_thread(void*) + 156)",
-            "index": 2,
-            "address": 128939423496572,
-            "pc": 63868,
-            "so_path": "/data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so",
-            "sym_name": "crashing_thread(void*)",
-            "so_base": 128939423432704,
-            "sym_addr": 128939423496416,
-            "sym_addr_offset": 156
-          },
-          {
-            "cstr": "#03 pc 00000000000c7d2b /apex/com.android.runtime/lib64/bionic/libc.so",
-            "index": 3,
-            "address": 128951943286059,
-            "pc": 818475,
-            "so_path": "/apex/com.android.runtime/lib64/bionic/libc.so",
-            "sym_name": "",
-            "so_base": 128951942467584,
-            "sym_addr": 0,
-            "sym_addr_offset": 0
-          },
-          {
-            "cstr": "#04 pc 000000000005f0c8 /apex/com.android.runtime/lib64/bionic/libc.so",
-            "index": 4,
-            "address": 128951942856904,
-            "pc": 389320,
-            "so_path": "/apex/com.android.runtime/lib64/bionic/libc.so",
-            "sym_name": "",
-            "so_base": 128951942467584,
-            "sym_addr": 0,
-            "sym_addr_offset": 0
-          }
-        ]
-      },
-      {
-        "threadNumber": 4151,
-        "threadId": "Worker-4151-4",
-        "state": "RUNNING",
-        "priority": 10,
-        "crashed": false,
-        "stack": [
-
-        ]
-      },
-      {
-        "threadNumber": 4152,
-        "threadId": "Worker-4152-4",
-        "state": "RUNNING",
-        "priority": 10,
-        "crashed": false,
-        "stack": [
-
-        ]
-      },
-      {
-        "threadNumber": 4153,
-        "threadId": "Worker-4153-4",
-        "state": "RUNNING",
-        "priority": 10,
+        "threadNumber": 6959,
+        "threadId": "Okio Watchdog",
+        "state": "SLEEPING",
+        "priority": 20,
         "crashed": false,
         "stack": [
 

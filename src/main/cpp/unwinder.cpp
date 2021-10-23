@@ -111,23 +111,10 @@ void transform_addr_to_stackframe(size_t index, uintptr_t address, stackframe_t 
 
 _Unwind_Reason_Code unwinder_cb(struct _Unwind_Context *ucontext, void *arg) {
     backtrace_state_t *state = static_cast<backtrace_state_t *>(arg);
-
-    /*
-    if (state->frame_cnt == 0) {
-        record_crashing_frame(state);
-        return _URC_NO_REASON;
-    }
-
-    // Skip any frames that belong to the signal handler frame.
-    if (state->skip_frames > 0) {
-        _LOGI("unwinder_cb[%zu]: Address skipped", state->frame_cnt);
-        state->skip_frames--;
-        return _URC_NO_REASON;
-    }
-    */
-
     int ip_before = 0;
+
     _Unwind_Ptr ip = _Unwind_GetIPInfo(ucontext, &ip_before);
+
     if (ip_before != 0) {
         // IP is before or after first not yet fully executed instruction
         _LOGI("unwinder_cb[%zu]: ip_before[%d]: address[%zu]", state->frame_cnt, ip_before, ip);

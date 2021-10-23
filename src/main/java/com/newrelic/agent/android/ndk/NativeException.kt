@@ -5,14 +5,14 @@
 
 package com.newrelic.agent.android.ndk
 
-class NativeException() : Exception("Native") {
+class NativeException(val stackTraceAsJson: String? = null) : Exception("Native") {
 
     var nativeStackTrace: NativeStackTrace? = null
 
-    constructor(stackTraceAsJson: String) : this() {
-        nativeStackTrace = NativeStackTrace(stackTraceAsJson)
-        nativeStackTrace?.stackFrames?.apply {
-            stackTrace = toTypedArray()
+    init {
+        stackTraceAsJson?.let {
+            nativeStackTrace = NativeStackTrace(stackTraceAsJson)
+            stackTrace = getStackTrace()
         }
     }
 
@@ -24,9 +24,12 @@ class NativeException() : Exception("Native") {
      * top two reporting methods), with any managed frame woven in
      */
     override fun getStackTrace(): Array<StackTraceElement> {
-        nativeStackTrace?.stackFrames?.apply {
-            return toTypedArray()
+        val stacks = mutableListOf<StackTraceElement>()
+        nativeStackTrace?.crashedThread?.getStackTrace()?.forEach {
+            it?.let {
+                stacks.add(it)
+            }
         }
-        return mutableListOf<StackTraceElement>().toTypedArray()
+        return stacks.toTypedArray()
     }
 }

@@ -62,16 +62,18 @@ class NativeStackFrameTest : TestCase() {
     }
 
     fun testAllFrames() {
-        val stackFrames = JSONObject(backtrace).getJSONObject("backtrace").getJSONArray("stack")
-        val allFrames = NativeStackFrame.allFrames(stackFrames)
-        Assert.assertTrue(allFrames[0] is StackTraceElement)
-        Assert.assertTrue(allFrames.size > 1)
+        val allFrames = NativeStackTrace(backtrace).crashedThread?.getStackTrace()
+        Assert.assertTrue(allFrames?.size!! > 0)
+        Assert.assertTrue(allFrames?.get(0) is StackTraceElement)
     }
 
     fun testAllNativeFrames() {
-        val stackFrames = JSONObject(backtrace).getJSONObject("backtrace").getJSONArray("stack")
+        val stackFrames = JSONObject(backtrace)
+            .getJSONObject("backtrace")
+            .getJSONArray("threads")
+            .getJSONObject(0)
+            .getJSONArray("stack")
         val allFrames = NativeStackFrame.allNativeFrames(stackFrames)
         Assert.assertTrue(allFrames[0] is NativeStackFrame)
-        Assert.assertTrue(allFrames.size > 1)
     }
 }

@@ -5,18 +5,17 @@
 
 package com.newrelic.agent.android.ndk
 
-import com.newrelic.agent.android.harvest.crash.ThreadInfo
 import org.json.JSONObject
 
-class NativeStackTrace(val exception: Exception) {
-
-    val stackFrames: MutableList<StackTraceElement> = mutableListOf()
+class NativeStackTrace(stackTraceAsString: String? = null) {
     var crashedThread: NativeThreadInfo? = null
     var threads: MutableList<NativeThreadInfo> = mutableListOf()
     var exceptionMessage: String? = "Native exception"
 
-    constructor(stackTraceAsString: String = "{}") : this(Exception("Native stacktrace")) {
-        transformNativeStackTrace(stackTraceAsString)
+    init {
+        stackTraceAsString?.let {
+            transformNativeStackTrace(it)
+        }
     }
 
     private fun transformNativeStackTrace(stackTraceAsString: String?): NativeStackTrace {
@@ -43,20 +42,11 @@ class NativeStackTrace(val exception: Exception) {
                     }
 
                     try {
-                        getJSONArray("stack")?.apply {
-                            stackFrames.addAll(NativeStackFrame.allFrames(this))
-                        }
-                    } catch (ignored: Exception) {
-                        ignored.printStackTrace()
-                    }
-
-                    try {
                         getJSONArray("threads")?.apply {
                             threads = NativeThreadInfo.allThreads(this)
                             threads.find() {
                                 it.isCrashingThread()
                             }?.apply {
-                                this.setStackTrace(stackFrames.toTypedArray())
                                 crashedThread = this
                             }
                         }

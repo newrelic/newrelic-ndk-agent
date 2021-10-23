@@ -55,19 +55,9 @@ typedef struct backtrace_state {
     uintptr_t crash_ip;
     const ucontext_t *sa_ucontext;
     const siginfo_t *siginfo;
-} backtrace_state_t;
 
+}   backtrace_state_t;
 
-/**
- * Metadata about the signal that caused the violation
- */
-typedef struct violation {
-    char cause[32];             // translation of signal
-    char signal_name[16];       // literal name of signal
-    int signal_code;            // signal sub-code
-    uintptr_t fault_address;    // address (ip) of violation
-
-} violation_t;
 
 /**
  * A stackframe represents the resolved address data for a single calling frame
@@ -82,7 +72,7 @@ typedef struct stackframe {
     uintptr_t sym_addr;         // Address of nearest symbol
     uintptr_t sym_addr_offset;  // Offset from symbol
 
-} stackframe_t;
+}   stackframe_t;
 
 /**
  * Thread state metadata
@@ -94,9 +84,10 @@ typedef struct threadinfo {
     char thread_state[16];      // State of thread (as reported in /procfs)
     int priority;               // Priority of thread (as reported in /procfs)
     uintptr_t stack;            // Stack address (base)
-    uintptr_t frames[BACKTRACE_FRAMES_MAX]; // TBA
 
-} threadinfo_t;
+    backtrace_state_t*  backtrace_state;
+
+}   threadinfo_t;
 
 
 /**
@@ -114,7 +105,7 @@ typedef struct backtrace {
 
     std::vector<threadinfo_t> threads;
 
-} backtrace_t;
+}   backtrace_t;
 
 
 #endif // _AGENT_NDK_BACKTRACE_H

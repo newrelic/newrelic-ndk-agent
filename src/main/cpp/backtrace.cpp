@@ -108,11 +108,9 @@ void collect_thread_info(int tid, threadinfo_t &threadinfo) {
     }
 
     threadinfo.crashed = (tid == gettid());
-
-    // TODO threadinfo.stackframes[]
 }
 
-void collect_thread_state(std::vector <threadinfo_t>& threads) {
+void collect_thread_state(backtrace &backtrace) {
     std::string path;
     const char *taskPath = procfs::get_task_path(getpid(), path);
 
@@ -121,13 +119,16 @@ void collect_thread_state(std::vector <threadinfo_t>& threads) {
         // iterate through this process' threads gathering info on each thread
         struct dirent *_dirent;
         while ((_dirent = readdir(dir)) != nullptr &&
-               (threads.size() < BACKTRACE_THREADS_MAX)) {
+               (backtrace.threads.size() < BACKTRACE_THREADS_MAX)) {
             // only interested in numeric directories (representing thread ids)
             if (isdigit(_dirent->d_name[0])) {
                 pid_t tid = std::strtol(_dirent->d_name, nullptr, 10);
                 threadinfo_t threadinfo = {};
                 collect_thread_info(tid, threadinfo);
-                threads.push_back(threadinfo);
+                if (threadinfo.crashed && backtrace.state.frame_cnt > 0) {
+                    threadinfo.backtrace_state = &backtrace.state;
+                }
+                backtrace.threads.push_back(threadinfo);
             }
         }
         closedir(dir);
@@ -145,6 +146,9 @@ bool collect_backtrace(char *backtrace_buffer,
     backtrace.state.sa_ucontext = sa_ucontext;
     backtrace.state.siginfo = siginfo;
 
+    // unwind the current thread's stacktrace asap
+    unwind_backtrace(backtrace.state);
+
     std::strncpy(backtrace.arch, get_arch(), sizeof(backtrace.arch));
     std::strncpy(backtrace.description,
                  sigutils::get_signal_description(siginfo->si_signo, siginfo->si_code),
@@ -156,12 +160,12 @@ bool collect_backtrace(char *backtrace_buffer,
     backtrace.ppid = getppid();
     backtrace.threads.clear();
 
-    state.reserve(BACKTRACE_SZ_MAX);
+    state.reserve(BACKTRACE_SZ_MAX >> 1);
 
-    unwind_backtrace(backtrace.state);
-    collect_thread_state(backtrace.threads);
+    // then collect the threads, passing the backtrace state to the crashing thread
+    collect_thread_state(backtrace);
 
-    std::string emitted = emit_backtrace(backtrace, state);
+        std::string emitted = emit_backtrace(backtrace, state);
 
     size_t str_size = emitted.size();
     size_t copy_size = std::min(str_size, max_size - 2);

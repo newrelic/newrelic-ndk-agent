@@ -6,7 +6,6 @@ import junit.framework.TestCase
 class NativeExceptionTest : TestCase() {
 
     val backtrace = this::class.java.classLoader.getResource("backtrace.json").readText()
-
     lateinit var nativeException: NativeException
 
     public override fun setUp() {
@@ -18,23 +17,24 @@ class NativeExceptionTest : TestCase() {
     }
 
     fun testGetMessage() {
-        Assert.assertTrue(nativeException.message!!.startsWith("SIGILL (code -6)"))
+        Assert.assertTrue(nativeException.message!!.startsWith("SIG"))
     }
 
     fun testGetNativeStackFrames() {
-        Assert.assertNotNull(nativeException.nativeStackTrace?.stackFrames)
-        Assert.assertTrue(nativeException.nativeStackTrace?.stackFrames?.size!! > 1)
-        Assert.assertTrue(nativeException.nativeStackTrace!!.stackFrames[0] is StackTraceElement)
+        val stacktrace = nativeException.nativeStackTrace?.crashedThread?.getStackTrace()
+        Assert.assertNotNull(stacktrace)
+        Assert.assertTrue(stacktrace?.size!! > 0)
+        Assert.assertTrue(stacktrace[0] is StackTraceElement)
     }
 
     fun testGetStackFrame() {
         Assert.assertNotNull(nativeException.stackTrace)
-        Assert.assertTrue(nativeException?.stackTrace.size > 1)
+        Assert.assertTrue(nativeException?.stackTrace.size > 0)
         Assert.assertTrue(nativeException!!.stackTrace[0] is StackTraceElement)
     }
 
     fun testGetAllThreads() {
-        Assert.assertTrue(nativeException.nativeStackTrace!!.threads.size > 1)
+        Assert.assertTrue(nativeException.nativeStackTrace!!.threads.size > 0)
     }
 
     fun testReportsOnlyNativeFrames() {
@@ -43,8 +43,9 @@ class NativeExceptionTest : TestCase() {
     }
 
     fun testFillInStackTrace() {
+        nativeException = NativeException(backtrace)
         var frames = nativeException.fillInStackTrace()
-        Assert.assertTrue(frames.stackTrace.size > 1)
+        Assert.assertTrue(frames.stackTrace.size > 0)
     }
 
 }

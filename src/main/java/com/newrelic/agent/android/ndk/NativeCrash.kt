@@ -5,41 +5,33 @@
 
 package com.newrelic.agent.android.ndk
 
-import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.newrelic.agent.android.analytics.AnalyticsAttribute
 import com.newrelic.agent.android.analytics.AnalyticsEvent
 import com.newrelic.agent.android.crash.Crash
-import com.newrelic.agent.android.harvest.crash.ExceptionInfo
 import com.newrelic.agent.android.harvest.crash.ThreadInfo
+import com.newrelic.agent.android.util.SafeJsonPrimitive
+import java.util.*
 
-/**
- * TODO Address dependency on agent-core
- */
+class NativeCrash(val nativeException: NativeException?,
+                  sessionAttributes: Set<AnalyticsAttribute?>? = HashSet<AnalyticsAttribute>(),
+                  events: Collection<AnalyticsEvent?>? = HashSet<AnalyticsEvent>())
+        : Crash(nativeException, sessionAttributes, events, true) {
 
-class NativeCrash : Crash {
-    constructor(
-        throwable: Throwable?, sessionAttributes: Set<AnalyticsAttribute?>?,
-        events: Collection<AnalyticsEvent?>?, analyticsEnabled: Boolean
-    ) : super(throwable, sessionAttributes, events, analyticsEnabled) {
+    constructor(crashAsJson: String) : this(NativeException(crashAsJson)) {
+
     }
 
-    constructor(throwable: Throwable?) : super(throwable) {}
-
-    override fun getExceptionInfo(): ExceptionInfo {
-        return super.getExceptionInfo()
+    override fun toJsonString(): String {
+        return super.toJsonString()
     }
 
     override fun asJsonObject(): JsonObject {
-
-        // data.add("threads", getThreadsAsJson());
-        // data.add("native", getThreadsAsJson());
-
-        return super.asJsonObject()
-    }
-
-    override fun getThreadsAsJson(): JsonArray {
-        return super.getThreadsAsJson()
+        val data = super.asJsonObject()
+        nativeException?.stackTraceAsJson?.let {
+            data.add("native", SafeJsonPrimitive.factory(it))
+        }
+        return data
     }
 
     fun extractNativeThreads(nativeException: NativeException): List<ThreadInfo> {
@@ -56,6 +48,10 @@ class NativeCrash : Crash {
         }
 
         return super.extractThreads(throwable)
+    }
+
+    override fun getAppToken(): String {
+        return super.getAppToken()
     }
 
     override fun toString(): String {

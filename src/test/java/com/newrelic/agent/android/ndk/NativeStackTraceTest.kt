@@ -5,7 +5,7 @@ import junit.framework.TestCase
 import java.lang.RuntimeException
 
 class NativeStackTraceTest : TestCase() {
-    var nativeCrashStack: NativeStackTrace? = NativeStackTrace(RuntimeException())
+    var nativeCrashStack: NativeStackTrace? = NativeStackTrace()
     val backtrace = this::class.java.classLoader.getResource("backtrace.json").readText()
 
     public override fun setUp() {
@@ -13,7 +13,7 @@ class NativeStackTraceTest : TestCase() {
     }
 
     fun testFromThrowable() {
-        Assert.assertNotNull(NativeStackTrace(NativeException()))
+        Assert.assertNotNull(NativeStackTrace())
     }
 
     fun testGetThreads() {
@@ -36,14 +36,14 @@ class NativeStackTraceTest : TestCase() {
     }
 
     fun testGetStackFrames() {
-        Assert.assertNotNull(nativeCrashStack?.stackFrames)
-        Assert.assertFalse(nativeCrashStack?.stackFrames!!.isEmpty())
-        Assert.assertTrue(nativeCrashStack?.stackFrames!!.size > 1)
+        Assert.assertNotNull(nativeCrashStack?.crashedThread)
+        Assert.assertNotNull(nativeCrashStack?.crashedThread?.getStackTrace())
+        Assert.assertTrue(nativeCrashStack?.crashedThread?.getStackTrace()?.size!! > 0)
     }
 
     fun testGetExceptionMessage() {
         Assert.assertNotNull(nativeCrashStack?.exceptionMessage)
-        Assert.assertTrue(nativeCrashStack?.exceptionMessage!!.startsWith("SIGILL (code -6)"))
+        Assert.assertTrue(nativeCrashStack?.exceptionMessage!!.startsWith("SIG"))
     }
 
 }
