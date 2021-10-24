@@ -1,0 +1,6 @@
+{
+  "className": "com.newrelic.android.test.NativeStackFrame",
+  "methodName": "<init>",
+  "fileName": "NativeStackFrame.kt",
+  "lineNumber": "-2"
+}

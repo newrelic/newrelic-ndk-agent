@@ -1,0 +1,27 @@
+failed to read /proc/uptime: Permission denied
+*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+Build fingerprint: 'google/blueline/blueline:S/SPB2.210513.011/7465093:user/release-keys'
+Revision: 'MP1.0'
+ABI: 'arm64'
+Timestamp: 2021-10-15 09:15:01.389243981-0700
+Process uptime: 0s
+Cmdline: com.newrelic.agent.android.ndk.test
+pid: 15947, tid: 15982, name: Worker-15982-4  >>> com.newrelic.agent.android.ndk.test <<<
+uid: 10306
+signal 4 (SIGILL), code -6 (SI_TKILL), fault addr --------
+    x0  0000000000000000  x1  0000000000003e6e  x2  0000000000000004  x3  0000000000000030
+    x4  8080000000000000  x5  feff332c31373834  x6  feff332c31373834  x7  7f7f7f7f7f7f7f7f
+    x8  0000000000000083  x9  0000006d23c14c00  x10 fffffffffffe43e0  x11 0000000000000001
+    x12 0000006d888b3440  x13 0000000000000033  x14 0000006d888b4788  x15 00118f7f83e45fb1
+    x16 0000006d23c3dd38  x17 000000703331d280  x18 0000006d87e3e000  x19 0000006d888b4cb0
+    x20 0000007033394000  x21 0000006d888b4cb0  x22 0000000000003e4b  x23 0000000000003e4b
+    x24 0000006d888b4cb0  x25 0000006d888b4cb0  x26 0000006d888b4ff8  x27 00000000000fc000
+    x28 0000006d887bc000  x29 0000006d888b4bd0
+    lr  0000006d23c14c28  sp  0000006d888b4ba0  pc  000000703331d2a0  pst 0000000000000000
+backtrace:
+      #00 pc 000000000004c2a0  /apex/com.android.runtime/lib64/bionic/libc.so (syscall+32) (BuildId: 8955af85d8857f3d34c01c417042bb85)
+      #01 pc 000000000000ec24  /data/app/~~jOsOsfrZM8HJbvwb74ib3w==/com.newrelic.agent.android.ndk.test-no6hrvyW9S-O9LtdfRyoPw==/base.apk!libnative-lib.so (crashBySignal(int)+160) (BuildId: e405b481cba3c8ed8a36d54b08701bb49d30410b)
+      #02 pc 000000000000f604  /data/app/~~jOsOsfrZM8HJbvwb74ib3w==/com.newrelic.agent.android.ndk.test-no6hrvyW9S-O9LtdfRyoPw==/base.apk!libnative-lib.so (crashing_thread(void*)+204) (BuildId: e405b481cba3c8ed8a36d54b08701bb49d30410b)
+      #03 pc 00000000000b191c  /apex/com.android.runtime/lib64/bionic/libc.so (__pthread_start(void*)+260) (BuildId: 8955af85d8857f3d34c01c417042bb85)
+      #04 pc 00000000000513cc  /apex/com.android.runtime/lib64/bionic/libc.so (__start_thread+64) (BuildId: 8955af85d8857f3d34c01c417042bb85)
+: Tombstone written to: tombstone_17

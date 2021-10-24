@@ -1,0 +1,57 @@
+/**
+ * Copyright 2021-present New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#ifndef _AGENT_NDK_AGENT_NDK_H
+#define _AGENT_NDK_AGENT_NDK_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <jni.h>
+#include <string.h>
+#include <signal.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <fcntl.h>
+#include <pthread.h>
+#include <sys/cdefs.h>
+#include <sys/system_properties.h>
+#include <sys/types.h>
+
+#pragma once
+
+#ifndef AGENT_VERSION
+#define AGENT_VERSION "6.FIXME"
+#endif  // !AGENT_VERSION
+
+static const char *TAG = "newrelic";
+
+// Limit backtrace to 100 frames
+static const size_t BACKTRACE_FRAMES_MAX = 100;
+
+// Limit each frame to 1k
+static const size_t BACKTRACE_FRAMES_SZ_MAX = 1024;
+
+// Limit backtrace to 100 threads
+static const size_t BACKTRACE_THREADS_MAX = 100;
+
+// Limit backtrace to 1Mb
+static const size_t BACKTRACE_SZ_MAX = 0x100000;
+
+// Return label representing  current architecture
+const char *get_arch();
+
+// return true if cpu is 32bit
+bool arch_is_32b();
+
+#include <android/log.h>
+
+#define  _LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,   TAG, __VA_ARGS__)
+#define  _LOGW(...)  __android_log_print(ANDROID_LOG_WARN,    TAG, __VA_ARGS__)
+#define  _LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,   TAG, __VA_ARGS__)
+#define  _LOGI(...)  __android_log_print(ANDROID_LOG_INFO,    TAG, __VA_ARGS__)
+#define  _LOGV(...)  __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)
+
+#endif // _AGENT_NDK_AGENT_NDK_H
