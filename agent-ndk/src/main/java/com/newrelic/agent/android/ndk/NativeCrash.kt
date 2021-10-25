@@ -5,12 +5,10 @@
 
 package com.newrelic.agent.android.ndk
 
-import com.google.gson.JsonObject
 import com.newrelic.agent.android.analytics.AnalyticsAttribute
 import com.newrelic.agent.android.analytics.AnalyticsEvent
 import com.newrelic.agent.android.crash.Crash
 import com.newrelic.agent.android.harvest.crash.ThreadInfo
-import com.newrelic.agent.android.util.SafeJsonPrimitive
 import java.util.*
 
 class NativeCrash(val nativeException: NativeException?,
@@ -24,14 +22,6 @@ class NativeCrash(val nativeException: NativeException?,
 
     override fun toJsonString(): String {
         return super.toJsonString()
-    }
-
-    override fun asJsonObject(): JsonObject {
-        val data = super.asJsonObject()
-        nativeException?.stackTraceAsJson?.let {
-            data.add("native", SafeJsonPrimitive.factory(it))
-        }
-        return data
     }
 
     fun extractNativeThreads(nativeException: NativeException): List<ThreadInfo> {

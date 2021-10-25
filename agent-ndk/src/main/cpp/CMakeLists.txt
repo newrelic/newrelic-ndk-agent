@@ -73,7 +73,7 @@ target_link_libraries(agent-ndk-a ${log-lib})
 # Include testing framework(s) and test app
 ## FIXME include(UnitTests.cmake)
 
-set(GOOGLETEST_ROOT ${ANDROID_NDK}/sources/third_party/googletest/googletest)
+# set(GOOGLETEST_ROOT ${ANDROID_NDK}/sources/third_party/googletest/googletest)
 # add_library(gtest STATIC ${GOOGLETEST_ROOT}/src/gtest_main.cc ${GOOGLETEST_ROOT}/src/gtest-all.cc)
 # target_include_directories(gtest PRIVATE ${GOOGLETEST_ROOT})
 # target_include_directories(gtest PUBLIC ${GOOGLETEST_ROOT}/include)

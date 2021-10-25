@@ -7,7 +7,7 @@ package com.newrelic.agent.android.ndk
 
 import android.content.Context
 import com.newrelic.agent.android.logging.AgentLog
-import com.newrelic.agent.android.metric.MetricNames
+import com.newrelic.agent.android.logging.ConsoleAgentLog
 import com.newrelic.agent.android.stats.StatsEngine
 import java.io.File
 import java.util.*
@@ -18,17 +18,32 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
     var managedContext: ManagedContext? = managedContext
 
     /**
-     * API methods callable from agent
+     * API methods
      **/
     external fun nativeStart(context: ManagedContext? = null): Boolean
     external fun nativeStop()
-    external fun setNativeContext(context: ManagedContext)
+    external fun nativeSetContext(context: ManagedContext)
+
     external fun crashNow(cause: String? = "This is a demonstration native crash courtesy of New Relic")
     external fun dumpStack(): String
     external fun isRootedDevice(): Boolean
 
     companion object {
-        var log: AgentLog = NativeLogger()
+        internal interface AnalyticsAttribute {
+            companion object {
+                const val APPLICATION_PLATFORM_ATTRIBUTE = "platform"
+            }
+        }
+
+        internal interface MetricNames {
+            companion object {
+                const val SUPPORTABILITY_NATIVE_CRASH = "Supportability/AgentHealth/Crash/NativeReporting"
+                const val SUPPORTABILITY_NATIVE_LOAD_ERR = "$SUPPORTABILITY_NATIVE_CRASH/Error/LoadLibrary"
+            }
+        }
+
+        @Volatile
+        var log: AgentLog = ConsoleAgentLog()
 
         @Volatile
         private var agentNdk: AgentNDK? = null
@@ -73,13 +88,11 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
             ANRMonitor.getInstance().startMonitor()
         }
 
-        // flushPendingReports()
-
         return nativeStart(managedContext!!)
     }
 
     fun stop() {
-        if (managedContext?.anrMonitor == true) {
+        managedContext?.anrMonitor.let {
             ANRMonitor.getInstance().stopMonitor()
         }
         nativeStop()
@@ -93,17 +106,17 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
                 if (exists() && canRead()) {
                     listFiles()?.let {
                         for (report in it) {
-                            if (report.lastModified() < (System.currentTimeMillis() - managedContext?.reportTTL!!)) {
-                                log.error("Report [${report.name}] is too old, deleting...")
-                                report.deleteOnExit()
-                                continue;
-                            }
                             try {
                                 if (postReport(report)) {
-                                    log.debug("Native report [${report.name}] submitted to New Relic")
+                                    log.info("Native report [${report.name}] submitted to New Relic")
                                 }
                             } catch (e: Exception) {
                                 log.warning("Failed to parse/write native report [${report.name}: $e")
+                            }
+
+                            if (report.lastModified() < (System.currentTimeMillis() - managedContext?.expirationPeriod!!)) {
+                                log.info("Report [${report.name}] is too old, deleting...")
+                                report.deleteOnExit()
                             }
                         }
                     }
@@ -185,6 +198,11 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
             return this
         }
 
+        fun withExpiration(expirationPeriod: Long): Builder {
+            managedContext.expirationPeriod = expirationPeriod
+            return this
+        }
+
         fun withLogger(agentLog: AgentLog): Builder {
             AgentNDK.log = agentLog
             return this
@@ -195,6 +213,7 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
             agentNdk = AgentNDK(managedContext)
             return getInstance()
         }
+
     }
 
 }

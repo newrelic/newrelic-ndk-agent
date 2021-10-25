@@ -6,8 +6,6 @@
 
 package com.newrelic.agent.android.ndk
 
-import java.util.*
-
 class JVMDelegate() {
 
     /**

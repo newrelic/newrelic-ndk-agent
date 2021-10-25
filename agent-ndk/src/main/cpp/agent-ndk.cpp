@@ -128,7 +128,7 @@ Java_com_newrelic_agent_android_ndk_AgentNDK_isRootedDevice(JNIEnv * env, jobjec
 }
 
 extern "C"
-JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_setNativeContext(JNIEnv *env, jobject thiz, jobject managedContext) {
+JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeSetContext(JNIEnv *env, jobject thiz, jobject managedContext) {
     (void) thiz;
     jni::set_native_context(env, managedContext);
 }

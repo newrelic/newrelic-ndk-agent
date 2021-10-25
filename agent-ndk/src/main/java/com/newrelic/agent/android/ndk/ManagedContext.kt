@@ -19,10 +19,9 @@ class ManagedContext(context: Context? = null) {
     var buildId: String? = null
     var reportsDir: File? = getNativeReportsDir(context?.cacheDir)
     var libDir: File? = getNativeLibraryDir(context)
-    val ipc: ByteBuffer = ByteBuffer.allocateDirect(0x10000)
     var nativeReportListener: AgentNDKListener? = null
     var anrMonitor: Boolean = false
-    val reportTTL = DEFAULT_TTL
+    var expirationPeriod = DEFAULT_TTL
 
     fun getNativeReportsDir(rootDir: File?): File {
         return File("${rootDir?.absolutePath}/newrelic/reports")
@@ -44,7 +43,7 @@ class ManagedContext(context: Context? = null) {
     }
 
     companion object {
-        val DEFAULT_TTL = TimeUnit.MILLISECONDS.convert(3, TimeUnit.DAYS)
+        val DEFAULT_TTL = TimeUnit.MILLISECONDS.convert(7, TimeUnit.DAYS)
     }
 
 }

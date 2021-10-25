@@ -51,11 +51,6 @@ class ManagedContextTest : TestCase(), AgentNDKListener {
     }
 
     @Test
-    fun testGetIpc() {
-        Assert.assertTrue(managedContext?.ipc is ByteBuffer)
-    }
-
-    @Test
     fun testGetNdkListener() {
         Assert.assertNull(managedContext?.nativeReportListener)
     }
@@ -73,9 +68,9 @@ class ManagedContextTest : TestCase(), AgentNDKListener {
     }
 
     @Test
-    fun testGetTTL() {
-        Assert.assertEquals(managedContext?.reportTTL, ManagedContext.DEFAULT_TTL)
-        Assert.assertEquals(managedContext?.reportTTL, TimeUnit.MILLISECONDS.convert(72, TimeUnit.HOURS))
+    fun testExpirationPeriod() {
+        Assert.assertEquals(managedContext?.expirationPeriod, ManagedContext.DEFAULT_TTL)
+        Assert.assertEquals(managedContext?.expirationPeriod, TimeUnit.MILLISECONDS.convert(7, TimeUnit.DAYS))
     }
 
     override fun onNativeCrash(crashAsString: String?): Boolean {

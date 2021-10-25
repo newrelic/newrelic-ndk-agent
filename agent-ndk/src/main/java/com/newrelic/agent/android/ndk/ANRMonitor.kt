@@ -50,14 +50,15 @@ open class ANRMonitor {
                         ) {
                             return@synchronized
                         }
+
                         val attributes: HashMap<String?, Any?> = object : HashMap<String?, Any?>() {
                             init {
-                                put(AnalyticsAttribute.APPLICATION_PLATFORM_ATTRIBUTE, "native")
+                                put(AgentNDK.Companion.AnalyticsAttribute.APPLICATION_PLATFORM_ATTRIBUTE, "native")
                                 put("ANR", "true")
                             }
                         }
-                        val exceptionToHandle: Exception =
-                            InterruptedException("Application not responding")
+
+                        val exceptionToHandle: Exception = NativeException("Application not responding")
                         if (!AgentDataController.sendAgentData(exceptionToHandle, attributes)) {
                             AgentNDK.log.error("AgentDataController not initialized")
                             stopMonitor()
