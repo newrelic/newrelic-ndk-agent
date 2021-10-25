@@ -6,15 +6,13 @@
 
 package com.newrelic.agent.android.ndk
 
-import java.util.*
-
 class JVMDelegate() {
 
     /**
      * A native crash has been detected and forwarded to this method
      */
     fun onNativeCrash(crashAsString: String?) {
-        AgentNDK.log.debug("onNativeCrash: $crashAsString")
+        AgentNDK.log.config("onNativeCrash: $crashAsString")
         AgentNDK.getInstance().managedContext?.nativeReportListener?.run {
             onNativeCrash(crashAsString)
         }
@@ -24,7 +22,7 @@ class JVMDelegate() {
      * A native runtime exception has been detected and forwarded to this method
      */
     fun onNativeException(exceptionAsString: String?) {
-        AgentNDK.log.debug("onNativeException: $exceptionAsString")
+        AgentNDK.log.config("onNativeException: $exceptionAsString")
         AgentNDK.getInstance().managedContext?.nativeReportListener?.run {
             onNativeException(exceptionAsString)
         }
@@ -34,7 +32,7 @@ class JVMDelegate() {
      * ANR condition has been detected and forwarded to this method
      */
     fun onApplicationNotResponding(anrAsString: String?) {
-        AgentNDK.log.debug("onApplicationNotResponding: $anrAsString")
+        AgentNDK.log.config("onApplicationNotResponding: $anrAsString")
         AgentNDK.getInstance().managedContext?.nativeReportListener?.run {
             onApplicationNotResponding(anrAsString)
         }

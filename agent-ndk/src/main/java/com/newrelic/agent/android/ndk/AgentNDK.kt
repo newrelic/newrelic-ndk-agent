@@ -6,19 +6,17 @@
 package com.newrelic.agent.android.ndk
 
 import android.content.Context
-import com.newrelic.agent.android.logging.AgentLog
-import com.newrelic.agent.android.metric.MetricNames
-import com.newrelic.agent.android.stats.StatsEngine
 import java.io.File
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
+import java.util.logging.Logger
 
 open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
     val lock = ReentrantLock()
     var managedContext: ManagedContext? = managedContext
 
     /**
-     * API methods callable from agent
+     * API methods
      **/
     external fun nativeStart(context: ManagedContext? = null): Boolean
     external fun nativeStop()
@@ -28,7 +26,20 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
     external fun isRootedDevice(): Boolean
 
     companion object {
-        var log: AgentLog = NativeLogger()
+        var log: Logger = Logger.getGlobal()
+
+        internal interface AnalyticsAttribute {
+            companion object {
+                const val APPLICATION_PLATFORM_ATTRIBUTE = "platform"
+            }
+        }
+
+        internal interface MetricNames {
+            companion object {
+                const val SUPPORTABILITY_NATIVE_CRASH = "Supportability/AgentHealth/Crash/NativeReporting"
+                const val SUPPORTABILITY_NATIVE_LOAD_ERR = "$SUPPORTABILITY_NATIVE_CRASH/Error/LoadLibrary"
+            }
+        }
 
         @Volatile
         private var agentNdk: AgentNDK? = null
@@ -38,16 +49,16 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
             try {
                 System.loadLibrary("agent-ndk")
                 log.info("Agent NDK loaded")
-                StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_CRASH)
+                // StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_CRASH)
 
             } catch (e: UnsatisfiedLinkError) {
                 if ("Dalvik".equals(System.getProperty("java.vm.name"))) {
-                    StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_LOAD_ERR)
+                    // StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_LOAD_ERR)
                     throw e
                 }
             } catch (e: Exception) {
                 log.info("Agent NDK load failed: " + e.localizedMessage)
-                StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_LOAD_ERR)
+                // StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_LOAD_ERR)
                 return false
             }
 
@@ -73,8 +84,6 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
             ANRMonitor.getInstance().startMonitor()
         }
 
-        // flushPendingReports()
-
         return nativeStart(managedContext!!)
     }
 
@@ -94,13 +103,13 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
                     listFiles()?.let {
                         for (report in it) {
                             if (report.lastModified() < (System.currentTimeMillis() - managedContext?.reportTTL!!)) {
-                                log.error("Report [${report.name}] is too old, deleting...")
+                                log.config("Report [${report.name}] is too old, deleting...")
                                 report.deleteOnExit()
                                 continue;
                             }
                             try {
                                 if (postReport(report)) {
-                                    log.debug("Native report [${report.name}] submitted to New Relic")
+                                    log.severe("Native report [${report.name}] submitted to New Relic")
                                 }
                             } catch (e: Exception) {
                                 log.warning("Failed to parse/write native report [${report.name}: $e")
@@ -140,7 +149,7 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
                     if (report.delete()) {
                         log.info("Deleted native report data [${report.absolutePath}")
                     } else {
-                        log.error("Failed to delete native report [${report.absolutePath}]")
+                        log.severe("Failed to delete native report [${report.absolutePath}]")
                     }
                 }
             }
@@ -185,7 +194,7 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
             return this
         }
 
-        fun withLogger(agentLog: AgentLog): Builder {
+        fun withLogger(agentLog: Logger): Builder {
             AgentNDK.log = agentLog
             return this
         }

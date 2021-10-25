@@ -9,8 +9,6 @@ import android.os.Debug
 import android.os.Handler
 import android.os.Looper
 import com.newrelic.agent.android.agentdata.AgentDataController
-import com.newrelic.agent.android.analytics.AnalyticsAttribute
-import com.newrelic.agent.android.util.NamedThreadFactory
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -26,9 +24,7 @@ open class ANRMonitor {
     var future: Future<*>? = null
     val handler: Handler = Handler(Looper.getMainLooper())
     var disableWhileDebugging = false
-    val executor = Executors.newSingleThreadExecutor(
-        NamedThreadFactory("NR-ANRMonitor")
-    )
+    val executor = Executors.newSingleThreadExecutor()
 
     private val anrMonitorRunner = Runnable {
         while (!Thread.interrupted()) {
@@ -50,16 +46,17 @@ open class ANRMonitor {
                         ) {
                             return@synchronized
                         }
+
                         val attributes: HashMap<String?, Any?> = object : HashMap<String?, Any?>() {
                             init {
-                                put(AnalyticsAttribute.APPLICATION_PLATFORM_ATTRIBUTE, "native")
+                                put(AgentNDK.Companion.AnalyticsAttribute.APPLICATION_PLATFORM_ATTRIBUTE, "native")
                                 put("ANR", "true")
                             }
                         }
-                        val exceptionToHandle: Exception =
-                            InterruptedException("Application not responding")
+
+                        val exceptionToHandle: Exception = NativeException("Application not responding")
                         if (!AgentDataController.sendAgentData(exceptionToHandle, attributes)) {
-                            AgentNDK.log.error("AgentDataController not initialized")
+                            AgentNDK.log.severe("AgentDataController not initialized")
                             stopMonitor()
                         }
 
@@ -85,7 +82,7 @@ open class ANRMonitor {
     fun startMonitor() {
         stopMonitor()
         future = executor.submit(anrMonitorRunner)
-        AgentNDK.log.debug("ANR monitor started with [$DEFAULT_ANR_TIMEOUT]ms delay")
+        AgentNDK.log.config("ANR monitor started with [$DEFAULT_ANR_TIMEOUT]ms delay")
     }
 
     fun stopMonitor() {
@@ -94,7 +91,7 @@ open class ANRMonitor {
             false -> future?.get()
         }
         future?.apply { future = null }
-        AgentNDK.log.debug("ANR monitor stopped")
+        AgentNDK.log.config("ANR monitor stopped")
     }
 
     fun isRunning(): Boolean {

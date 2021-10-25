@@ -15,12 +15,6 @@ class NativeCrashTest : TestCase() {
         nativeCrash = NativeCrash(exception)
     }
 
-    fun testAaJsonObject() {
-        val jobj = nativeCrash.asJsonObject()
-        Assert.assertTrue(jobj.has("native"))
-        Assert.assertNotNull(jobj.get("native"))
-    }
-
     fun testExtractNativeThreads() {
         val threads = nativeCrash.extractNativeThreads(exception)
         Assert.assertFalse(threads.isEmpty())
