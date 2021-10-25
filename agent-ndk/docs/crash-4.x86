@@ -1,0 +1,19 @@
+*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+Build fingerprint: 'google/sdk_gphone_x86/generic_x86:10/QSR1.190920.001/5891938:user/release-keys'
+Revision: '0'
+ABI: 'x86'
+Timestamp: 2021-10-18 17:55:40-0700
+pid: 16581, tid: 16789, name: Worker-16789-4  >>> com.newrelic.agent.android.ndk.test <<<
+uid: 10224
+signal 4 (SIGILL), code -6 (SI_TKILL), fault addr --------
+    eax 00000000  ebx 000040c5  ecx 00004195  edx 00000004
+    edi 0000000f  esi 00000010
+    ebp bde2a705  esp bdc440f8  eip e965dad9
+
+backtrace:
+      #00 pc 00000ad9  [vdso] (__kernel_vsyscall+9)
+      #01 pc 00092328  /apex/com.android.runtime/lib/bionic/libc.so (syscall+40) (BuildId: 76290498408016ad14f4b98c3ab6c65c)
+      #02 pc 00008544  /data/app/com.newrelic.agent.android.ndk.test-WoOqBPrkfrign92S6NN1jw==/base.apk!libnative-lib.so (offset 0x1000) (crashBySignal(int)+164) (BuildId: c0cb2d74fe71797df3f268a45ff8ac4c07d0a4f3)
+      #03 pc 0000923a  /data/app/com.newrelic.agent.android.ndk.test-WoOqBPrkfrign92S6NN1jw==/base.apk!libnative-lib.so (offset 0x1000) (crashing_thread(void*)+218) (BuildId: c0cb2d74fe71797df3f268a45ff8ac4c07d0a4f3)
+      #04 pc 0011a8e5  /apex/com.android.runtime/lib/bionic/libc.so (__pthread_start(void*)+53) (BuildId: 76290498408016ad14f4b98c3ab6c65c)
+      #05 pc 000af6a7  /apex/com.android.runtime/lib/bionic/libc.so (__start_thread+71) (BuildId: 76290498408016ad14f4b98c3ab6c65c)
