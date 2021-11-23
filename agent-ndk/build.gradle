@@ -7,7 +7,7 @@ def withThirdPartySupport = false
 
 android {
     compileSdkVersion versions.agp.compileSdk
-    buildToolsVersion versions.agp.buildTools
+    // buildToolsVersion versions.agp.buildTools
     ndkVersion versions.agp.ndk
 
     defaultConfig {
@@ -76,7 +76,9 @@ android {
 }
 
 dependencies {
-    implementation project(path: ':agent-core', configuration: 'default')
+    // implementation newrelic.deps.agent
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin.plugin}"
 
     // https://android-developers.googleblog.com/2020/02/native-dependencies-in-android-studio-40.html
@@ -89,6 +91,9 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:' + project.versions.test.mockitoCore
     testImplementation 'org.mockito.kotlin:mockito-kotlin:' + project.versions.kotlin.mockito
     testImplementation 'org.json:json:20190722'
+    // testImplementation newrelic.deps.agent
+    testImplementation fileTree(dir: 'libs', include: ['*.jar'])
+
 
     testImplementation 'androidx.test:core:' + project.versions.test.androidxCore
     testImplementation 'androidx.test.ext:junit-ktx:1.1.3'
