@@ -39,7 +39,6 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 /* Collection of observed signals */
 static observed_signal_t observedSignals[] = {
         {SIGILL,  "SIGILL",  "Illegal instruction",                               {}},
-        {SIGTRAP, "SIGTRAP", "Breakpoint",                                        {}},
         {SIGABRT, "SIGABRT", "Abnormal termination",                              {}},
         {SIGFPE,  "SIGFPE",  "Floating-point exception",                          {}},
         {SIGBUS,  "SIGBUS",  "Bus error (bad memory access)",                     {}},
@@ -77,9 +76,11 @@ void interceptor(int signo, siginfo_t *_siginfo, void *ucontext) {
                     case SIGFPE:
                     case SIGBUS:
                     case SIGSEGV:
+                        char *buffer = new char[BACKTRACE_SZ_MAX];
                         if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
                             serializer::from_crash(buffer, std::strlen(buffer));
                         }
+                        delete [] buffer;
                         break;
 
                     default:
