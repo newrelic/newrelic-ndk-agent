@@ -80,7 +80,6 @@ android {
 }
 
 dependencies {
-
     if (bootstrap) {
         logger.warn("Bootstrapping module")
         implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -115,32 +114,58 @@ afterEvaluate {
 
     def isSnapshotDeploy = (
             (optionalOf("newrelic.version.build", 'SNAPSHOT') != 'SNAPSHOT') &&
-            (optionalOf("sonatypeUsername", null) != null) &&
-            (optionalOf("sonatypePassword", null) != null))
+                    (optionalOf("sonatypeUsername", null) != null) &&
+                    (optionalOf("sonatypePassword", null) != null))
 
-    repositories {
-        if (isSnapshotDeploy) {
-            maven {
-                name "snapshots"
-                url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                credentials {
-                    username = rootProject['sonatypeUsername']
-                    password = rootProject['sonatypePassword']
+    publishing {
+        repositories {
+            if (isSnapshotDeploy) {
+                maven {
+                    name "snapshots"
+                    url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                    credentials {
+                        username = rootProject['sonatypeUsername']
+                        password = rootProject['sonatypePassword']
+                    }
                 }
             }
         }
-    }
 
-    publishing {
         publications {
             release(MavenPublication) {
                 // The following applies a component to this publication
-                // which results in publishing an app bundle.
+                // which results in publishing dr app bundle.
                 from components.release
 
                 groupId = 'com.newrelic.agent.android'
                 artifactId = 'agent-ndk'
                 version = project.newrelic.version
+
+                pom {
+                    name = 'com.newrelic.agent.android.agent-ndk'
+                    description = 'The New Relic Android Native Agent provides crash reporting for Android NDK applications'
+                    url = 'https://newrelic.com'
+                    packaging = 'aar'
+
+                    licenses {
+                        license {
+                            url = 'https://github.com/newrelic/android-agent-ndk/blob/main/LICENSE'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id = 'mobile-agents-team'
+                            name = 'Mobile Agents Team'
+                            email = 'mobile-agents@newrelic.com'
+                        }
+                    }
+
+                    scm {
+                        url = 'scm:git:https://github.com/newrelic/android-agent-ndk.git'
+                        connection = 'scm:git:https://github.com/newrelic/android-agent-ndk.git'
+                    }
+                }
             }
         }
     }
@@ -148,8 +173,7 @@ afterEvaluate {
     signing {
         sign publishing.publications.release
         required {
-            gradle.taskGraph.hasTask("publishAllPublicationsToArtifactsRepository") ||
-                    gradle.taskGraph.hasTask("publishAllPublicationsToSnapshotsRepository")
+            gradle.taskGraph.hasTask("publishReleasePublicationToSnapshotsRepository")
         }
     }
 
@@ -159,6 +183,5 @@ afterEvaluate {
                 "Replacement for the legacy 'maven' plugin task."
         group "publishing"
     }
-
 
 }
