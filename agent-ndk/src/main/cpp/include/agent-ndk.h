@@ -9,10 +9,10 @@
 #pragma once
 
 #ifndef AGENT_VERSION
-#define AGENT_VERSION "6.FIXME"
+#define AGENT_VERSION "0.1"
 #endif  // !AGENT_VERSION
 
-static const char *TAG = "newrelic";
+static const char *TAG = "com.newrelic.android";
 
 // Limit backtrace to 100 frames
 static const size_t BACKTRACE_FRAMES_MAX = 100;

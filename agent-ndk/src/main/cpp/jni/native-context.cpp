@@ -27,10 +27,11 @@ namespace jni {
     }
 
     native_context_t &set_native_context(JNIEnv *env, jobject managedContext) {
-        static native_context_t instance = {};
+        static native_context_t &instance = get_native_context();
 
         if (managedContext != nullptr) {
             jni::native_context_t &native_context = jni::get_native_context();
+
             jclass managedContextClass = jni::env_get_object_class(env, managedContext);
             jclass fileClass = static_cast<jclass>(jni::env_find_class(env, "java/io/File"));
             jmethodID absolutePathMethodId = jni::env_get_methodid(env,
@@ -38,6 +39,7 @@ namespace jni {
                                                                    "getAbsolutePath",
                                                                    "()Ljava/lang/String;");
 
+            // copy the report path field
             jfieldID reportsDir = jni::env_get_fieldid(env,
                                                        managedContextClass,
                                                        "reportsDir",
@@ -45,13 +47,33 @@ namespace jni {
 
             jobject fileObject = jni::env_get_object_field(env, managedContext, reportsDir);
             jobject pathObject = jni::env_call_object_method(env, fileObject, absolutePathMethodId);
-
             const char *reportsPath = jni::env_get_string_UTF_chars(env,
                                                                     static_cast<jstring>(pathObject));
 
-            // copy the report path field
             std::strncpy(native_context.reportPathAbsolute, reportsPath,
                          sizeof(native_context.reportPathAbsolute));
+
+
+            // copy the session ID field
+            jfieldID fieldId = jni::env_get_fieldid(env,
+                                                    managedContextClass,
+                                                    "sessionId",
+                                                    "Ljava/lang/String;");
+            jobject fieldObject = jni::env_get_object_field(env, managedContext, fieldId);
+            const char *sessionId = jni::env_get_string_UTF_chars(env,
+                                                                  static_cast<jstring>(fieldObject));
+            std::strncpy(native_context.sessionId, sessionId, sizeof(native_context.sessionId));
+
+            // copy the session ID field
+            fieldId = jni::env_get_fieldid(env,
+                                           managedContextClass,
+                                           "buildId",
+                                           "Ljava/lang/String;");
+            fieldObject = jni::env_get_object_field(env, managedContext, fieldId);
+            const char *buildId = jni::env_get_string_UTF_chars(env,
+                                                                static_cast<jstring>(fieldObject));
+            std::strncpy(native_context.buildId, buildId, sizeof(native_context.buildId));
+
         }
 
         return instance;

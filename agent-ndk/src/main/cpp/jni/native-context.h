@@ -24,6 +24,12 @@ namespace jni {
         // report storage
         char reportPathAbsolute[PATH_MAX];
 
+        // session id passed from client
+        char sessionId[40];
+
+        // build id passed from client
+        char buildId[40];
+
     } native_context_t;
 
     /**

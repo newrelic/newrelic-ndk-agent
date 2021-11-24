@@ -24,7 +24,7 @@ namespace serializer {
         to_storage("crash-", buffer, buffsz);
         // TODO crashes may be best left on storage and processed
         // on the next app launch
-        jni::on_native_crash(buffer);
+        // jni::on_native_crash(buffer);
     }
 
     void from_exception(const char *buffer, size_t buffsz) {

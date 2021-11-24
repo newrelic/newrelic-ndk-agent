@@ -115,7 +115,7 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
                             }
 
                             if (report.lastModified() < (System.currentTimeMillis() - managedContext?.expirationPeriod!!)) {
-                                log.info("Report [${report.name}] is too old, deleting...")
+                                log.info("Native report [${report.name}] has expired, deleting...")
                                 report.deleteOnExit()
                             }
                         }

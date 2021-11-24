@@ -50,7 +50,7 @@ JNIEXPORT jboolean JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeSt
     std::string cstr;
     const char *procName = procfs::get_process_name(getpid(), cstr);
 
-    _LOGD("Starting NewRelic native reporting: %s", AGENT_VERSION);
+    _LOGD("New Relic native reporter starting: %s", AGENT_VERSION);
     _LOGD("    Process[%s] pid: %d ppid: %d tid: %d", procName, getpid(), getppid(), gettid());
 
     jni::native_context_t &native_context = jni::set_native_context(env, managedContext);

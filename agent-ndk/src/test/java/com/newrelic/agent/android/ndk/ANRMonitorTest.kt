@@ -50,5 +50,4 @@ class ANRMonitorTest {
         Assert.assertFalse(anrMonitor?.executor?.isShutdown == true)
     }
 
-
 }

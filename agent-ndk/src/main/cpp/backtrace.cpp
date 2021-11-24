@@ -165,13 +165,12 @@ bool collect_backtrace(char *backtrace_buffer,
     // then collect the threads, passing the backtrace state to the crashing thread
     collect_thread_state(backtrace);
 
-        std::string emitted = emit_backtrace(backtrace, state);
+    std::string emitted = emit_backtrace(backtrace, state);
 
     size_t str_size = emitted.size();
     size_t copy_size = std::min(str_size, max_size - 2);
     memcpy(backtrace_buffer, emitted.data(), copy_size);
     backtrace_buffer[copy_size] = '\0';
-    // _LOGD("buffer[%zu]: %s", copy_size, backtrace_buffer);
 
     return copy_size == str_size;
 }

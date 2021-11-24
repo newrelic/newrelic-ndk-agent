@@ -10,12 +10,14 @@
 #include <sys/ucontext.h>
 #include <asm/sigcontext.h>
 #include <sstream>
+#include <jni.h>
 
 #include <agent-ndk.h>
 #include "backtrace.h"
 #include "unwinder.h"
 #include "procfs.h"
 #include "signal-utils.h"
+#include "jni/native-context.h"
 
 /**
  * Append a formatted string to the output state
@@ -273,6 +275,7 @@ const char *emit_registers(const ucontext_t *sa_ucontext, std::string &state) {
  */
 const char *emit_context(backtrace_t &backtrace, std::string &state) {
     std::string cstr;
+    jni::native_context_t &native_context = jni::get_native_context();
 
     _EMIT_F(state, "'name':'%s',", procfs::get_process_name(backtrace.pid, cstr));
     _EMIT_F(state, "'description':'%s',", backtrace.description);
@@ -281,6 +284,8 @@ const char *emit_context(backtrace_t &backtrace, std::string &state) {
     _EMIT_F(state, "'pid':%d,", backtrace.pid);
     _EMIT_F(state, "'ppid':%d,", backtrace.ppid);
     _EMIT_F(state, "'uid':%d,", backtrace.uid);
+    _EMIT_F(state, "'buildid':'%s',", native_context.buildId);
+    _EMIT_F(state, "'sessionid':'%s',", native_context.sessionId);
     _EMIT_F(state, "'platform':'%s'", "android");
 
     return state.c_str();
@@ -381,8 +386,6 @@ const char *emit_backtrace(backtrace_t &backtrace, std::string &state) {
 
     // translate single to double quotes
     std::replace(state.begin(), state.end(), '\'', '"');
-
-    // _LOGE("_EMIT_F[%s]", state.c_str());
 
     return state.c_str();
 }

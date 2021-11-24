@@ -58,8 +58,8 @@ static bool record_frame(uintptr_t ip, backtrace_state_t *state) {
         if (ip == state->frames[state->frame_cnt - 1]) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat"
-            _LOGW("record_frame[%zu]: ip[%zu] duplicate of frame[%lu]: ip[%zu]",
-                  state->frame_cnt, ip, state->frame_cnt - 1, state->frames[state->frame_cnt - 1]);
+            // _LOGD("record_frame[%zu]: ip[%zu] duplicate of frame[%lu]: ip[%zu]",
+            //      state->frame_cnt, ip, state->frame_cnt - 1, state->frames[state->frame_cnt - 1]);
 #pragma clang diagnostic pop
             state->skipped_frames++;
             return true;
@@ -67,7 +67,7 @@ static bool record_frame(uintptr_t ip, backtrace_state_t *state) {
     }
 
     // Finally add the address to the storage
-    _LOGI("record_frame[%zu]: adding address[%zu]", state->frame_cnt, ip);
+    // _LOGV("record_frame[%zu]: adding address[%zu]", state->frame_cnt, ip);
     state->frames[state->frame_cnt++] = ip;
 
     return true;
@@ -117,11 +117,11 @@ _Unwind_Reason_Code unwinder_cb(struct _Unwind_Context *ucontext, void *arg) {
 
     if (ip_before != 0) {
         // IP is before or after first not yet fully executed instruction
-        _LOGI("unwinder_cb[%zu]: ip_before[%d]: address[%zu]", state->frame_cnt, ip_before, ip);
+        // _LOGD("unwinder_cb[%zu]: ip_before[%d]: address[%zu]", state->frame_cnt, ip_before, ip);
     }
 
     if (ip == state->crash_ip) {
-        _LOGI("unwinder_cb[%zu]: crash address[%zu]", state->frame_cnt, ip);
+        // _LOGV("unwinder_cb[%zu]: crash address[%zu]", state->frame_cnt, ip);
         state->skipped_frames = state->frame_cnt;
         state->frame_cnt = 0;   // reset the index
     } else if (ip > 0) {
