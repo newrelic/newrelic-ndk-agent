@@ -1,0 +1,48 @@
+Android Native Agent MVP
+
+
+The New Relic Android native reporting agent is a light-weight module to observe and report runtime error conditions. 
+
+It currently reports abnormal termination from signals, unhandled C++ exceptions, and 'Application Not Responding' (ANR) conditions
+
+
+## Native Crashes
+What violations are of concern to an Android app?
+
+SIGILL	Illegal instruction: Attempt is made to execute an invalid, privileged, or ill-formed instruction
+SIGABRT Abnormal termination: often called by C library 'exit()' or 'abort()' functions
+SIGFPE	Floating-point exception: covers all arithmetic errors, including division by zero and overflow
+SIGBUS	Bus error:  bad memory access, such as a null pointer exception
+SIGSEGV	Segmentation violation: invalid memory reference
+
+The default action for all of these signals is to terminate the process.
+
+
+## Unhandled C++ Exceptions
+
+## Application Not Responding' (ANR) conditions
+
+
+What is the current state of the agent?
+
+How is the agent integrated into an existing app?
+
+As custom with Android apps, the agent is added as a dependency to the app's build.gradle file: 
+
+dependencies {
+	implementation "com.newrelic.agent.android:agent-ndk:1.0.+”
+}
+
+The agent uses a simple builder pattern, can be started, stopped by the caller as needed
+
+What is the format of delivered reports?
+	JSON - describe schema
+
+	How does is compare to Google native crash/ANR reporting?
+
+
+How does is compare to Google native crash/ANR reporting?
+
+
+Are crashing stack frames fully symbolicated?
+
