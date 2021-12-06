@@ -9,12 +9,10 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import java.io.File
-import java.nio.ByteBuffer
 import java.util.concurrent.TimeUnit
 
-class ManagedContext(context: Context? = null) {
+class ManagedContext(val context: Context? = null) {
 
-    var context: Context? = context
     var sessionId: String? = null
     var buildId: String? = null
     var reportsDir: File? = getNativeReportsDir(context?.cacheDir)

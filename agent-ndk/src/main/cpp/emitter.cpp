@@ -10,7 +10,6 @@
 #include <sys/ucontext.h>
 #include <asm/sigcontext.h>
 #include <sstream>
-#include <jni.h>
 
 #include <agent-ndk.h>
 #include "backtrace.h"

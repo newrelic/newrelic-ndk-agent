@@ -13,10 +13,7 @@ import java.io.File
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 
-open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
-    val lock = ReentrantLock()
-    var managedContext: ManagedContext? = managedContext
-
+open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
     /**
      * API methods
      **/
@@ -41,6 +38,8 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
                 const val SUPPORTABILITY_NATIVE_LOAD_ERR = "$SUPPORTABILITY_NATIVE_CRASH/Error/LoadLibrary"
             }
         }
+
+        val lock = ReentrantLock()
 
         @Volatile
         var log: AgentLog = ConsoleAgentLog()
@@ -114,7 +113,7 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
                                 log.warning("Failed to parse/write native report [${report.name}: $e")
                             }
 
-                            if (report.lastModified() < (System.currentTimeMillis() - managedContext?.expirationPeriod!!)) {
+                            if (report.lastModified() < (System.currentTimeMillis() - managedContext.expirationPeriod)) {
                                 log.info("Native report [${report.name}] has expired, deleting...")
                                 report.deleteOnExit()
                             }
@@ -183,7 +182,7 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
         }
 
         fun withStorageDir(storageRootDir: File): Builder {
-            managedContext.reportsDir = managedContext.getNativeReportsDir(storageRootDir);
+            managedContext.reportsDir = managedContext.getNativeReportsDir(storageRootDir)
             managedContext.reportsDir?.mkdirs()
             return this
         }
@@ -204,7 +203,7 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
         }
 
         fun withLogger(agentLog: AgentLog): Builder {
-            AgentNDK.log = agentLog
+            log = agentLog
             return this
         }
 

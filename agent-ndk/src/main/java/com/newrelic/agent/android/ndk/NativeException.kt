@@ -20,8 +20,8 @@ class NativeException(val stackTraceAsJson: String? = null) : Exception("Native"
         get() = nativeStackTrace?.exceptionMessage
 
     /**
-     * The backtrace will be comprised of the native crash stack (minus the
-     * top two reporting methods), with any managed frame woven in
+     * The backtrace will be comprised of the native crash stack
+     * with any managed frames woven in
      */
     override fun getStackTrace(): Array<StackTraceElement> {
         val stacks = mutableListOf<StackTraceElement>()
