@@ -13,6 +13,7 @@ import java.io.File
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 
+
 open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
     /**
      * API methods
@@ -171,13 +172,13 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
             loadAgent()
         }
 
-        fun withBuildId(buildId: UUID): Builder {
-            managedContext.buildId = buildId.toString()
+        fun withBuildId(buildId: String): Builder {
+            managedContext.buildId = buildId
             return this
         }
 
-        fun withSessionId(sessionId: UUID): Builder {
-            managedContext.sessionId = sessionId.toString()
+        fun withSessionId(sessionId: String): Builder {
+            managedContext.sessionId = sessionId
             return this
         }
 

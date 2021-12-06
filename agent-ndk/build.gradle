@@ -37,7 +37,7 @@ android {
 
         ndk {
             // https://developer.android.com/ndk/guides/abis#sa
-            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64', 'x86'
+            abiFilters 'x86_64', 'arm64-v8a', 'x86'
         }
     }
 
@@ -179,7 +179,7 @@ afterEvaluate {
 
     tasks.register("install") {
         dependsOn publishToMavenLocal
-        description "Publishes all Maven publications produced by this project to the local Maven cache. " +
+        description "Publishes all Maven artifacts produced by this project to the local Maven cache. " +
                 "Replacement for the legacy 'maven' plugin task."
         group "publishing"
     }

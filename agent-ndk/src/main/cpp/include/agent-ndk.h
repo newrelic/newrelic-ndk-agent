@@ -9,7 +9,7 @@
 #pragma once
 
 #ifndef AGENT_VERSION
-#define AGENT_VERSION "0.1"
+#define AGENT_VERSION "0.1.0"
 #endif  // !AGENT_VERSION
 
 static const char *TAG = "com.newrelic.android";
@@ -33,11 +33,6 @@ static const size_t BACKTRACE_SZ_MAX = 0x100000;
 const char *get_arch();
 
 /**
- * return true if cpu is 32bit
- */
-bool arch_is_32b();
-
-/**
  * Collect and return a complete backtrace report into the provided buffer
  */
 bool collect_backtrace(char *, size_t, const siginfo_t *, const ucontext_t *);
@@ -49,6 +44,5 @@ bool collect_backtrace(char *, size_t, const siginfo_t *, const ucontext_t *);
 #define  _LOGW(...)  __android_log_print(ANDROID_LOG_WARN,    TAG, __VA_ARGS__)
 #define  _LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,   TAG, __VA_ARGS__)
 #define  _LOGI(...)  __android_log_print(ANDROID_LOG_INFO,    TAG, __VA_ARGS__)
-#define  _LOGV(...)  __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)
 
 #endif // _AGENT_NDK_AGENT_NDK_H
