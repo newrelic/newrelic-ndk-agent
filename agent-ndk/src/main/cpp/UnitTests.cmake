@@ -3,10 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 ##
 
-##
-# Testing frameworks: we will choose one based on usability
-#
-
 cmake_minimum_required(VERSION 3.18.0)
 enable_testing()
 
@@ -15,21 +11,21 @@ include(FetchContent)
 
 # GTest/GMock: https://google.github.io/googletest/primer.html
 #
-
 FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG master
+        GIT_TAG main
 )
 
 FetchContent_MakeAvailable(googletest)
 
 include(GoogleTest)
 
+set(TEST_SRC_DIR ${CMAKE_HOME_DIRECTORY}/../../test/cpp)
 
 set(TEST_SOURCES
-        ${PROJECT_TEST_DIR}/SimpleTests.cpp
-        ${PROJECT_TEST_DIR}/TestFixtures.cpp
+        ${TEST_SRC_DIR}/AgentNDKTests.cpp
+        ${TEST_SRC_DIR}/TestFixtures.cpp
         )
 
 add_executable(
@@ -44,26 +40,5 @@ target_link_libraries(
         gmock_main
 )
 
-gtest_discover_tests(agent-ndk-test)
-
-
-##
-# Catch: https://github.com/catchorg/Catch2
-#
-
-FetchContent_Declare(
-        Catch2
-        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG v2.13.1)
-
-FetchContent_MakeAvailable(Catch2)
-
-# add_executable(ndk-catch-test # catch.cpp )
-# target_link_libraries(ndk-catch-test PRIVATE Catch2::Catch2)
-
-
-if (FIXME)
-    include(Catch)
-    catch_discover_tests(${TEST_APP})
-endif ()
-
+# TODO Run test on ABI
+# gtest_discover_tests(agent-ndk-test)

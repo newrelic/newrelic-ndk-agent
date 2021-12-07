@@ -21,17 +21,14 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                // Sets a flag to enable format macro constants for the C compiler.
-                cFlags "-DHAVE_STDLIB_H", "-DHAVE_STRING_H", "-D__STDC_FORMAT_MACROS"
-
                 // Sets optional flags for the C++ compiler.
                 cppFlags "-fexceptions", "-frtti", "-std=c++14"
 
                 // Specifies the targets Gradle should build
-                targets "agent-ndk" // , "agent-ndk-test"
+                targets "agent-ndk", "agent-ndk-test"
 
                 // Passes optional arguments to CMake.
-                arguments "-DAGENT_VERSION=${project.version}", "-DCMAKE_BUILD_TYPE=Debug"
+                arguments "-DCMAKE_BUILD_TYPE=Debug"
             }
         }
 
@@ -81,7 +78,7 @@ android {
 
 dependencies {
     if (bootstrap) {
-        logger.warn("Bootstrapping module")
+        logger.warn("[${project.name}] Bootstrapping legacy agent dependency")
         implementation fileTree(dir: 'libs', include: ['*.jar'])
         testImplementation fileTree(dir: 'libs', include: ['*.jar'])
     } else {
@@ -89,12 +86,8 @@ dependencies {
         testImplementation newrelic.deps.agent
     }
 
+    //noinspection GradleDependency
     implementation "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin.plugin}"
-
-    // https://android-developers.googleblog.com/2020/02/native-dependencies-in-android-studio-40.html
-    if (withThirdPartySupport) {
-        implementation 'com.android.ndk.thirdparty:jsoncpp:1.8.4-alpha-1'
-    }
 
     testImplementation 'org.robolectric:robolectric:' + project.versions.test.robolectric
     testImplementation 'junit:junit:' + project.versions.test.junit
