@@ -11,6 +11,7 @@ import com.newrelic.agent.android.logging.ConsoleAgentLog
 import com.newrelic.agent.android.stats.StatsEngine
 import java.io.File
 import java.util.*
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 
 
@@ -114,7 +115,10 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
                                 log.warning("Failed to parse/write native report [${report.name}: $e")
                             }
 
-                            if (report.lastModified() < (System.currentTimeMillis() - managedContext.expirationPeriod)) {
+                            val expirationTimeMs : Long = (System.currentTimeMillis() -
+                                    TimeUnit.MILLISECONDS.convert(managedContext?.expirationPeriod!!, TimeUnit.SECONDS))
+
+                            if (report.lastModified() < expirationTimeMs) {
                                 log.info("Native report [${report.name}] has expired, deleting...")
                                 report.deleteOnExit()
                             }
@@ -198,6 +202,9 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
             return this
         }
 
+        /**
+         * Sets the report expiration time, in seconds
+         */
         fun withExpiration(expirationPeriod: Long): Builder {
             managedContext.expirationPeriod = expirationPeriod
             return this

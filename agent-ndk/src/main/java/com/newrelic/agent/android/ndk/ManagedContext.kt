@@ -41,7 +41,7 @@ class ManagedContext(val context: Context? = null) {
     }
 
     companion object {
-        val DEFAULT_TTL = TimeUnit.MILLISECONDS.convert(7, TimeUnit.DAYS)
+        val DEFAULT_TTL = TimeUnit.SECONDS.convert(7, TimeUnit.DAYS)
     }
 
 }
