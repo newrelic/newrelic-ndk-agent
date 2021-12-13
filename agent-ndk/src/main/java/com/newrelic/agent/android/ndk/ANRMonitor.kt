@@ -9,7 +9,6 @@ import android.os.Debug
 import android.os.Handler
 import android.os.Looper
 import com.newrelic.agent.android.agentdata.AgentDataController
-import com.newrelic.agent.android.analytics.AnalyticsAttribute
 import com.newrelic.agent.android.util.NamedThreadFactory
 import java.util.*
 import java.util.concurrent.Executors

@@ -11,12 +11,11 @@ import com.newrelic.agent.android.logging.ConsoleAgentLog
 import com.newrelic.agent.android.stats.StatsEngine
 import java.io.File
 import java.util.*
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 
-open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
-    val lock = ReentrantLock()
-    var managedContext: ManagedContext? = managedContext
 
+open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
     /**
      * API methods
      **/
@@ -41,6 +40,8 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
                 const val SUPPORTABILITY_NATIVE_LOAD_ERR = "$SUPPORTABILITY_NATIVE_CRASH/Error/LoadLibrary"
             }
         }
+
+        val lock = ReentrantLock()
 
         @Volatile
         var log: AgentLog = ConsoleAgentLog()
@@ -114,7 +115,10 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
                                 log.warning("Failed to parse/write native report [${report.name}: $e")
                             }
 
-                            if (report.lastModified() < (System.currentTimeMillis() - managedContext?.expirationPeriod!!)) {
+                            val expirationTimeMs : Long = (System.currentTimeMillis() -
+                                    TimeUnit.MILLISECONDS.convert(managedContext?.expirationPeriod!!, TimeUnit.SECONDS))
+
+                            if (report.lastModified() < expirationTimeMs) {
                                 log.info("Native report [${report.name}] has expired, deleting...")
                                 report.deleteOnExit()
                             }
@@ -172,18 +176,18 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
             loadAgent()
         }
 
-        fun withBuildId(buildId: UUID): Builder {
-            managedContext.buildId = buildId.toString()
+        fun withBuildId(buildId: String): Builder {
+            managedContext.buildId = buildId
             return this
         }
 
-        fun withSessionId(sessionId: UUID): Builder {
-            managedContext.sessionId = sessionId.toString()
+        fun withSessionId(sessionId: String): Builder {
+            managedContext.sessionId = sessionId
             return this
         }
 
         fun withStorageDir(storageRootDir: File): Builder {
-            managedContext.reportsDir = managedContext.getNativeReportsDir(storageRootDir);
+            managedContext.reportsDir = managedContext.getNativeReportsDir(storageRootDir)
             managedContext.reportsDir?.mkdirs()
             return this
         }
@@ -198,13 +202,16 @@ open class AgentNDK(managedContext: ManagedContext? = ManagedContext()) {
             return this
         }
 
+        /**
+         * Sets the report expiration time, in seconds
+         */
         fun withExpiration(expirationPeriod: Long): Builder {
             managedContext.expirationPeriod = expirationPeriod
             return this
         }
 
         fun withLogger(agentLog: AgentLog): Builder {
-            AgentNDK.log = agentLog
+            log = agentLog
             return this
         }
 

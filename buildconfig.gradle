@@ -8,8 +8,6 @@ buildscript {
     ext {
         def hasOptional = { key, defaultValue -> rootProject.hasProperty(key) ? rootProject[key] : defaultValue }
 
-        withThirdPartySupport = false
-
         newrelic = [
                 version: hasOptional('newrelic.version', '1.0.1'),
                 agent  : [
