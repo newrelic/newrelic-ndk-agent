@@ -79,8 +79,8 @@ android {
 dependencies {
     if (bootstrap) {
         logger.warn("[${project.name}] Bootstrapping legacy agent dependency")
-        implementation fileTree(dir: 'libs', include: ['*.jar'])
-        testImplementation fileTree(dir: 'libs', include: ['*.jar'])
+        implementation fileTree(dir: project.libsDirName, include: ['*.jar', '*.aar'])
+        testImplementation fileTree(dir: project.libsDirName, include: ['*.jar', '*.aar'])
     } else {
         implementation newrelic.deps.agent
         testImplementation newrelic.deps.agent

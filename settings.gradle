@@ -1,2 +1,3 @@
 rootProject.name = 'android-agent-ndk'
 include ':agent-ndk'
+include ':samples:android-test-native'

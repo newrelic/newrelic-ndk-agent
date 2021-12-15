@@ -116,7 +116,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
                             }
 
                             val expirationTimeMs : Long = (System.currentTimeMillis() -
-                                    TimeUnit.MILLISECONDS.convert(managedContext?.expirationPeriod!!, TimeUnit.SECONDS))
+                                    TimeUnit.MILLISECONDS.convert(managedContext.expirationPeriod, TimeUnit.SECONDS))
 
                             if (report.lastModified() < expirationTimeMs) {
                                 log.info("Native report [${report.name}] has expired, deleting...")

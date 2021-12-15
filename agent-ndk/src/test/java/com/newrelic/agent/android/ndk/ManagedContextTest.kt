@@ -70,7 +70,7 @@ class ManagedContextTest : TestCase(), AgentNDKListener {
     @Test
     fun testExpirationPeriod() {
         Assert.assertEquals(managedContext?.expirationPeriod, ManagedContext.DEFAULT_TTL)
-        Assert.assertEquals(managedContext?.expirationPeriod, TimeUnit.MILLISECONDS.convert(7, TimeUnit.DAYS))
+        Assert.assertEquals(managedContext?.expirationPeriod, TimeUnit.SECONDS.convert(7, TimeUnit.DAYS))
     }
 
     override fun onNativeCrash(crashAsString: String?): Boolean {
