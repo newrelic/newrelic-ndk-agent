@@ -1,4 +1,5 @@
-[![Community Plus header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
+[![Community header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Project.png)](https://opensource.newrelic.com/oss-category/#community-project)
+
 # newrelic-android-ndk
 
 With [New Relic's Android native agent](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/), you can capture native crashes resulting from raised signals and uncaught runtime exceptions from C and C++ code used in your Android app.
@@ -29,8 +30,6 @@ See the [getting started guide](https://docs.newrelic.com/docs/mobile-monitoring
 See the following documentation for specific use cases of the Android native agent:
 - [General configuration](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/configuration)
 - [Troubleshooting](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/troubleshooting)
-
-## Installation
 
 #### Add agent to build dependencies
 To add the Android native agent to your app, you simply need to declare a dependency in your app-level Gradle build file:
@@ -93,7 +92,6 @@ agentNDK.stop()
 // Alternatively, the agent can be stopped by calling the static method
 AgentNDK.shutdown()
 ```
-
 The agent exists as a single instance (singleton), and any further uses of the builder will replace the instance
 
 ```
@@ -104,7 +102,6 @@ AgentNDK.Builder(context)
     .build()
 
 // agentNDK is now invalid
-
 ```
 
 #### Requesting Queued Reports
@@ -131,10 +128,12 @@ agent.managedContext?.expirationPeriod = REPORT_TTL
 #### Additional Builder methods
 
 ##### AgentNDK.Builder.withBuildId(buildId: String)
-##### AgentNDK.Builder.withSessionId(sessionId: String)
+The agent will inject a 40-character build id into each generated report.
+A random UUID will be created, but can also be specified when the agent is built.
 
-The agent will inject a 40-character build and session id into each generated report.
-These values will be created, but can also be specified when the agent is built.
+##### AgentNDK.Builder.withSessionId(sessionId: String)
+The agent will inject a 40-character session id into each generated report.
+A random UUID will be created, but can also be specified when the agent is built.
 
 ```
 // the default values are UUIDs
@@ -156,26 +155,14 @@ AgentNDK.Builder(context)
   .withStorageDir(context?.cacheDir)
 ```
 
-### Receiving Queued Reports
-In the event of a crash, the native agent will generally not have enough time or stability to process the report. Instead, the report data is quickly written to local storage, to be processed the next time the app is launched. It is up to the app to request reports when it is ready for them by calling:
-```
-agentNDK.flushPendingReports()
-```
+## Installation
 
-#### Expiring Reports
-Reports that remain in the cache longer that remain in the cache longer than the configured expiration duration will be removed, but only after a final post to the listener.
+## Known Issues
 
-```
-// The expiration time is set during agent creation by adding this build method
-val REPORT_TTL = TimeUnit.SECONDS.convert(3, TimeUnit.DAYS)
-val agentNDK = AgentNDK.Builder(context)
-    .withReportListener(Listener())
-    .withExpiration(REPORT_TTL)
-    .build()
+#### Stack frames will be unsymbolicated
+Stacks will be reported with the symbols provided by the app. If symbols are stripped prior to release, nine will be available for crash stack frames.
 
-// But can also be set at runtime
-agent.managedContext?.expirationPeriod = REPORT_TTL
-```
+#### ARM ABI is not supported
 
 ### For full details see:
 
@@ -193,7 +180,10 @@ The Android native agent requires the following tools to build:
 |Android Gradle Plugin|4.1 or higher|AGP 7 requires JDK 11|
 |Gradle|6.7.1|AGP 7 requires Gradle 7 or higher|
 |NDK|21.4.7075529 or higher||
+|CMake|3.18||
 |minSDK|24||
+|NDK|21.4.7075529 or higher||
+|Cmake|3.18.1 or higher
 
 Dependencies must to be installed and configured for your environment prior to building.
 
@@ -218,6 +208,8 @@ After building, Android native agent artifacts are located in `agent-ndk/build/o
 ## Android Studio setup
 
 Android Studio must be configured with the Android Native Development Kit (NDK) installed.
+
+Update `cmake` in _Tools -> SDK Manager -> SDK Tools_
 
 ## Testing
 
