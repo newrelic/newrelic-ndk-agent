@@ -5,14 +5,14 @@
 
 package com.newrelic.agent.android.ndk
 
-import junit.framework.Assert
 import junit.framework.TestCase
 import org.json.JSONObject
+import org.junit.Assert
 
 class NativeStackFrameTest : TestCase() {
 
-    val stackframe = this::class.java.classLoader.getResource("stackframe.json").readText()
-    val backtrace = this::class.java.classLoader.getResource("backtrace.json").readText()
+    val stackframe = this::class.java.classLoader?.getResource("stackframe.json")?.readText()
+    val backtrace = this::class.java.classLoader?.getResource("backtrace.json")?.readText()
     lateinit var nativeStackFrame: NativeStackFrame
 
     public override fun setUp() {
@@ -20,7 +20,6 @@ class NativeStackFrameTest : TestCase() {
     }
 
     fun testGetDelegate() {
-        Assert.assertTrue(nativeStackFrame.delegate is StackTraceElement)
         Assert.assertEquals(nativeStackFrame.delegate.className, "class")
         Assert.assertEquals(nativeStackFrame.delegate.methodName, "method")
         Assert.assertEquals(nativeStackFrame.delegate.fileName, "file")
@@ -64,7 +63,7 @@ class NativeStackFrameTest : TestCase() {
     fun testAllFrames() {
         val allFrames = NativeStackTrace(backtrace).crashedThread?.getStackTrace()
         Assert.assertTrue(allFrames?.size!! > 0)
-        Assert.assertTrue(allFrames?.get(0) is StackTraceElement)
+        Assert.assertTrue(allFrames.get(0) is StackTraceElement)
     }
 
     fun testAllNativeFrames() {
@@ -74,6 +73,6 @@ class NativeStackFrameTest : TestCase() {
             .getJSONObject(0)
             .getJSONArray("stack")
         val allFrames = NativeStackFrame.allNativeFrames(stackFrames)
-        Assert.assertTrue(allFrames[0] is NativeStackFrame)
+        Assert.assertFalse(allFrames.isEmpty())
     }
 }

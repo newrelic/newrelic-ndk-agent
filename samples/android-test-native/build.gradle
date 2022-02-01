@@ -8,10 +8,6 @@ plugins {
     id 'kotlin-android'
 }
 
-ext {
-    agent_core_lib = project.file("${project(':agent-ndk').projectDir}/${project(':agent-ndk').libsDirName}").absolutePath
-}
-
 android {
     ndkVersion versions.agp.ndk
     compileSdkVersion versions.agp.compileSdk
@@ -73,7 +69,7 @@ android {
 
 dependencies {
     implementation project(':agent-ndk')
-    implementation fileTree(dir: agent_core_lib, include: ['*.jar', '*.aar'])
+    implementation fileTree(dir: "${rootDir}/libs", include: ['*.jar', '*.aar'])
 
     //noinspection GradleDependency
     implementation "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin.plugin}"

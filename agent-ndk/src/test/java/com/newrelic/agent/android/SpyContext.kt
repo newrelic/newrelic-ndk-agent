@@ -70,7 +70,7 @@ class SpyContext {
         try {
             packageInfo = packageManager.getPackageInfo(context.packageName, 0)
             packageInfo.versionName = APP_VERSION_NAME
-            packageInfo.versionCode = APP_VERSION_CODE
+            packageInfo.longVersionCode = APP_VERSION_CODE.toLong()
         } catch (e: PackageManager.NameNotFoundException) {
             Assert.fail()
         }

@@ -2,14 +2,13 @@ package com.newrelic.agent.android.ndk
 
 import android.content.Context
 import com.newrelic.agent.android.SpyContext
-import junit.framework.Assert
 import junit.framework.TestCase
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.io.File
-import java.nio.ByteBuffer
 import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)

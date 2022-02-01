@@ -38,6 +38,8 @@ const char *get_arch() {
 #else
 #define ABI "unknown"
 #endif  // defined(arm)
+
+    return ABI;
 }
 
 
@@ -51,7 +53,7 @@ void crashBySignal(int signo) {
         case SIGFPE: {
             int denom = 0;
             int dbz = 13 / denom;
-            dbz;
+            dbz = 0;
             break;
         }
         case SIGABRT:
@@ -71,7 +73,7 @@ void crashBySignal(int signo) {
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_newrelic_agent_android_ndk_MainActivity_installNative(JNIEnv *env, jobject thiz) {
+Java_com_newrelic_agent_android_ndk_samples_MainActivity_installNative(JNIEnv *env, jobject thiz) {
     char str[0x200];
     std::string cstr;
     const char *procName = procfs::get_process_name(getpid(), cstr);
@@ -89,14 +91,14 @@ Java_com_newrelic_agent_android_ndk_MainActivity_installNative(JNIEnv *env, jobj
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_com_newrelic_agent_android_ndk_MainActivity_raiseSignal(__unused JNIEnv *env, __unused jobject thiz, jint signo) {
+Java_com_newrelic_agent_android_ndk_samples_MainActivity_raiseSignal(__unused JNIEnv *env, __unused jobject thiz, jint signo) {
     crashBySignal(signo);
     return nullptr;
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_com_newrelic_agent_android_ndk_MainActivity_raiseException(JNIEnv *env, jobject thiz, jint exception_name_id) {
+Java_com_newrelic_agent_android_ndk_samples_MainActivity_raiseException(JNIEnv *env, jobject thiz, jint exception_name_id) {
     using namespace std;
 
     switch (exception_name_id) {
@@ -131,6 +133,8 @@ Java_com_newrelic_agent_android_ndk_MainActivity_raiseException(JNIEnv *env, job
             throw bad_alloc();
             break;
     };  // switch
+
+    return nullptr;
 }
 
 
@@ -152,11 +156,13 @@ void *crashing_thread(void *args) {
 
     sleep(thread_args->sleepSec);
     crashBySignal(thread_args->signo);
+
+    return nullptr;
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_com_newrelic_agent_android_ndk_MainActivity_backgroundCrash(JNIEnv *env, jobject thiz,
+Java_com_newrelic_agent_android_ndk_samples_MainActivity_backgroundCrash(JNIEnv *env, jobject thiz,
                              jint signo, jint sleep_sec, jint thread_cnt, jboolean detached) {
 
     _thread_args_t *thread_args = new _thread_args_t();
