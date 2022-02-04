@@ -8,16 +8,38 @@
 
 const char *get_arch() {
 #if defined(__arm__)
-    return "ARM32";
-#elif defined(__aarch64__)
-    return "ARM64";
-#elif defined(__i386__)
-    return "X86";
-#elif defined(__x86_64__)
-    return "X86_64";
+#if defined(__ARM_ARCH_7A__)
+#if defined(__ARM_NEON__)
+#if defined(__ARM_PCS_VFP)
+#define ABI "armeabi-v7a/NEON (hard-float)"
 #else
-#error Unknown architecture!
+#define ABI "armeabi-v7a/NEON"
 #endif
+#else
+#if defined(__ARM_PCS_VFP)
+#define ABI "armeabi-v7a (hard-float)"
+#else
+#define ABI "armeabi-v7a"
+#endif
+#endif
+#else
+#define ABI "armeabi"
+#endif
+#elif defined(__i386__)
+#define ABI "x86"
+#elif defined(__x86_64__)
+    #define ABI "x86_64"
+#elif defined(__mips64)  /* mips64el-* toolchain defines __mips__ too */
+#define ABI "mips64"
+#elif defined(__mips__)
+#define ABI "mips"
+#elif defined(__aarch64__)
+#define ABI "arm64-v8a"
+#else
+#define ABI "unknown"
+#endif  // defined(arm)
+
+    return ABI;
 }
 
 
@@ -31,7 +53,7 @@ void crashBySignal(int signo) {
         case SIGFPE: {
             int denom = 0;
             int dbz = 13 / denom;
-            dbz;
+            dbz = 0;
             break;
         }
         case SIGABRT:
@@ -51,7 +73,7 @@ void crashBySignal(int signo) {
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_newrelic_agent_android_ndk_MainActivity_installNative(JNIEnv *env, jobject thiz) {
+Java_com_newrelic_agent_android_ndk_samples_MainActivity_installNative(JNIEnv *env, jobject thiz) {
     char str[0x200];
     std::string cstr;
     const char *procName = procfs::get_process_name(getpid(), cstr);
@@ -69,14 +91,14 @@ Java_com_newrelic_agent_android_ndk_MainActivity_installNative(JNIEnv *env, jobj
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_com_newrelic_agent_android_ndk_MainActivity_raiseSignal(__unused JNIEnv *env, __unused jobject thiz, jint signo) {
+Java_com_newrelic_agent_android_ndk_samples_MainActivity_raiseSignal(__unused JNIEnv *env, __unused jobject thiz, jint signo) {
     crashBySignal(signo);
     return nullptr;
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_com_newrelic_agent_android_ndk_MainActivity_raiseException(JNIEnv *env, jobject thiz, jint exception_name_id) {
+Java_com_newrelic_agent_android_ndk_samples_MainActivity_raiseException(JNIEnv *env, jobject thiz, jint exception_name_id) {
     using namespace std;
 
     switch (exception_name_id) {
@@ -111,6 +133,8 @@ Java_com_newrelic_agent_android_ndk_MainActivity_raiseException(JNIEnv *env, job
             throw bad_alloc();
             break;
     };  // switch
+
+    return nullptr;
 }
 
 
@@ -132,11 +156,13 @@ void *crashing_thread(void *args) {
 
     sleep(thread_args->sleepSec);
     crashBySignal(thread_args->signo);
+
+    return nullptr;
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_com_newrelic_agent_android_ndk_MainActivity_backgroundCrash(JNIEnv *env, jobject thiz,
+Java_com_newrelic_agent_android_ndk_samples_MainActivity_backgroundCrash(JNIEnv *env, jobject thiz,
                              jint signo, jint sleep_sec, jint thread_cnt, jboolean detached) {
 
     _thread_args_t *thread_args = new _thread_args_t();

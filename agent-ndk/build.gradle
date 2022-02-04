@@ -39,9 +39,13 @@ android {
     }
 
     buildTypes {
+        debug {
+            minifyEnabled false
+        }
         release {
             minifyEnabled false
         }
+
     }
 
     externalNativeBuild {
@@ -79,11 +83,8 @@ android {
 dependencies {
     if (bootstrap) {
         logger.warn("[${project.name}] Bootstrapping legacy agent dependency")
-        implementation fileTree(dir: project.libsDirName, include: ['*.jar', '*.aar'])
-        testImplementation fileTree(dir: project.libsDirName, include: ['*.jar', '*.aar'])
-    } else {
-        implementation newrelic.deps.agent
-        testImplementation newrelic.deps.agent
+        compileOnly fileTree(dir: "${rootDir}/libs", include: ['*.jar', '*.aar'])
+        testImplementation fileTree(dir: "${rootDir}/libs", include: ['*.jar', '*.aar'])
     }
 
     //noinspection GradleDependency

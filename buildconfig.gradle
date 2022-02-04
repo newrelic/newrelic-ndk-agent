@@ -11,7 +11,7 @@ buildscript {
         newrelic = [
                 version: hasOptional('newrelic.version', '1.0.1'),
                 agent  : [
-                        version       : hasOptional('newrelic.agent.version', '6.4.+'),
+                        version       : hasOptional('newrelic.agent.version', '6.5.+'),
                         snapshotNumber: hasOptional('newrelic.agent.snapshot', "experimental")
                 ]
         ]
