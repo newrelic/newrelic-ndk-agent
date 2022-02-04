@@ -3,9 +3,37 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+buildscript {
+    ext {
+        def hasOptional = { key, defaultValue -> rootProject.hasProperty(key) ? rootProject[key] : defaultValue }
+        newrelic = [
+                agent: [
+                        version       : hasOptional('newrelic.agent.version', '6.5.+'),
+                        snapshotNumber: hasOptional('newrelic.agent.snapshot', "experimental")
+                ]
+        ]
+
+        newrelic.agent.snapshotUri = uri("https://oss.sonatype.org/content/repositories/comnewrelic-$newrelic.agent.snapshotNumber")
+        newrelic.deps = [
+                agent : "com.newrelic.agent.android:android-agent:" + newrelic.agent.version,
+                plugin: "com.newrelic.agent.android:agent-gradle-plugin:" + newrelic.agent.version,
+        ]
+    }
+
+    repositories {
+        mavenLocal()
+        maven { url newrelic.agent.snapshotUri }
+    }
+
+    dependencies {
+        classpath newrelic.deps.plugin
+    }
+}
+
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'newrelic'
 }
 
 android {
@@ -17,7 +45,7 @@ android {
         targetSdkVersion versions.agp.targetSdk
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.1"
 
         externalNativeBuild {
             cmake {
@@ -40,7 +68,7 @@ android {
     }
 
     buildTypes {
-        release {
+        debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             // AGP 4.1+
@@ -64,6 +92,19 @@ android {
 
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+
+    flavorDimensions "sdk"
+    productFlavors {
+        ndk {
+            dimension "sdk"
+            applicationIdSuffix ".debugNDK"
+        }
+
+        legacy {
+            dimension "sdk"
+            applicationIdSuffix ".debugLegacy"
+        }
     }
 }
 

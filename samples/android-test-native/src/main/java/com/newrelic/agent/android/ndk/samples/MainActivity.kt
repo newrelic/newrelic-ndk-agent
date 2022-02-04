@@ -17,13 +17,13 @@ import com.newrelic.agent.android.ndk.AgentNDK
 import com.newrelic.agent.android.ndk.AgentNDKListener
 import com.newrelic.agent.android.ndk.NativeCrash
 import com.newrelic.agent.android.ndk.NativeException
-import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity(), AgentNDKListener {
     private var threadPool: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
+    private var newRelicAgent : NewRelicAgent? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,19 +35,8 @@ class MainActivity : AppCompatActivity(), AgentNDKListener {
 
         findViewById<TextView>(R.id.text).text = installNative()
 
-        // Change these to suite your testing
-        val buildId = UUID.randomUUID().toString()
-        val sessionId = UUID.randomUUID().toString()
-        val reportTTL = TimeUnit.SECONDS.convert(3, TimeUnit.DAYS)
-
-        AgentNDK.Builder(this)
-            .withReportListener(this)
-            .withBuildId(buildId)
-            .withSessionId(sessionId)
-            .withExpiration(reportTTL)
-            .build()
-
-        AgentNDK.getInstance().start()
+        newRelicAgent = NewRelicAgent(this)
+        newRelicAgent?.onCreate()
 
         val btnSignal = findViewById<TextView>(R.id.btnSignal)
         val btnThrow = findViewById<TextView>(R.id.btnThrow)
@@ -86,7 +75,17 @@ class MainActivity : AppCompatActivity(), AgentNDKListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        AgentNDK.getInstance().stop()
+        newRelicAgent?.onDestroy()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        newRelicAgent?.onStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        newRelicAgent?.onStop()
     }
 
     override fun onCreateContextMenu(

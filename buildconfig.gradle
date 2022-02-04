@@ -1,3 +1,8 @@
+/**
+ * Copyright 2022-present New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 //
 // Include this file into the project's root-level build.gradle file.
 //
@@ -10,16 +15,6 @@ buildscript {
 
         newrelic = [
                 version: hasOptional('newrelic.version', '1.0.1'),
-                agent  : [
-                        version       : hasOptional('newrelic.agent.version', '6.5.+'),
-                        snapshotNumber: hasOptional('newrelic.agent.snapshot', "experimental")
-                ]
-        ]
-
-        newrelic.agent.snapshotUri = uri("https://oss.sonatype.org/content/repositories/comnewrelic-$newrelic.agent.snapshotNumber")
-
-        newrelic.deps = [
-                agent: "com.newrelic.agent.android:android-agent:" + newrelic.agent.version
         ]
 
         versions = [
@@ -51,17 +46,14 @@ buildscript {
 allprojects {
     buildscript {
         repositories {
-            maven { url newrelic.agent.snapshotUri }
-            mavenLocal()
-        }
-        dependencies {
-
+            mavenCentral()
+            google()
         }
     }
 
     repositories {
+        mavenCentral()
         google()
-        mavenLocal()
     }
 }
 
@@ -70,20 +62,12 @@ subprojects {
 
     buildscript {
         repositories {
-            maven { url newrelic.agent.snapshotUri }
-            mavenLocal()
             mavenCentral()
             google()
-        }
-
-        dependencies {
-
         }
     }
 
     repositories {
-        maven { url newrelic.agent.snapshotUri }
-        mavenLocal()
         mavenCentral()
         google()
     }

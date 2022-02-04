@@ -8,20 +8,21 @@ buildscript {
 
     repositories {
         mavenCentral()
-        mavenLocal()
         google()
     }
+
     dependencies {
         classpath "com.android.tools.build:gradle:${versions.agp.plugin}"
         //noinspection DifferentKotlinGradleVersion
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin.plugin}"
+        //noinspection GradleDynamicVersion,GradleDependency
+        classpath "com.newrelic.agent.android:agent-gradle-plugin:6.+"
     }
 }
 
 allprojects {
     repositories {
         mavenCentral()
-        mavenLocal()
         google()
     }
 }
