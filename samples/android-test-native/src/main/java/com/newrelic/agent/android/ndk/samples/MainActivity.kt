@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package com.newrelic.agent.android.ndk
+package com.newrelic.agent.android.ndk.samples
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -13,6 +13,10 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.newrelic.agent.android.ndk.AgentNDK
+import com.newrelic.agent.android.ndk.AgentNDKListener
+import com.newrelic.agent.android.ndk.NativeCrash
+import com.newrelic.agent.android.ndk.NativeException
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService

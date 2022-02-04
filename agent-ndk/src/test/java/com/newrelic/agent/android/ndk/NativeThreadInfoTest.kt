@@ -1,13 +1,13 @@
 package com.newrelic.agent.android.ndk
 
-import junit.framework.Assert
 import junit.framework.TestCase
 import org.json.JSONObject
+import org.junit.Assert
 
 class NativeThreadInfoLegacyTest : TestCase() {
 
-    val backtrace = this::class.java.classLoader.getResource("backtrace.json").readText()
-    val threadInfo = this::class.java.classLoader.getResource("threadInfo.json").readText()
+    val backtrace = this::class.java.classLoader?.getResource("backtrace.json")?.readText()
+    val threadInfo = this::class.java.classLoader?.getResource("threadInfo.json")?.readText()
 
     var nativeThreadInfo: NativeThreadInfo = NativeThreadInfo(threadInfo)
 

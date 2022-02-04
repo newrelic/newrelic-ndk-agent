@@ -1,11 +1,11 @@
 package com.newrelic.agent.android.ndk
 
-import junit.framework.Assert
 import junit.framework.TestCase
+import org.junit.Assert
 
 class NativeExceptionTest : TestCase() {
 
-    val backtrace = this::class.java.classLoader.getResource("backtrace.json").readText()
+    val backtrace = this::class.java.classLoader?.getResource("backtrace.json")?.readText()
     lateinit var nativeException: NativeException
 
     public override fun setUp() {
@@ -29,8 +29,7 @@ class NativeExceptionTest : TestCase() {
 
     fun testGetStackFrame() {
         Assert.assertNotNull(nativeException.stackTrace)
-        Assert.assertTrue(nativeException?.stackTrace.size > 0)
-        Assert.assertTrue(nativeException!!.stackTrace[0] is StackTraceElement)
+        Assert.assertTrue(nativeException.stackTrace.size > 0)
     }
 
     fun testGetAllThreads() {

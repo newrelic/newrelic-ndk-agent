@@ -1,10 +1,11 @@
+/**
+ * Copyright 2021-present New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-}
-
-ext {
-    agent_core_lib = project.file("${project(':agent-ndk').projectDir}/${project(':agent-ndk').libsDirName}").absolutePath
 }
 
 android {
@@ -68,7 +69,7 @@ android {
 
 dependencies {
     implementation project(':agent-ndk')
-    implementation fileTree(dir: agent_core_lib, include: ['*.jar', '*.aar'])
+    implementation fileTree(dir: "${rootDir}/libs", include: ['*.jar', '*.aar'])
 
     //noinspection GradleDependency
     implementation "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin.plugin}"

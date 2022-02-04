@@ -1,12 +1,11 @@
 package com.newrelic.agent.android.ndk
 
-import junit.framework.Assert
 import junit.framework.TestCase
-import java.lang.RuntimeException
+import org.junit.Assert
 
 class NativeStackTraceTest : TestCase() {
     var nativeCrashStack: NativeStackTrace? = NativeStackTrace()
-    val backtrace = this::class.java.classLoader.getResource("backtrace.json").readText()
+    val backtrace = this::class.java.classLoader?.getResource("backtrace.json")?.readText()
 
     public override fun setUp() {
         nativeCrashStack = NativeStackTrace(backtrace)
