@@ -3,37 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-buildscript {
-    ext {
-        def hasOptional = { key, defaultValue -> rootProject.hasProperty(key) ? rootProject[key] : defaultValue }
-        newrelic = [
-                agent: [
-                        version       : hasOptional('newrelic.agent.version', '6.5.+'),
-                        snapshotNumber: hasOptional('newrelic.agent.snapshot', "experimental")
-                ]
-        ]
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
-        newrelic.agent.snapshotUri = uri("https://oss.sonatype.org/content/repositories/comnewrelic-$newrelic.agent.snapshotNumber")
-        newrelic.deps = [
-                agent : "com.newrelic.agent.android:android-agent:" + newrelic.agent.version,
-                plugin: "com.newrelic.agent.android:agent-gradle-plugin:" + newrelic.agent.version,
-        ]
-    }
-
-    repositories {
-        mavenLocal()
-        maven { url newrelic.agent.snapshotUri }
-    }
-
-    dependencies {
-        classpath newrelic.deps.plugin
-    }
-}
-
-plugins {
-    id 'com.android.application'
-    id 'kotlin-android'
-    id 'newrelic'
+if (newrelic.withLegacyAgent) {
+    apply plugin: 'newrelic'
 }
 
 android {

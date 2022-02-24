@@ -14,7 +14,18 @@ buildscript {
         def hasOptional = { key, defaultValue -> rootProject.hasProperty(key) ? rootProject[key] : defaultValue }
 
         newrelic = [
-                version: hasOptional('newrelic.version', '1.0.1'),
+                version: hasOptional('newrelic.version', '1.0.+'),
+                withLegacyAgent : hasOptional('newrelic.withLegacyAgent', false),
+                agent: [
+                        version       : hasOptional('newrelic.agent.version', '6.5.+'),
+                        snapshotNumber: hasOptional('newrelic.agent.snapshot', null),
+                ]
+        ]
+
+        newrelic.deps = [
+                ndk   : "com.newrelic.agent.android:agent-ndk:" + newrelic.version,
+                agent : "com.newrelic.agent.android:android-agent:" + newrelic.agent.version,
+                plugin: "com.newrelic.agent.android:agent-gradle-plugin:" + newrelic.agent.version
         ]
 
         versions = [
@@ -41,16 +52,18 @@ buildscript {
                 ]
         ]
     }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    // dependencies {
+    //    classpath newrelic.deps.plugin
+    // }
 }
 
 allprojects {
-    buildscript {
-        repositories {
-            mavenCentral()
-            google()
-        }
-    }
-
     repositories {
         mavenCentral()
         google()
@@ -59,14 +72,6 @@ allprojects {
 
 subprojects {
     ext.newrelic = rootProject.newrelic
-
-    buildscript {
-        repositories {
-            mavenCentral()
-            google()
-        }
-    }
-
     repositories {
         mavenCentral()
         google()

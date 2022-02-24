@@ -9,6 +9,7 @@ buildscript {
     repositories {
         mavenCentral()
         google()
+        mavenLocal()
     }
 
     dependencies {
@@ -16,7 +17,9 @@ buildscript {
         //noinspection DifferentKotlinGradleVersion
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin.plugin}"
         //noinspection GradleDynamicVersion,GradleDependency
-        classpath "com.newrelic.agent.android:agent-gradle-plugin:6.+"
+        if (newrelic.withLegacyAgent) {
+            classpath "com.newrelic.agent.android:agent-gradle-plugin:${newrelic.agent.version}"
+        }
     }
 }
 

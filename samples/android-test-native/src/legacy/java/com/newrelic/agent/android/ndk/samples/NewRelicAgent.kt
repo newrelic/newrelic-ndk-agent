@@ -31,7 +31,7 @@ class NewRelicAgent(val activity: Activity) {
     }
 
     fun onStart() {
-        legacyAgent?.start(activity?.applicationContext)
+        legacyAgent?.start(activity.applicationContext)
         activity.findViewById<TextView>(R.id.text)?.text = "Started"
         agentLog?.info("Legacy agent has started")
     }

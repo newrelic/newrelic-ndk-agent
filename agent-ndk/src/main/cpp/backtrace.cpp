@@ -160,7 +160,7 @@ bool collect_backtrace(char *backtrace_buffer,
     backtrace.ppid = getppid();
     backtrace.threads.clear();
 
-    state.reserve(BACKTRACE_SZ_MAX >> 1);
+    state.reserve(BACKTRACE_SZ_MAX);
 
     // then collect the threads, passing the backtrace state to the crashing thread
     collect_thread_state(backtrace);
