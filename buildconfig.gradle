@@ -1,3 +1,8 @@
+/**
+ * Copyright 2022-present New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 //
 // Include this file into the project's root-level build.gradle file.
 //
@@ -9,17 +14,18 @@ buildscript {
         def hasOptional = { key, defaultValue -> rootProject.hasProperty(key) ? rootProject[key] : defaultValue }
 
         newrelic = [
-                version: hasOptional('newrelic.version', '1.0.1'),
-                agent  : [
+                version: hasOptional('newrelic.version', '1.0.+'),
+                withLegacyAgent : hasOptional('newrelic.withLegacyAgent', false),
+                agent: [
                         version       : hasOptional('newrelic.agent.version', '6.5.+'),
-                        snapshotNumber: hasOptional('newrelic.agent.snapshot', "experimental")
+                        snapshotNumber: hasOptional('newrelic.agent.snapshot', null),
                 ]
         ]
 
-        newrelic.agent.snapshotUri = uri("https://oss.sonatype.org/content/repositories/comnewrelic-$newrelic.agent.snapshotNumber")
-
         newrelic.deps = [
-                agent: "com.newrelic.agent.android:android-agent:" + newrelic.agent.version
+                ndk   : "com.newrelic.agent.android:agent-ndk:" + newrelic.version,
+                agent : "com.newrelic.agent.android:android-agent:" + newrelic.agent.version,
+                plugin: "com.newrelic.agent.android:agent-gradle-plugin:" + newrelic.agent.version
         ]
 
         versions = [
@@ -46,44 +52,27 @@ buildscript {
                 ]
         ]
     }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    // dependencies {
+    //    classpath newrelic.deps.plugin
+    // }
 }
 
 allprojects {
-    buildscript {
-        repositories {
-            maven { url newrelic.agent.snapshotUri }
-            mavenLocal()
-        }
-        dependencies {
-
-        }
-    }
-
     repositories {
+        mavenCentral()
         google()
-        mavenLocal()
     }
 }
 
 subprojects {
     ext.newrelic = rootProject.newrelic
-
-    buildscript {
-        repositories {
-            maven { url newrelic.agent.snapshotUri }
-            mavenLocal()
-            mavenCentral()
-            google()
-        }
-
-        dependencies {
-
-        }
-    }
-
     repositories {
-        maven { url newrelic.agent.snapshotUri }
-        mavenLocal()
         mavenCentral()
         google()
     }

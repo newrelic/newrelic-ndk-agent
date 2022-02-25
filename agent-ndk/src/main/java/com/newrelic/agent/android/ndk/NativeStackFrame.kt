@@ -15,10 +15,11 @@ import org.json.JSONObject
  * Per {@link StackTraceElement#isNativeMethod()}, line number -2 indicates this frame is native
  */
 class NativeStackFrame(
-    className: String = "",
+    className: String = "<native>",
     methodName: String = "<unknown>",
     fileName: String = "<unknown>",
-    lineNumber: Int = -2 ) {
+    lineNumber: Int = -2
+) {
 
     var delegate: StackTraceElement =
         StackTraceElement(className, methodName, fileName, lineNumber)
@@ -30,9 +31,9 @@ class NativeStackFrame(
     fun fromJson(frame: JSONObject): NativeStackFrame {
         try {
             delegate = StackTraceElement(
-                frame.optString("className", ""),
-                frame.optString("sym_name", "<unknown>"),
-                frame.optString("so_path", "<unknown>"),
+                "0x" + frame.optLong("address", frame.optLong("so_base", -1L)).toString(16),
+                frame.optString("sym_name", "???"), // "0x" + frame.optLong("sym_addr", -1L).toString(16)),
+                frame.optString("so_path", "0x" + frame.optLong("so_base", -1L).toString(16)),
                 frame.optInt("lineNumber", -2)
             )
         } catch (e: Exception) {
@@ -56,8 +57,10 @@ class NativeStackFrame(
                         try {
                             val frame = get(i) as JSONObject
                             val stackFrame = NativeStackFrame().fromJson(frame)
-                            stackFrames.add(frame.optInt("index", stackFrames.size),
-                                stackFrame.asStackTraceElement())
+                            stackFrames.add(
+                                frame.optInt("index", stackFrames.size),
+                                stackFrame.asStackTraceElement()
+                            )
                         } catch (e: Exception) {
                             stackFrames.add(
                                 NativeStackFrame(get(i).toString()).asStackTraceElement()

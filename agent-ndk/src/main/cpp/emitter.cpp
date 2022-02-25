@@ -121,7 +121,6 @@ __unused static const char *frame_to_string(stackframe_t &stackframe, std::strin
     if (*stackframe.sym_name != '\0') {
         _EMIT_F(frame, " (%s+%d)", stackframe.sym_name, stackframe.sym_addr_offset);
     }
-    // _LOGE("%s", frame.c_str());
     return frame.c_str();
 }
 
@@ -132,11 +131,16 @@ static const char *frame_to_json(stackframe_t &stackframe, std::string &state) {
     _EMIT_F(frame, "'index':%d,", stackframe.index);
     _EMIT_F(frame, "'address':%zu,", stackframe.address);
     _EMIT_F(frame, "'pc':%zu,", stackframe.pc);
-    _EMIT_F(frame, "'so_path':'%s',", stackframe.so_path);
-    _EMIT_F(frame, "'sym_name':'%s',", stackframe.sym_name);
     _EMIT_F(frame, "'so_base':%zu,", stackframe.so_base);
     _EMIT_F(frame, "'sym_addr':%zu,", stackframe.sym_addr);
     _EMIT_F(frame, "'sym_addr_offset':%zu", stackframe.sym_addr_offset);
+
+    if (*stackframe.so_path != '\0') {
+        _EMIT_F(frame, ",'so_path':'%s'", stackframe.so_path);
+    }
+    if (*stackframe.sym_name != '\0') {
+        _EMIT_F(frame, ",'sym_name':'%s'", stackframe.sym_name);
+    }
 
     _EMIT_E(state, nullptr, frame.c_str(), nullptr);
 
@@ -324,7 +328,7 @@ const char *emit_callstack(backtrace_state_t *backtrace_state, std::string &stat
  * @param thread Thread data
  * @return Thread data appended to state
  */
-const char * emit_thread_info(threadinfo_t &thread, std::string &state) {
+const char *emit_thread_info(threadinfo_t &thread, std::string &state) {
     std::string tstate, callstack;
 
     _EMIT_F(tstate, "'threadNumber':%d,", thread.tid);

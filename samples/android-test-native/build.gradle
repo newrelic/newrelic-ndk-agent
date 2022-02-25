@@ -3,9 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-plugins {
-    id 'com.android.application'
-    id 'kotlin-android'
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+if (newrelic.withLegacyAgent) {
+    apply plugin: 'newrelic'
 }
 
 android {
@@ -17,7 +19,7 @@ android {
         targetSdkVersion versions.agp.targetSdk
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.1"
 
         externalNativeBuild {
             cmake {
@@ -40,7 +42,7 @@ android {
     }
 
     buildTypes {
-        release {
+        debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             // AGP 4.1+
@@ -64,6 +66,19 @@ android {
 
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+
+    flavorDimensions "sdk"
+    productFlavors {
+        ndk {
+            dimension "sdk"
+            applicationIdSuffix ".debugNDK"
+        }
+
+        legacy {
+            dimension "sdk"
+            applicationIdSuffix ".debugLegacy"
+        }
     }
 }
 

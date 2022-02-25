@@ -79,7 +79,7 @@ void transform_addr_to_stackframe(size_t index, uintptr_t address, stackframe_t 
     stackframe.index = index;
     stackframe.address = address;
 
-    _LOGE("Resolving frame[%zu]: addr[%zu]", index, address);
+    // _LOGD("Resolving frame[%zu]: addr[%zu]", index, address);
     if (dladdr(reinterpret_cast<void *>(address), &info)) {
 
         if (info.dli_fname) {
