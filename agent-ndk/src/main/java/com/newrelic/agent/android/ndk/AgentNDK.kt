@@ -10,7 +10,6 @@ import com.newrelic.agent.android.logging.AgentLog
 import com.newrelic.agent.android.logging.ConsoleAgentLog
 import com.newrelic.agent.android.stats.StatsEngine
 import java.io.File
-import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 
@@ -110,15 +109,19 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
                             try {
                                 if (postReport(report)) {
                                     log.info("Native report [${report.name}] submitted to New Relic")
+                                    continue
                                 }
                             } catch (e: Exception) {
                                 log.warning("Failed to parse/write native report [${report.name}: $e")
                             }
 
-                            val expirationTimeMs : Long = (System.currentTimeMillis() -
-                                    TimeUnit.MILLISECONDS.convert(managedContext.expirationPeriod, TimeUnit.SECONDS))
+                            val expirationTimeMs: Long = (System.currentTimeMillis() -
+                                    TimeUnit.MILLISECONDS.convert(
+                                        managedContext.expirationPeriod,
+                                        TimeUnit.SECONDS
+                                    ))
 
-                            if (report.lastModified() < expirationTimeMs) {
+                            if (report.exists() && (report.lastModified() < expirationTimeMs)) {
                                 log.info("Native report [${report.name}] has expired, deleting...")
                                 report.deleteOnExit()
                             }
@@ -161,8 +164,10 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
                     }
                 }
             }
+
             return !report.exists()
         }
+
         return false
     }
 

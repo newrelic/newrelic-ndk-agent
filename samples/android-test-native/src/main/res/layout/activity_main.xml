@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    tools:context="com.newrelic.agent.android.ndk.MainActivity">
+    tools:context="com.newrelic.agent.android.ndk.samples.MainActivity">
 
     <LinearLayout
         android:id="@+id/controls"

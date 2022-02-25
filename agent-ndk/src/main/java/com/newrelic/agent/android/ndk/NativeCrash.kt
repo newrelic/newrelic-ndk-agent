@@ -20,10 +20,6 @@ class NativeCrash(val nativeException: NativeException?,
 
     }
 
-    override fun toJsonString(): String {
-        return super.toJsonString()
-    }
-
     fun extractNativeThreads(nativeException: NativeException): List<ThreadInfo> {
         nativeException.nativeStackTrace?.apply {
             return this.threads
@@ -38,14 +34,6 @@ class NativeCrash(val nativeException: NativeException?,
         }
 
         return super.extractThreads(throwable)
-    }
-
-    override fun getAppToken(): String {
-        return super.getAppToken()
-    }
-
-    override fun toString(): String {
-        return super.toString()
     }
 
     companion object {
