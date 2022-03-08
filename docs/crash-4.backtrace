@@ -1,5 +1,0 @@
-#00 pc 000000000005a2a8 /apex/com.android.runtime/lib64/bionic/libc.so (syscall + 24)
-#01 pc 000000000000ee18 /data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so
-#02 pc 000000000000f97c /data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so
-#03 pc 00000000000c7d2b /apex/com.android.runtime/lib64/bionic/libc.so      
-#04 pc 000000000005f0c8 /apex/com.android.runtime/lib64/bionic/libc.so
