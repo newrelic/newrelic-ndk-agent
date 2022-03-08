@@ -58,4 +58,4 @@ dkms.conf
 **/build
 **/local.properties
 **/.DS_Store
-
+**/docs

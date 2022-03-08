@@ -18,7 +18,7 @@ buildscript {
                 withLegacyAgent : hasOptional('newrelic.withLegacyAgent', false),
                 agent: [
                         version       : hasOptional('newrelic.agent.version', '6.5.+'),
-                        snapshotNumber: hasOptional('newrelic.agent.snapshot', null),
+                        snapshot      : hasOptional('newrelic.agent.snapshot', null),
                 ]
         ]
 
@@ -51,30 +51,38 @@ buildscript {
                         cmake     : '3.18.1'
                 ]
         ]
+
+        newrelic.agent.snapshotUri = uri("https://oss.sonatype.org/content/repositories/comnewrelic-$newrelic.agent.snapshot")
     }
 
     repositories {
+        maven { url newrelic.agent.snapshotUri }
         mavenLocal()
         mavenCentral()
     }
-
-    // dependencies {
-    //    classpath newrelic.deps.plugin
-    // }
 }
 
-allprojects {
-    repositories {
-        mavenCentral()
-        google()
-    }
-}
 
 subprojects {
     ext.newrelic = rootProject.newrelic
+
+    buildscript {
+        repositories {
+            maven { url newrelic.agent.snapshotUri }
+            mavenLocal()
+            mavenCentral()
+            google()
+        }
+
+        dependencies {
+            classpath newrelic.deps.plugin
+        }
+    }
+
     repositories {
+        maven { url newrelic.agent.snapshotUri }
+        mavenLocal()
         mavenCentral()
         google()
     }
-
 }
