@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/dump_stack"
+        android:title="@string/dumpStack" />
+    <item android:id="@+id/flush_reports"
+        android:title="@string/flushReports" />
+    <item android:id="@+id/crash_me"
+        android:title="@string/crashMe" />
+</menu>

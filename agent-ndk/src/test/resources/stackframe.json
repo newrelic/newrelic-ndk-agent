@@ -1,0 +1,11 @@
+{
+  "cstr": "#01 pc 000000000000ee18 /data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so (crashBySignal(int) + 136)",
+  "index": 1,
+  "address": 128939423493656,
+  "pc": 60952,
+  "so_path": "/data/app/~~==/base.apk!/lib/x86_64/libnative-lib.so",
+  "sym_name": "crashBySignal(int)",
+  "so_base": 128939423432704,
+  "sym_addr": 128939423493520,
+  "sym_addr_offset": 136
+}
