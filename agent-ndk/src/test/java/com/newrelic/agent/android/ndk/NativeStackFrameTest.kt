@@ -45,7 +45,7 @@ class NativeStackFrameTest : TestCase() {
     fun testFromJson() {
         nativeStackFrame.fromJson(stackframe)
         val element = nativeStackFrame.asStackTraceElement()
-        Assert.assertEquals(element.className, "")
+        Assert.assertEquals(element.className, "0x75450c88ee18")
         Assert.assertEquals(element.methodName, "crashBySignal(int)")
         Assert.assertTrue(element.fileName.startsWith("/data/app/~~"))
         Assert.assertEquals(element.lineNumber, -2)
@@ -54,7 +54,7 @@ class NativeStackFrameTest : TestCase() {
     fun testFromJsonObj() {
         nativeStackFrame.fromJson(JSONObject(stackframe))
         val element = nativeStackFrame.asStackTraceElement()
-        Assert.assertEquals(element.className, "")
+        Assert.assertEquals(element.className, "0x75450c88ee18")
         Assert.assertEquals(element.methodName, "crashBySignal(int)")
         Assert.assertTrue(element.fileName.startsWith("/data/app/~~"))
         Assert.assertEquals(element.lineNumber, -2)
