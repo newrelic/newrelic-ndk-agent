@@ -2,4 +2,4 @@ rootProject.name = 'android-agent-ndk'
 include ':agent-ndk'
 
 // Uncomment to build test harness
-include ':samples:android-test-native'
+// include ':samples:android-test-native'
