@@ -1,25 +1,29 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+/**
+ * Copyright 2021-present New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 buildscript {
     apply from: "$rootDir/buildconfig.gradle"
 
     repositories {
+        mavenCentral()
         google()
-        jcenter()
         mavenLocal()
     }
+
     dependencies {
         classpath "com.android.tools.build:gradle:${versions.agp.plugin}"
+        //noinspection DifferentKotlinGradleVersion
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin.plugin}"
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+        //noinspection GradleDynamicVersion,GradleDependency
     }
 }
 
 allprojects {
     repositories {
-        mavenLocal()
+        mavenCentral()
         google()
-        jcenter()
     }
 }
 

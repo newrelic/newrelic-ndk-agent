@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:context="com.newrelic.agent.android.ndk.samples.MainActivity">
+
+    <LinearLayout
+        android:id="@+id/controls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/scrolledView"
+        android:orientation="vertical">
+        <LinearLayout
+            android:id="@+id/signals"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:orientation="horizontal"
+            android:weightSum="6"
+            app:layout_constraintBottom_toTopOf="@id/cppExceptions"
+            >
+            <Spinner
+                android:id="@+id/signalSpinner"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="4"
+                android:entries="@array/signals" />
+
+            <Button
+                android:id="@+id/btnSignal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="@string/raise" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/cppExceptions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:orientation="horizontal"
+            android:weightSum="6"
+            app:layout_constraintTop_toBottomOf="@id/signals"
+            app:layout_constraintBottom_toTopOf="@id/threadedCrash">
+            <Spinner
+                android:id="@+id/exceptionSpinner"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="4"
+                android:entries="@array/exceptions" />
+            <Button
+                android:id="@+id/btnThrow"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="@string/throwCpp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/threadedCrash"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:orientation="horizontal"
+            android:weightSum="6"
+            app:layout_constraintTop_toBottomOf="@id/cppExceptions"
+            app:layout_constraintBottom_toTopOf="@id/anr">
+            <Spinner
+                android:id="@+id/threadedCrashSpinner"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="4"
+                android:entries="@array/threaded_crashes"
+                />
+            <Button
+                android:id="@+id/btnThreadedCrash"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="@string/threadedCrash" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/anr"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintTop_toBottomOf="@id/threadedCrash">
+
+            <Button
+                android:id="@+id/btnANR"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/anr" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/scrolledView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/controls">
+        <TextView
+            android:id="@+id/text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:padding="4dp"
+            android:text=""
+            android:textSize="18sp"/>
+    </ScrollView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
