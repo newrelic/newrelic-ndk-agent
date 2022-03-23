@@ -8,8 +8,6 @@ plugins {
     id "kotlin-android"
 }
 
-def bootstrap = properties.get("newrelic.bootstrap") as Boolean
-
 android {
     compileSdkVersion versions.agp.compileSdk
     ndkVersion versions.agp.ndk
@@ -81,14 +79,8 @@ android {
 }
 
 dependencies {
-    if (bootstrap) {
-        logger.warn("[${project.name}] Bootstrapping legacy agent dependency")
-        compileOnly fileTree(dir: "${rootDir}/libs", include: ['*.jar', '*.aar'])
-        testImplementation fileTree(dir: "${rootDir}/libs", include: ['*.jar', '*.aar'])
-    } else {
-        compileOnly newrelic.deps.agent
-        testImplementation newrelic.deps.agent
-    }
+    compileOnly newrelic.deps.agent
+    testImplementation newrelic.deps.agent
 
     //noinspection GradleDependency
     implementation "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin.plugin}"
