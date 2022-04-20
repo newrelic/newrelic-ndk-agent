@@ -6,7 +6,9 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
-if (newrelic.withLegacyAgent) {
+def withLegacyAgent = true
+
+if (withLegacyAgent) {
     apply plugin: 'newrelic'
 }
 
@@ -36,7 +38,6 @@ android {
 
         ndk {
             // https://developer.android.com/ndk/guides/abis#sa
-            // abiFilters 'x86_64', 'x86' // , 'arm64-v8a', 'armeabi-v7a',
         }
 
     }

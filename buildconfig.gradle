@@ -15,7 +15,6 @@ buildscript {
 
         newrelic = [
                 version: hasOptional('newrelic.version', '1.0.+'),
-                withLegacyAgent : hasOptional('newrelic.withLegacyAgent', false),
                 agent: [
                         version       : hasOptional('newrelic.agent.version', '6.5.+'),
                         snapshot      : hasOptional('newrelic.agent.snapshot', null),
