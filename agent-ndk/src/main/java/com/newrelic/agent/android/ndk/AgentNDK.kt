@@ -9,6 +9,7 @@ import android.content.Context
 import com.newrelic.agent.android.logging.AgentLog
 import com.newrelic.agent.android.logging.ConsoleAgentLog
 import com.newrelic.agent.android.stats.StatsEngine
+import com.scottyab.rootbeer.RootBeer
 import java.io.File
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
@@ -24,7 +25,6 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
 
     external fun crashNow(cause: String? = "This is a demonstration native crash courtesy of New Relic")
     external fun dumpStack(): String
-    external fun isRootedDevice(): Boolean
 
     companion object {
         internal interface AnalyticsAttribute {
@@ -136,6 +136,11 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
         } finally {
             lock.unlock()
         }
+    }
+
+    fun isRooted(): Boolean {
+        var rootBeer: RootBeer = RootBeer(managedContext?.getAgentNDKContext())
+        return rootBeer.isRooted();
     }
 
     private fun postReport(report: File): Boolean {

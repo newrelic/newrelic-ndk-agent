@@ -84,6 +84,7 @@ dependencies {
 
     //noinspection GradleDependency
     implementation "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin.plugin}"
+    implementation 'com.scottyab:rootbeer-lib:' + project.versions.libraries.rootbeer
 
     testImplementation 'org.robolectric:robolectric:' + project.versions.test.robolectric
     testImplementation 'junit:junit:' + project.versions.test.junit

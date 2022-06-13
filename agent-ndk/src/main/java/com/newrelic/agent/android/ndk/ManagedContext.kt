@@ -40,6 +40,10 @@ class ManagedContext(val context: Context? = null) {
         return File("./")
     }
 
+    fun getAgentNDKContext(): Context? {
+        return context;
+    }
+
     companion object {
         val DEFAULT_TTL = TimeUnit.SECONDS.convert(7, TimeUnit.DAYS)
     }
