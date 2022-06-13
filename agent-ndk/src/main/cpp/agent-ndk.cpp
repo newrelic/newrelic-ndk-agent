@@ -117,17 +117,6 @@ JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_crashNow(JNI
 }
 
 extern "C"
-JNIEXPORT jboolean JNICALL
-Java_com_newrelic_agent_android_ndk_AgentNDK_isRootedDevice(JNIEnv * env, jobject thiz) {
-    (void) env;
-    (void) thiz;
-
-    // TODO
-
-    return false;
-}
-
-extern "C"
 JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeSetContext(JNIEnv *env, jobject thiz, jobject managedContext) {
     (void) thiz;
     jni::set_native_context(env, managedContext);
