@@ -42,7 +42,7 @@ buildscript {
                 agp   : [
                         // https://developer.android.com/studio/releases/platforms
                         plugin    : hasOptional('newrelic.agp.version', '4.1.+'),
-                        minSdk    : 21,         // Android 5.0
+                        minSdk    : 24,         // Android 7.0
                         compileSdk: 28,         // Android 8.1
                         targetSdk : 28,         // Android 8.1
                         buildTools: '29.0.2',

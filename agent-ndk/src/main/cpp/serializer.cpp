@@ -1,5 +1,5 @@
 /**
- * Copyright 2021-present New Relic Corporation. All rights reserved.
+ * Copyright 2022-present New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  *
  */
@@ -22,14 +22,14 @@ namespace serializer {
 
     void from_crash(const char *buffer, size_t buffsz) {
         to_storage("crash-", buffer, buffsz);
-        // TODO crashes may be best left on storage and processed
+        // Crashes are best left in storage and processed
         // on the next app launch
-        // jni::on_native_crash(buffer);
     }
 
     void from_exception(const char *buffer, size_t buffsz) {
         to_storage("ex-", buffer, buffsz);
-        jni::on_native_exception(buffer);
+        // Exceptions are best left in storage and processed
+        // on the next app launch
     }
 
     void from_anr(const char *buffer, size_t buffsz) {
@@ -67,7 +67,7 @@ namespace serializer {
         auto now = system_clock::now();
         auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
         auto timer = system_clock::to_time_t(now);
-        std::tm wallTime = *std::localtime(&timer);
+        std::tm wallTime = *(std::localtime(&timer));
 
         oss << native_context.reportPathAbsolute << "/"
             << filePrefix

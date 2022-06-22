@@ -1,5 +1,5 @@
 /**
- * Copyright 2021-present New Relic Corporation. All rights reserved.
+ * Copyright 2022-present New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -23,6 +23,8 @@ namespace procfs {
     const char *get_task_path(pid_t, std::string &);
 
     const char *get_thread_stat(pid_t, pid_t, std::string &);
+
+    const char *get_process_stat(pid_t, std::string &);
 
 }   // namespace procfs
 

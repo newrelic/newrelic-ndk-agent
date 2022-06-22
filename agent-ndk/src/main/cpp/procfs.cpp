@@ -1,5 +1,5 @@
 /**
- * Copyright 2021-present New Relic Corporation. All rights reserved.
+ * Copyright 2022-present New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -92,6 +92,24 @@ namespace procfs {
         taskPath = path;
 
         return taskPath.c_str();
+    }
+
+    const char *get_process_stat(pid_t pid, std::string &statResult) {
+        char path[PATH_MAX];
+        std::snprintf(path, sizeof(path), "/proc/%d/stat", pid);
+
+        FILE *fp = fopen(path, "r");
+        if (fp != nullptr) {
+            char buff[1024];
+            if (fgets(buff, sizeof(buff), fp) != nullptr) {
+                statResult = trim_trailing_ws(buff);
+            }
+            fclose(fp);
+        } else {
+            _LOGE("get_cpu_sample: error[%d]: %s", errno, strerror(errno));
+        }
+
+        return statResult.c_str();
     }
 
 }   // namespace procfs

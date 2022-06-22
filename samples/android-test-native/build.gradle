@@ -73,12 +73,12 @@ android {
     productFlavors {
         ndk {
             dimension "sdk"
-            applicationIdSuffix ".debugNDK"
+            applicationIdSuffix ".ndk"
         }
 
         legacy {
             dimension "sdk"
-            applicationIdSuffix ".debugLegacy"
+            applicationIdSuffix ".legacy"
         }
     }
 }

@@ -59,38 +59,16 @@ void interceptor(int signo, siginfo_t *_siginfo, void *ucontext) {
     if (!intercepting++) {
         char *buffer = new char[BACKTRACE_SZ_MAX];
 
-        if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
-            serializer::from_crash(buffer, std::strlen(buffer));
-        }
-
-        /*
         for (size_t i = 0; i < observedSignalCnt; i++) {
             if (observedSignals[i].signo == signo) {
                 const observed_signal_t *signal = &observedSignals[i];
-
                 _LOGD("Signal %d intercepted: %s", signal->signo, signal->description);
-                switch (signo) {
-                    case SIGILL:
-                    case SIGTRAP:
-                    case SIGABRT:
-                    case SIGFPE:
-                    case SIGBUS:
-                    case SIGSEGV:
-                        char *buffer = new char[BACKTRACE_SZ_MAX];
-                        if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
-                            serializer::from_crash(buffer, std::strlen(buffer));
-                        }
-                        delete [] buffer;
-                        break;
-
-                    default:
-                        _LOGE("Unsupported signal %d intercepted!", signo);
-                        break;
-                }
-                break;
             }
         }
-        */
+
+        if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
+            serializer::from_crash(buffer, std::strlen(buffer));
+        }
 
         delete [] buffer;
 
@@ -152,7 +130,7 @@ void uninstall_handler() {
  * release all alloc'd heap:
  */
 void dealloc() {
-    _LOGE("dealloc called");
+    _LOGD("dealloc called");
 
     if (_stack.ss_sp != nullptr) {
         free(_stack.ss_sp);

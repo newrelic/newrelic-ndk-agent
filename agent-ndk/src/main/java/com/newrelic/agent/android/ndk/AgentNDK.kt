@@ -25,18 +25,22 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
 
     external fun crashNow(cause: String? = "This is a demonstration native crash courtesy of New Relic")
     external fun dumpStack(): String
+    external fun getProcessStat(): String
 
     companion object {
         internal interface AnalyticsAttribute {
             companion object {
                 const val APPLICATION_PLATFORM_ATTRIBUTE = "platform"
+                const val APPLICATION_NOT_RESPONDING_ATTRIBUTE = "anr"
             }
         }
 
         internal interface MetricNames {
             companion object {
-                const val SUPPORTABILITY_NATIVE_CRASH = "Supportability/AgentHealth/Crash/NativeReporting"
-                const val SUPPORTABILITY_NATIVE_LOAD_ERR = "$SUPPORTABILITY_NATIVE_CRASH/Error/LoadLibrary"
+                const val SUPPORTABILITY_NATIVE_CRASH =
+                    "Supportability/AgentHealth/Crash/NativeReporting"
+                const val SUPPORTABILITY_NATIVE_LOAD_ERR =
+                    "$SUPPORTABILITY_NATIVE_CRASH/Error/LoadLibrary"
             }
         }
 
@@ -222,6 +226,11 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
 
         fun withLogger(agentLog: AgentLog): Builder {
             log = agentLog
+            return this
+        }
+
+        fun withANRMonitor(enabled: Boolean) : Builder {
+            managedContext?.anrMonitor = enabled
             return this
         }
 

@@ -120,6 +120,12 @@ class MainActivity : AppCompatActivity(), AgentNDKListener {
                 AgentNDK.getInstance().flushPendingReports()
                 true
             }
+            R.id.cpu_sample -> {
+                val sample = AgentNDK.getInstance().getProcessStat()
+                findViewById<TextView>(R.id.text).text = sample
+                postToClipboard(sample)
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }

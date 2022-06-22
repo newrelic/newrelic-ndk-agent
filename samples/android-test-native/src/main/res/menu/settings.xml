@@ -7,4 +7,6 @@
         android:title="@string/flushReports" />
     <item android:id="@+id/crash_me"
         android:title="@string/crashMe" />
+    <item android:id="@+id/cpu_sample"
+        android:title="@string/cpuSample" />
 </menu>

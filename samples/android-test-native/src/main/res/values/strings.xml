@@ -15,6 +15,7 @@
     <string name="flushReports">Flush reports</string>
     <string name="threadedCrash">Background Crash</string>
     <string name="anr">ANR</string>
+    <string name="cpuSample">CPU Sample</string>
 
     <string-array name="signals">
         <item>SIGQUIT (3)</item>

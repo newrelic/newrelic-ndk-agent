@@ -16,7 +16,6 @@ class AgentNDKTest {
 
     @Before
     fun setUp() {
-
         agentNdk = AgentNDK.getInstance()
         /*
         agentNdk = mock() {
@@ -30,7 +29,6 @@ class AgentNDKTest {
     @Test
     fun loadLib() {
         Assert.assertTrue(AgentNDK.loadAgent())
-        // ???
     }
 
     @Test
@@ -59,4 +57,10 @@ class AgentNDKTest {
     fun dumpstack() {
         // TODO
     }
+
+    @Test
+    fun cpuSample() {
+        // TODO
+    }
+
 }
