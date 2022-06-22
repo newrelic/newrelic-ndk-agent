@@ -29,6 +29,7 @@ class NewRelicAgent(var activity: Activity) : AgentNDKListener {
             .withBuildId(buildId)
             .withSessionId(sessionId)
             .withExpiration(reportTTL)
+            .withANRMonitor(true)
             .build()
     }
 

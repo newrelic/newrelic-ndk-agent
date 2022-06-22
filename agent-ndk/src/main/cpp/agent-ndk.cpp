@@ -1,5 +1,5 @@
 /**
- * Copyright 2021-present New Relic Corporation. All rights reserved.
+ * Copyright 2022-present New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -81,10 +81,9 @@ JNIEXPORT jboolean JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeSt
 }
 
 extern "C"
-JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStop(JNIEnv *env, jobject thiz, jboolean hard_kill) {
+JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStop(JNIEnv *env, jobject thiz) {
     (void) env;
     (void) thiz;
-    (void) hard_kill;
 
     signal_handler_shutdown();
     anr_handler_shutdown();
@@ -122,3 +121,9 @@ JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeSetCon
     jni::set_native_context(env, managedContext);
 }
 
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_com_newrelic_agent_android_ndk_AgentNDK_getProcessStat(JNIEnv *env, jobject /*thiz*/) {
+    std::string stat;
+    return env->NewStringUTF(procfs::get_process_stat(getpid(), stat));
+}
