@@ -28,7 +28,7 @@ const char *get_arch() {
 #elif defined(__i386__)
 #define ABI "x86"
 #elif defined(__x86_64__)
-    #define ABI "x86_64"
+#define ABI "x86_64"
 #elif defined(__mips64)  /* mips64el-* toolchain defines __mips__ too */
 #define ABI "mips64"
 #elif defined(__mips__)
@@ -91,7 +91,9 @@ Java_com_newrelic_agent_android_ndk_samples_MainActivity_installNative(JNIEnv *e
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_com_newrelic_agent_android_ndk_samples_MainActivity_raiseSignal(__unused JNIEnv *env, __unused jobject thiz, jint signo) {
+Java_com_newrelic_agent_android_ndk_samples_MainActivity_raiseSignal(__unused JNIEnv *env,
+                                                                     __unused jobject thiz,
+                                                                     jint signo) {
     crashBySignal(signo);
     return nullptr;
 }
@@ -163,7 +165,9 @@ void *crashing_thread(void *args) {
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_com_newrelic_agent_android_ndk_samples_MainActivity_backgroundCrash(JNIEnv *env, jobject thiz,
-                             jint signo, jint sleep_sec, jint thread_cnt, jboolean detached) {
+                                                                         jint signo, jint sleep_sec,
+                                                                         jint thread_cnt,
+                                                                         jboolean detached) {
 
     _thread_args_t *thread_args = new _thread_args_t();
 
@@ -194,4 +198,14 @@ Java_com_newrelic_agent_android_ndk_samples_MainActivity_backgroundCrash(JNIEnv 
     pthread_attr_destroy(&threadAttr);
 
     return nullptr;
+}
+
+volatile unsigned anrCounter = 0;
+
+extern "C"
+[[noreturn]] JNIEXPORT jobject JNICALL
+Java_com_newrelic_agent_android_ndk_samples_MainActivity_triggerNativeANR(JNIEnv* /*env*/, jobject /*thiz*/) {
+    for (unsigned i = 0;; i++) {
+        anrCounter = i;
+    }
 }

@@ -31,6 +31,8 @@ static volatile bool watchdog_triggered = false;
 static pthread_t watchdog_thread = 0;
 static sem_t watchdog_semaphore;
 static bool watchdog_must_poll = false;
+static char *reportBuffer = nullptr;
+
 
 /**
  * https://android.googlesource.com/platform/art/+/master/runtime/signal_catcher.cc
@@ -87,14 +89,11 @@ void anr_interceptor(__unused int signo, siginfo_t *_siginfo, void *ucontext) {
 
     if (enabled) {
         _LOGD("Notify the JVM delegate an ANR has occurred");
-        char *buffer = new char[BACKTRACE_SZ_MAX];
         const ucontext_t *_ucontext = static_cast<const ucontext_t *>(ucontext);
 
-        if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
-            serializer::from_anr(buffer, std::strlen(buffer));
+        if (collect_backtrace(reportBuffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
+            serializer::from_anr(reportBuffer, std::strlen(reportBuffer));
         }
-
-        // delete [] buffer;
     }
 
     // set the trigger flag for the poll loop if a semaphore was not created
@@ -173,6 +172,10 @@ bool detect_android_anr_handler() {
 void reset_android_anr_handler() {
     pid = 0;
     anr_monitor_tid = -1;
+    if(reportBuffer != nullptr) {
+        delete [] reportBuffer;
+        reportBuffer = nullptr;
+    }
 }
 
 
@@ -208,6 +211,7 @@ bool anr_handler_initialize() {
     // Unblock SIGQUIT to allow the ANR handler to run
     sigutils::unblock_signal(SIGQUIT);
 
+    reportBuffer = new char[BACKTRACE_SZ_MAX];
     enabled = true;
 
     _LOGD("anr_handler_initialize: watchdog sem [%p]", &watchdog_semaphore);
@@ -232,6 +236,7 @@ void anr_handler_shutdown() {
 
     sem_close(&watchdog_semaphore);
     watchdog_triggered = false;
+
     reset_android_anr_handler();
 }
 

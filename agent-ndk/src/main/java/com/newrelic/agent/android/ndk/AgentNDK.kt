@@ -31,15 +31,16 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
         internal interface AnalyticsAttribute {
             companion object {
                 const val APPLICATION_PLATFORM_ATTRIBUTE = "platform"
-                const val APPLICATION_NOT_RESPONDING_ATTRIBUTE = "anr"
+                const val APPLICATION_NOT_RESPONDING_ATTRIBUTE = "ANR"
             }
         }
 
         internal interface MetricNames {
             companion object {
-                const val SUPPORTABILITY_NATIVE_CRASH = "Supportability/AgentHealth/Crash/NativeReporting"
-                const val SUPPORTABILITY_NATIVE_LOAD_ERR = "$SUPPORTABILITY_NATIVE_CRASH/Error/LoadLibrary"
-                const val APPLICATION_NOT_RESPONDING_DETECTED = "$SUPPORTABILITY_NATIVE_CRASH/ANR/Detected"
+                const val SUPPORTABILITY_NATIVE_ROOT = "Supportability/AgentHealth/NativeReporting"
+                const val SUPPORTABILITY_NATIVE_CRASH = "$SUPPORTABILITY_NATIVE_ROOT/Crash"
+                const val SUPPORTABILITY_NATIVE_LOAD_ERR = "$SUPPORTABILITY_NATIVE_ROOT/Error/LoadLibrary"
+                const val SUPPORTABILITY_ANR_DETECTED = "$SUPPORTABILITY_NATIVE_ROOT/ANR/Detected"
             }
         }
 
@@ -222,7 +223,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
             return this
         }
 
-        fun withANRMonitor(enabled: Boolean) : Builder {
+        fun withANRMonitor(enabled: Boolean): Builder {
             managedContext?.anrMonitor = enabled
             return this
         }

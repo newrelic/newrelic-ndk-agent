@@ -5,8 +5,10 @@
 
 package com.newrelic.agent.android.ndk.samples
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import android.widget.Spinner
@@ -23,8 +25,9 @@ import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity(), AgentNDKListener {
     private var threadPool: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
-    private var newRelicAgent : NewRelicAgent? = null
+    private var newRelicAgent: NewRelicAgent? = null
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -66,9 +69,41 @@ class MainActivity : AppCompatActivity(), AgentNDKListener {
 
         btnANR.setOnClickListener() {
             // waste enough time on the main thread to trigger ANR
-            Toast.makeText(this, "Blocking the main tread for 10 secs", Toast.LENGTH_LONG).show()
-            runOnUiThread() {
-                Thread.sleep(10000)
+
+            // Activity ANR
+            // runOnUiThread() {
+            Toast.makeText(this, "Blocking the main Activity thread", Toast.LENGTH_LONG).show()
+            btnANR.text = "Sleeping..."    // needs some user input
+            btnANR.setPressed(true);
+            btnANR.invalidate();
+            Thread.sleep(8000)
+            btnANR.text = getString(R.string.anr)
+            // }
+
+            // Service ANR
+            Toast.makeText(this, "Blocking the main tread through Context Provider", Toast.LENGTH_LONG).show()
+            var contentProvider = getContentResolver()
+            val contentType = contentProvider.getType(CheeseyContentProvider.CONTENT_URI)
+            contentProvider.query(
+                CheeseyContentProvider.CONTENT_URI,
+                null, null, null, null
+            ).apply {
+                val stock = StringBuilder("CONTENT_URI: " + contentType + "\n");
+                if (moveToFirst()) {
+                    while (!isAfterLast()) {
+                        stock.append("\n["
+                                + getString(getColumnIndex(CheeseyContentProvider.country))
+                                + "] "
+                                + getString(getColumnIndex(CheeseyContentProvider.name))
+                        )
+                        moveToNext();
+                    }
+                } else {
+                    stock.append("No cheese for you")
+                }
+                runOnUiThread() {
+                    findViewById<TextView>(R.id.text).text = stock
+                }
             }
         }
     }
@@ -145,6 +180,8 @@ class MainActivity : AppCompatActivity(), AgentNDKListener {
         detached: Boolean = true
     ): Void
 
+    private external fun triggerNativeANR(): Void
+
     companion object {
         init {
             System.loadLibrary("native-lib")
@@ -183,6 +220,5 @@ class MainActivity : AppCompatActivity(), AgentNDKListener {
         val clip = ClipData.newPlainText("backtrace", str)
         clipboard.setPrimaryClip(clip)
     }
-
 
 }

@@ -63,26 +63,23 @@ open class ANRMonitor {
 
     fun notify(anrAsJson: String? = null) {
         StatsEngine.get()
-            .inc(AgentNDK.Companion.MetricNames.APPLICATION_NOT_RESPONDING_DETECTED)
-
-        // compose the native portion of the ANR
-        val nativeException = NativeException(anrAsJson)
+            .inc(AgentNDK.Companion.MetricNames.SUPPORTABILITY_ANR_DETECTED)
 
         // save the UI thread, aka the thread that is blocking
-        val managedException = ANRException(Looper.getMainLooper().thread)
+        val exception = NativeException(anrAsJson)
 
-        // and weave into the JVM stacktrace
+        // and weave in the JVM stacktrace
+        exception.stackTrace = Looper.getMainLooper().thread.stackTrace
 
-        // poll the activity manager for error details,
-        // then send the ANR as a HEx event
-        reportWithRetry(managedException)
+        // Poll the activity manager for details, then send the ANR as a HEx event
+        reportWithRetry(exception)
     }
 
     internal fun isNativeTrace(stackTrace: Array<StackTraceElement>): Boolean {
         if (!stackTrace.isEmpty()) {
             return stackTrace[0].isNativeMethod
         }
-        return false
+        return true // false
     }
 
     internal fun getProcessErrorStateOrNull(): ActivityManager.ProcessErrorStateInfo? {
@@ -101,9 +98,9 @@ open class ANRMonitor {
         return null
     }
 
-    internal fun reportWithRetry(exception: Exception) {
+    internal fun reportWithRetry(exception: NativeException) {
         val handler = Handler(monitorThread.looper)
-        val retries = AtomicInteger(100)
+        val retries = AtomicInteger(250)
         val attributes: HashMap<String?, Any?> = HashMap<String?, Any?>()
 
         attributes.put(
@@ -115,6 +112,22 @@ open class ANRMonitor {
             "true"
         )
 
+        exception.cause?.apply {
+            attributes.put("cause", this.message)
+        }
+
+        exception.nativeStackTrace?.apply {
+            crashedThread?.apply {
+                attributes.put("crashingThreadId", threadId)
+            }
+            threads.apply {
+                attributes.put("threads", this)
+            }
+            exceptionMessage?.apply {
+                attributes.put("exceptionMessage", this)
+            }
+        }
+
         handler.post(
             object : Runnable {
                 override fun run() {
@@ -122,10 +135,6 @@ open class ANRMonitor {
 
                     if (anrDetails != null) {
                         AgentNDK.log.debug("ANR monitor notified. Posting ANR report")
-
-                        if (isNativeTrace(exception.stackTrace)) {
-                            anrDetails
-                        }
 
                         attributes.put("pid", anrDetails?.pid)
                         attributes.put("uid", anrDetails?.uid)
@@ -203,12 +212,6 @@ open class ANRMonitor {
             override fun run() {
                 signaled = true
                 notifyAll()
-            }
-        }
-
-        internal class ANRException(thread: Thread) : Exception() {
-            init {
-                stackTrace = thread.stackTrace
             }
         }
     }
