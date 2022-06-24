@@ -39,6 +39,7 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 /* Collection of observed signals */
 static observed_signal_t observedSignals[] = {
         {SIGILL,  "SIGILL",  "Illegal instruction",                               {}},
+        {SIGTRAP, "SIGTRAP", "Trap (invalid memory reference)", {}},
         {SIGABRT, "SIGABRT", "Abnormal termination",                              {}},
         {SIGFPE,  "SIGFPE",  "Floating-point exception",                          {}},
         {SIGBUS,  "SIGBUS",  "Bus error (bad memory access)",                     {}},

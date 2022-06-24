@@ -33,8 +33,14 @@ class JVMDelegate() {
      */
     fun onApplicationNotResponding(anrAsString: String?) {
         AgentNDK.log.debug("onApplicationNotResponding: $anrAsString")
-        AgentNDK.getInstance().managedContext?.nativeReportListener?.run {
-            onApplicationNotResponding(anrAsString)
+
+        if (ANRMonitor.getInstance().isRunning()) {
+            ANRMonitor.getInstance().notify(anrAsString)
+
+        } else {
+            AgentNDK.getInstance().managedContext?.nativeReportListener?.run {
+                onApplicationNotResponding(anrAsString)
+            }
         }
     }
 }

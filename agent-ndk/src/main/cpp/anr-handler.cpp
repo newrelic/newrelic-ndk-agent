@@ -47,7 +47,7 @@ void raise_anr_signal() {
     }
 }
 
-void *anr_monitor_thread(__unused void *unused) {
+[[noreturn]] void *anr_monitor_thread(__unused void *unused) {
     static const useconds_t poll_sleep = 100000;
 
     _LOGD("anr_monitor_thread: started (enabled[%d])", (int) enabled);
@@ -55,8 +55,10 @@ void *anr_monitor_thread(__unused void *unused) {
 
     while (enabled) {
         watchdog_triggered = false;
+
         _LOGD("anr_monitor_thread: waiting on trigger via %s",
               watchdog_must_poll ? "polling" : "semaphore");
+
         if (watchdog_must_poll || sem_wait(&watchdog_semaphore) != 0) {
             while (enabled && !watchdog_triggered) {
                 _LOGD("anr_monitor_thread: sleeping [%d] ns", poll_sleep);
@@ -197,8 +199,8 @@ bool anr_handler_initialize() {
         _LOGW("Failed to init semaphore, revert to polling");
     }
 
-    // Install the new SIGQUIT (ANR) handler. The previous SIGQUIT
-    // handler must not be called, so no need to save it
+    // Install the new SIGQUIT (ANR) handler.
+    // The previous SIGQUIT handler must not be called
     if (!sigutils::install_handler(SIGQUIT, anr_interceptor, nullptr, 0)) {
         _LOGE("Could not install SIGQUIT handler: ANR reports will not be collected.");
     }

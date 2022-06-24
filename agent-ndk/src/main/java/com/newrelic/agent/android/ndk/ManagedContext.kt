@@ -16,9 +16,8 @@ class ManagedContext(val context: Context? = null) {
     var sessionId: String? = null
     var buildId: String? = null
     var reportsDir: File? = getNativeReportsDir(context?.cacheDir)
-    var libDir: File? = getNativeLibraryDir(context)
     var nativeReportListener: AgentNDKListener? = null
-    var anrMonitor: Boolean = false
+    var anrMonitor: Boolean = true
     var expirationPeriod = DEFAULT_TTL
 
     fun getNativeReportsDir(rootDir: File?): File {
@@ -38,10 +37,6 @@ class ManagedContext(val context: Context? = null) {
         }
 
         return File("./")
-    }
-
-    fun getAgentNDKContext(): Context? {
-        return context;
     }
 
     companion object {

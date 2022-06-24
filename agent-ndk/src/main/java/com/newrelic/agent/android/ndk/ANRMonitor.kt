@@ -1,19 +1,24 @@
 /**
- * Copyright 2021-present New Relic Corporation. All rights reserved.
+ * Copyright 2022-present New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 package com.newrelic.agent.android.ndk
 
-import android.os.Debug
+import android.app.ActivityManager
+import android.content.Context
 import android.os.Handler
+import android.os.HandlerThread
 import android.os.Looper
+import android.os.Process
 import com.newrelic.agent.android.agentdata.AgentDataController
-import com.newrelic.agent.android.util.NamedThreadFactory
+import com.newrelic.agent.android.stats.StatsEngine
 import java.util.*
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * An secondary approach to detecting ANR conditions during runtime
@@ -23,13 +28,12 @@ import java.util.concurrent.TimeUnit
 open class ANRMonitor {
 
     var future: Future<*>? = null
-    val handler: Handler = Handler(Looper.getMainLooper())
-    var disableWhileDebugging = false
-    val executor = Executors.newSingleThreadExecutor(
-        NamedThreadFactory("NR-ANRMonitor")
-    )
+    val handler = Handler(Looper.getMainLooper())
+    val monitorThread = HandlerThread("NR-ANRMonitor")
+    val executor: ExecutorService = Executors.newSingleThreadExecutor()
+    val anrMonitorRunner = Runnable {
+        monitorThread.start()
 
-    private val anrMonitorRunner = Runnable {
         while (!Thread.interrupted()) {
             try {
                 val runner = WaitableRunner()
@@ -41,51 +45,120 @@ open class ANRMonitor {
                         return@Runnable
                     }
 
-                    runner.wait(DEFAULT_ANR_TIMEOUT)
+                    runner.wait(ANR_TIMEOUT)
 
                     if (!runner.signaled) {
-                        if (disableWhileDebugging &&
-                            (Debug.isDebuggerConnected() || Debug.waitingForDebugger())
-                        ) {
-                            return@synchronized
-                        }
-
-                        val attributes: HashMap<String?, Any?> = object : HashMap<String?, Any?>() {
-                            init {
-                                put(AgentNDK.Companion.AnalyticsAttribute.APPLICATION_PLATFORM_ATTRIBUTE, "native")
-                                put("ANR", "true")
-                            }
-                        }
-
-                        val exceptionToHandle: Exception = NativeException("Application not responding")
-                        if (!AgentDataController.sendAgentData(exceptionToHandle, attributes)) {
-                            AgentNDK.log.error("AgentDataController not initialized")
-                            stopMonitor()
-                        }
-
+                        notify()
                         runner.wait()
                     }
 
                     Thread.yield()
                 }
             } catch (e: InterruptedException) {
-                e.printStackTrace()
+                // e.printStackTrace()
             }
         }
+        monitorThread.quitSafely()
     }
 
-    /**
-     * Ignore detected ANRs when debugging
-     */
-    fun disableWhileDebugging(): ANRMonitor {
-        disableWhileDebugging = true
-        return this
+    fun notify(anrAsJson: String? = null) {
+        StatsEngine.get()
+            .inc(AgentNDK.Companion.MetricNames.APPLICATION_NOT_RESPONDING_DETECTED)
+
+        // compose the native portion of the ANR
+        val nativeException = NativeException(anrAsJson)
+
+        // save the UI thread, aka the thread that is blocking
+        val managedException = ANRException(Looper.getMainLooper().thread)
+
+        // and weave into the JVM stacktrace
+
+        // poll the activity manager for error details,
+        // then send the ANR as a HEx event
+        reportWithRetry(managedException)
+    }
+
+    internal fun isNativeTrace(stackTrace: Array<StackTraceElement>): Boolean {
+        if (!stackTrace.isEmpty()) {
+            return stackTrace[0].isNativeMethod
+        }
+        return false
+    }
+
+    internal fun getProcessErrorStateOrNull(): ActivityManager.ProcessErrorStateInfo? {
+        val am = runCatching {
+            AgentNDK.getInstance().managedContext?.context!!.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+        }.getOrNull()
+
+        try {
+            am?.processesInErrorState?.apply {
+                return firstOrNull { it.pid == Process.myPid() }
+            }
+        } catch (e: Exception) {
+            AgentNDK.log.error(e.toString())
+        }
+
+        return null
+    }
+
+    internal fun reportWithRetry(exception: Exception) {
+        val handler = Handler(monitorThread.looper)
+        val retries = AtomicInteger(100)
+        val attributes: HashMap<String?, Any?> = HashMap<String?, Any?>()
+
+        attributes.put(
+            AgentNDK.Companion.AnalyticsAttribute.APPLICATION_PLATFORM_ATTRIBUTE,
+            "native"
+        )
+        attributes.put(
+            AgentNDK.Companion.AnalyticsAttribute.APPLICATION_NOT_RESPONDING_ATTRIBUTE,
+            "true"
+        )
+
+        handler.post(
+            object : Runnable {
+                override fun run() {
+                    val anrDetails = getProcessErrorStateOrNull()
+
+                    if (anrDetails != null) {
+                        AgentNDK.log.debug("ANR monitor notified. Posting ANR report")
+
+                        if (isNativeTrace(exception.stackTrace)) {
+                            anrDetails
+                        }
+
+                        attributes.put("pid", anrDetails?.pid)
+                        attributes.put("uid", anrDetails?.uid)
+                        attributes.put("processName", anrDetails?.processName)
+                        attributes.put("shortMsg", anrDetails?.shortMsg)
+                        attributes.put("longMsg", anrDetails?.longMsg)
+                        attributes.put("stackTrace", anrDetails?.stackTrace)
+                        attributes.put("tag", anrDetails?.tag)
+                        attributes.put("condition", anrDetails?.condition)
+
+                        if (!AgentDataController.sendAgentData(exception, attributes)) {
+                            exception.printStackTrace()
+                        }
+
+                    } else if (retries.getAndDecrement() > 0) {
+                        handler.postDelayed(this, 50)
+
+                    } else {
+                        if (!AgentDataController.sendAgentData(exception, attributes)) {
+                            exception.printStackTrace()
+                        }
+                    }
+                }
+            }
+        )
     }
 
     fun startMonitor() {
-        stopMonitor()
+        if (isRunning()) {
+            stopMonitor()
+        }
         future = executor.submit(anrMonitorRunner)
-        AgentNDK.log.debug("ANR monitor started with [$DEFAULT_ANR_TIMEOUT]ms delay")
+        AgentNDK.log.debug("ANR monitor started with [$ANR_TIMEOUT] ms delay")
     }
 
     fun stopMonitor() {
@@ -105,7 +178,10 @@ open class ANRMonitor {
     }
 
     companion object {
-        val DEFAULT_ANR_TIMEOUT = TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS)
+        // The default Android ANR timeout is ~5 seconds.
+        // Setting timeout to 1 second captures code execution leading
+        // up to a reported ANR
+        val ANR_TIMEOUT = TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS)
 
         @Volatile
         var anrMonitor: ANRMonitor? = null
@@ -127,6 +203,12 @@ open class ANRMonitor {
             override fun run() {
                 signaled = true
                 notifyAll()
+            }
+        }
+
+        internal class ANRException(thread: Thread) : Exception() {
+            init {
+                stackTrace = thread.stackTrace
             }
         }
     }
