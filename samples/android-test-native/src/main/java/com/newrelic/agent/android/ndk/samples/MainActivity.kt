@@ -5,26 +5,31 @@
 
 package com.newrelic.agent.android.ndk.samples
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.newrelic.agent.android.ndk.AgentNDK
 import com.newrelic.agent.android.ndk.AgentNDKListener
 import com.newrelic.agent.android.ndk.NativeCrash
 import com.newrelic.agent.android.ndk.NativeException
+import com.newrelic.agent.android.ndk.samples.service.SleepyBackgroundService
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity(), AgentNDKListener {
     private var threadPool: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
-    private var newRelicAgent : NewRelicAgent? = null
+    private var newRelicAgent: NewRelicAgent? = null
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -45,6 +50,7 @@ class MainActivity : AppCompatActivity(), AgentNDKListener {
 
         val signalSpinner: Spinner = findViewById(R.id.signalSpinner)
         val exceptionSpinner: Spinner = findViewById(R.id.exceptionSpinner)
+        val anrSpinner: Spinner = findViewById(R.id.anrSpinner)
 
         btnSignal.setOnClickListener() {
             val item = signalSpinner.selectedItem as String
@@ -59,18 +65,81 @@ class MainActivity : AppCompatActivity(), AgentNDKListener {
             raiseException(exceptionSpinner.selectedItemPosition)
         }
 
+        btnANR.setOnClickListener() {
+            val item = anrSpinner.selectedItem as String
+            Toast.makeText(this, "Forcing ANR with $item", Toast.LENGTH_SHORT).show()
+            when (anrSpinner.selectedItemPosition) {
+                0 -> anrUIThread()
+                1 -> anrContentProvider()
+                2 -> anrService()
+            }
+        }
+
         btnThreadedCrash.setOnClickListener() {
             Toast.makeText(this, "Starting detached crashing thread(s)", Toast.LENGTH_LONG).show()
             backgroundCrash()
         }
+    }
 
-        btnANR.setOnClickListener() {
-            // waste enough time on the main thread to trigger ANR
-            Toast.makeText(this, "Blocking the main tread for 10 secs", Toast.LENGTH_LONG).show()
+    // Activity blocking Main UI thread ANR
+    fun anrUIThread() {
+        runOnUiThread() {
+            findViewById<TextView>(R.id.text).text = "Blocking the UI thread"
+            val btnANR = findViewById<TextView>(R.id.btnANR)
+            Toast.makeText(this, "Blocking the main Activity thread", Toast.LENGTH_LONG).show()
+            btnANR.text = "Sleeping..."    // needs some user input
+            btnANR.setPressed(true);
+            btnANR.invalidate();
+            Thread.sleep(8000)
+            btnANR.text = getString(R.string.anr)
+        }
+    }
+
+    // Slow content provider ANR
+    fun anrContentProvider() {
+        findViewById<TextView>(R.id.text).text = "Blocking the main tread through Context Provider"
+        Toast.makeText(this, "Blocking the main tread through Context Provider", Toast.LENGTH_LONG).show()
+        var contentProvider = getContentResolver()
+        val contentType = contentProvider.getType(CheeseyContentProvider.CONTENT_URI)
+
+        contentProvider.query(
+            CheeseyContentProvider.CONTENT_URI,
+            null, null, null, null
+        ).apply {
+            val stock = StringBuilder("CONTENT_URI: " + contentType + "\n");
+            if (moveToFirst()) {
+                while (!isAfterLast()) {
+                    stock.append(
+                        "\n["
+                                + getString(getColumnIndex(CheeseyContentProvider.country))
+                                + "] "
+                                + getString(getColumnIndex(CheeseyContentProvider.name))
+                    )
+                    moveToNext();
+                }
+            } else {
+                stock.append("No cheese for you")
+            }
             runOnUiThread() {
-                Thread.sleep(10000)
+                findViewById<TextView>(R.id.text).text = stock
             }
         }
+    }
+
+    // Slow service ANR
+    fun anrService() {
+        findViewById<TextView>(R.id.text).text = "Blocking through slow service"
+
+        threadPool.execute(Runnable {
+            Thread.sleep((Math.random() * 1234).toLong())
+            AndroidTestNative.alarmProvider.setWakeyWakey()
+        })
+
+        threadPool.scheduleWithFixedDelay(Runnable {
+            val intent = Intent(this, SleepyBackgroundService::class.java)
+            intent.putExtra("seqNo", SleepyBackgroundService.seqNo.getAndIncrement())
+            startService(intent)
+        }, 0, (Math.random() * 1234).toLong(), TimeUnit.MILLISECONDS)
     }
 
     override fun onDestroy() {
@@ -81,6 +150,9 @@ class MainActivity : AppCompatActivity(), AgentNDKListener {
     override fun onStart() {
         super.onStart()
         newRelicAgent?.onStart()
+
+        // set an alarm for every 3 min that starts in 30 seconds
+        AndroidTestNative.alarmProvider.setInexact3MinRepeatingAlarm(30000)
     }
 
     override fun onStop() {
@@ -145,6 +217,8 @@ class MainActivity : AppCompatActivity(), AgentNDKListener {
         detached: Boolean = true
     ): Void
 
+    private external fun triggerNativeANR(): Void
+
     companion object {
         init {
             System.loadLibrary("native-lib")
@@ -183,6 +257,5 @@ class MainActivity : AppCompatActivity(), AgentNDKListener {
         val clip = ClipData.newPlainText("backtrace", str)
         clipboard.setPrimaryClip(clip)
     }
-
 
 }

@@ -196,8 +196,6 @@ namespace jni {
         delegate_thread_args->method = methodId;
         delegate_thread_args->backtrace = jBacktraceRef;
 
-        // delegate_worker_thread((void*) delegate_thread_args);
-
         pthread_t delegate_thread = {};
         pthread_attr_t thread_attr;
         pthread_attr_init(&thread_attr);
@@ -271,6 +269,7 @@ namespace jni {
             _LOGE("on_native_crash: no jvm available in native_context");
             return;
         }
+
         threaded_delegate_call(backtrace, native_context.onApplicationNotResponding);
     }
 

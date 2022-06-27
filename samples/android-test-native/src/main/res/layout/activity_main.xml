@@ -44,7 +44,7 @@
             android:orientation="horizontal"
             android:weightSum="6"
             app:layout_constraintTop_toBottomOf="@id/signals"
-            app:layout_constraintBottom_toTopOf="@id/threadedCrash">
+            app:layout_constraintBottom_toTopOf="@id/anrCauses">
             <Spinner
                 android:id="@+id/exceptionSpinner"
                 android:layout_width="0dp"
@@ -60,6 +60,29 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/anrCauses"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:orientation="horizontal"
+            android:weightSum="6"
+            app:layout_constraintTop_toBottomOf="@id/cppExceptions"
+            app:layout_constraintBottom_toTopOf="@id/threadedCrash">
+            <Spinner
+                android:id="@+id/anrSpinner"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="4"
+                android:entries="@array/anrCause" />
+            <Button
+                android:id="@+id/btnANR"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="@string/anr" />
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/threadedCrash"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -67,7 +90,7 @@
             android:orientation="horizontal"
             android:weightSum="6"
             app:layout_constraintTop_toBottomOf="@id/cppExceptions"
-            app:layout_constraintBottom_toTopOf="@id/anr">
+            app:layout_constraintBottom_toTopOf="@id/scrolledView">
             <Spinner
                 android:id="@+id/threadedCrashSpinner"
                 android:layout_width="0dp"
@@ -83,20 +106,6 @@
                 android:text="@string/threadedCrash" />
         </LinearLayout>
 
-
-        <LinearLayout
-            android:id="@+id/anr"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_constraintTop_toBottomOf="@id/threadedCrash">
-
-            <Button
-                android:id="@+id/btnANR"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/anr" />
-
-        </LinearLayout>
     </LinearLayout>
 
     <ScrollView

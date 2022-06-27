@@ -96,6 +96,12 @@ JNIEXPORT void JNI_OnUnload(JavaVM *vm, void *reserved) {
 
 namespace jni {
 
+    static void env_detach(JavaVM *jvm, void *env) {
+        if (jvm != NULL && env != NULL) {
+            jvm->DetachCurrentThread();
+        }
+    }
+
     bool env_check_and_clear_ex(JNIEnv *env) {
         if (env != nullptr) {
             if (env->ExceptionCheck()) {

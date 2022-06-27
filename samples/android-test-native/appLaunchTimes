@@ -1,0 +1,5 @@
+#!/bin/sh
+adb -s emulator-5554 shell \
+  am start -S -W "com.newrelic.agent.android.ndk.samples.legacy/com.newrelic.agent.android.ndk.samples.MainActivity"  \
+  -c android.intent.category.LAUNCHER \
+  -a android.intent.action.MAIN

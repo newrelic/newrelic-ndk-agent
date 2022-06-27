@@ -21,7 +21,7 @@ class NewRelicAgent(val activity: Activity) {
     fun onCreate() {
         NewRelic.enableFeature(FeatureFlag.NativeReporting)
 
-        legacyAgent = NewRelic.withApplicationToken("<app-token>")
+        legacyAgent = NewRelic.withApplicationToken("AA6efa323ac58463b8a0b3295bf434d2672d34dde8-NRMA")
             .withLogLevel(AgentLog.DEBUG)
             .withApplicationBuild("Legacy Native agent")
 
@@ -44,7 +44,7 @@ class NewRelicAgent(val activity: Activity) {
     fun onDestroy() {
         onStop();
         activity.findViewById<TextView>(R.id.text)?.text = "Destroyed"
-        agentLog?.info("Legacy agent destrpyed")
+        agentLog?.info("Legacy agent destroyed")
     }
 
 }
