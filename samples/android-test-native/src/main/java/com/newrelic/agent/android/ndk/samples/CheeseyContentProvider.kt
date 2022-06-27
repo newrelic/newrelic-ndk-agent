@@ -43,8 +43,8 @@ class CheeseyContentProvider : ContentProvider() {
 
         companion object {
             const val DATABASE_NAME = "DidYouTryTheCheese"
-            const val TABLE_NAME = PATH
-            const val CREATE_DB_TABLE = (" CREATE TABLE " + TABLE_NAME
+            const val TABLE_NAME = "Cheese"
+            const val CREATE_DB_TABLE = ("CREATE TABLE " + TABLE_NAME
                     + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
                     + " country TEXT NOT NULL, "
                     + " name TEXT NOT NULL);")
@@ -61,14 +61,12 @@ class CheeseyContentProvider : ContentProvider() {
 
         override fun onCreate(db: SQLiteDatabase) {
             db.execSQL(CREATE_DB_TABLE)
-            db.beginTransaction()
             STOCK.forEach { k, v ->
                 val contentValues = ContentValues()
                 contentValues.put(CheeseyContentProvider.country, k)
                 contentValues.put(CheeseyContentProvider.name, v)
                 db.insert(TABLE_NAME, null, contentValues)
             }
-            db.endTransaction()
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {

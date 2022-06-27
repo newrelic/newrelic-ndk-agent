@@ -79,7 +79,7 @@ open class ANRMonitor {
         if (!stackTrace.isEmpty()) {
             return stackTrace[0].isNativeMethod
         }
-        return true // false
+        return false
     }
 
     internal fun getProcessErrorStateOrNull(): ActivityManager.ProcessErrorStateInfo? {
@@ -121,7 +121,7 @@ open class ANRMonitor {
                 attributes.put("crashingThreadId", threadId)
             }
             threads.apply {
-                attributes.put("threads", this)
+                attributes.put("nativeThreads", this)
             }
             exceptionMessage?.apply {
                 attributes.put("exceptionMessage", this)
@@ -144,17 +144,17 @@ open class ANRMonitor {
                         attributes.put("stackTrace", anrDetails?.stackTrace)
                         attributes.put("tag", anrDetails?.tag)
                         attributes.put("condition", anrDetails?.condition)
+                        retries.set(0)
+                    }
 
-                        if (!AgentDataController.sendAgentData(exception, attributes)) {
-                            exception.printStackTrace()
+                    when (retries.getAndDecrement()) {
+                        0 -> {
+                            if (!AgentDataController.sendAgentData(exception, attributes)) {
+                                exception.printStackTrace()
+                            }
                         }
-
-                    } else if (retries.getAndDecrement() > 0) {
-                        handler.postDelayed(this, 50)
-
-                    } else {
-                        if (!AgentDataController.sendAgentData(exception, attributes)) {
-                            exception.printStackTrace()
+                        else -> {
+                            handler.postDelayed(this, 50)
                         }
                     }
                 }
