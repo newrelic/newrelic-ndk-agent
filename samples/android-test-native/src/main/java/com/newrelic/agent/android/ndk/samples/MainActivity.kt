@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity(), AgentNDKListener {
         findViewById<TextView>(R.id.text).text = "Blocking the main tread through Context Provider"
         Toast.makeText(this, "Blocking the main tread through Context Provider", Toast.LENGTH_LONG).show()
         var contentProvider = getContentResolver()
-        val contentType = contentProvider.getType(CheeseyContentProvider.CONTENT_URI)
+        val contentType = contentProvider?.getType(CheeseyContentProvider.CONTENT_URI)
 
         contentProvider.query(
             CheeseyContentProvider.CONTENT_URI,
@@ -109,8 +109,7 @@ class MainActivity : AppCompatActivity(), AgentNDKListener {
             val stock = StringBuilder("CONTENT_URI: " + contentType + "\n");
             if (moveToFirst()) {
                 while (!isAfterLast()) {
-                    stock.append(
-                        "\n["
+                    stock.append("\n["
                                 + getString(getColumnIndex(CheeseyContentProvider.country))
                                 + "] "
                                 + getString(getColumnIndex(CheeseyContentProvider.name))

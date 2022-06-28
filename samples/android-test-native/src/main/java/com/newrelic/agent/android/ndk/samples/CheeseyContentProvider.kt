@@ -100,7 +100,7 @@ class CheeseyContentProvider : ContentProvider() {
 
         val c = qb.query(db, projection, selection, selectionArgs, null, null, id)
 
-        c.setNotificationUri(context.contentResolver, uri)
+        c.setNotificationUri(context?.contentResolver, uri)
 
         return c
     }
@@ -118,23 +118,19 @@ class CheeseyContentProvider : ContentProvider() {
         val rowID: Long = db.insert(PATH, "", values)
         if (rowID > 0) {
             val _uri = ContentUris.withAppendedId(CONTENT_URI, rowID)
-            context.contentResolver.notifyChange(_uri, null)
+            context?.contentResolver?.notifyChange(_uri, null)
             return _uri
         }
         throw SQLiteException("Failed to add a record into $uri")
-
-        return Uri.parse("Snoozed")
     }
 
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int {
         Thread.sleep(5000)
-        var count = 0
-        count =
-            when (uriMatcher.match(uri)) {
+        var count = when (uriMatcher.match(uri)) {
                 uriCode -> db.delete(PATH, selection, selectionArgs)
                 else -> throw java.lang.IllegalArgumentException("Unknown URI $uri")
             }
-        context.contentResolver.notifyChange(uri, null)
+        context?.contentResolver?.notifyChange(uri, null)
         return count
     }
 
@@ -144,14 +140,13 @@ class CheeseyContentProvider : ContentProvider() {
         selection: String?,
         selectionArgs: Array<out String>?
     ): Int {
-        var count = 0
-
+        val count: Int
         Thread.sleep(5000)
         when (uriMatcher.match(uri)) {
             uriCode -> count = db.update(PATH, values, selection, selectionArgs)
             else -> throw java.lang.IllegalArgumentException("Unknown URI $uri")
         }
-        context.contentResolver.notifyChange(uri, null)
+        context?.contentResolver?.notifyChange(uri, null)
 
         return count
     }

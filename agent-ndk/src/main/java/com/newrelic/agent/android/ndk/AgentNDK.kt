@@ -63,6 +63,11 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
                 log.info("Agent NDK load failed: " + e.localizedMessage)
                 StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_LOAD_ERR)
                 return false
+
+            } catch (e: UnsatisfiedLinkError) {
+                log.info("Agent NDK load failed: " + e.localizedMessage)
+                StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_LOAD_ERR)
+                return false
             }
 
             return true
@@ -167,10 +172,9 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
      */
 
     fun isRooted(): Boolean {
-        var rootBeer: RootBeer = RootBeer(managedContext?.context).also {
-            return isRooted()
+        RootBeer(managedContext?.context).also {
+            return it.isRooted()
         }
-        return false
     }
 
 
@@ -224,7 +228,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
         }
 
         fun withANRMonitor(enabled: Boolean): Builder {
-            managedContext?.anrMonitor = enabled
+            managedContext.anrMonitor = enabled
             return this
         }
 

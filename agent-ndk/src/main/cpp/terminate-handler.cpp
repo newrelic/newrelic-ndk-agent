@@ -23,22 +23,23 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
  */
 static void terminateHandler() {
     try {
-        std::exception_ptr exc = std::current_exception();
-
         std::type_info *tinfo = __cxxabiv1::__cxa_current_exception_type();
-        char demangled[0x100];
-        if (tinfo != NULL) {
-            std::strncpy(demangled, (char *) tinfo->name(), sizeof(demangled));
+
+        char *demangled = abi::__cxa_demangle(tinfo->name(), nullptr, nullptr, nullptr);
+        _LOGI("Caught unhandled exception of type [%s]: ", (demangled ? demangled : tinfo->name()));
+        if (demangled) {
+            std::free(demangled);
         }
 
-        if (exc != nullptr) {
-            char *buffer = new char[BACKTRACE_SZ_MAX];
-            if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, nullptr, nullptr)) {
-                serializer::from_exception(buffer, std::strlen(buffer));
-            }
-            delete[] buffer;
+        char *buffer = new char[BACKTRACE_SZ_MAX];
+        if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, nullptr, nullptr)) {
+            serializer::from_exception(buffer, std::strlen(buffer));
+        }
+        delete[] buffer;
 
-            _LOGI("Unknown current exception, rethrowing: %s", buffer);
+        std::exception_ptr exc = std::current_exception();
+        if (exc != nullptr) {
+            _LOGI("Unknown current exception, rethrowing:");
             std::rethrow_exception(exc);
         } else {
             _LOGI("Normal termination recvd");
@@ -61,7 +62,6 @@ static void terminateHandler() {
         delete[] buffer;
 
         _LOGI("Unknown exception: %s", buffer);
-        throw;
     }
 
     // reset the handler
@@ -69,11 +69,11 @@ static void terminateHandler() {
         if (currentHandler != nullptr) {
             std::set_terminate(currentHandler);
             currentHandler();
+            currentHandler = nullptr;
         }
     } catch (...) {
         _LOGE("Couldn't reset the previous termination handler!");
     }
-
 
     // kill the process if the rethrown exception doesn't
     abort();
@@ -107,6 +107,7 @@ bool terminate_handler_initialize() {
 void terminate_handler_shutdown() {
     pthread_mutex_lock(&mutex);
     std::set_terminate(currentHandler);
+    currentHandler = nullptr;
 #if _LIBCPP_STD_VER <= 14
     std::set_unexpected(currentUnexpectedHandler);
 #endif // LIBCPP_STD_VER <= 14

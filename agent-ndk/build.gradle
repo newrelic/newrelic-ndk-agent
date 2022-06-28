@@ -20,7 +20,7 @@ android {
         externalNativeBuild {
             cmake {
                 // Sets optional flags for the C++ compiler.
-                cppFlags "-fexceptions", "-frtti", "-std=c++14"
+                cppFlags "-fexceptions", "-frtti", "-std=c++14", "-funwind-tables"
 
                 // Specifies the targets Gradle should build
                 targets "agent-ndk", "agent-ndk-test"

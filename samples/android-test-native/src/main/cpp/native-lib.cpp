@@ -1,3 +1,8 @@
+/**
+ * Copyright 2022-present New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <jni.h>
 #include <string>
 #include <unistd.h>
@@ -109,16 +114,12 @@ Java_com_newrelic_agent_android_ndk_samples_MainActivity_raiseException(JNIEnv *
             break;
         case 1:
             throw domain_error("");
-            break;
         case 2:
             throw invalid_argument("");
-            break;
         case 3:
             throw length_error("");
-            break;
         case 4:
             throw out_of_range("");
-            break;
         case 5:
             throw runtime_error("");
         case 6:
@@ -127,13 +128,10 @@ Java_com_newrelic_agent_android_ndk_samples_MainActivity_raiseException(JNIEnv *
             throw overflow_error("");
         case 8:
             throw underflow_error("");
-            break;
         case 9:
             throw bad_cast();
-            break;
         case 10:
             throw bad_alloc();
-            break;
     };  // switch
 
     return nullptr;
@@ -204,7 +202,7 @@ volatile unsigned anrCounter = 0;
 
 extern "C"
 [[noreturn]] JNIEXPORT jobject JNICALL
-Java_com_newrelic_agent_android_ndk_samples_MainActivity_triggerNativeANR(JNIEnv* /*env*/, jobject /*thiz*/) {
+Java_com_newrelic_agent_android_ndk_samples_MainActivity_triggerNativeANR(JNIEnv * /*env*/, jobject /*thiz*/) {
     for (unsigned i = 0;; i++) {
         anrCounter = i;
     }

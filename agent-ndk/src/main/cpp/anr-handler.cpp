@@ -34,22 +34,7 @@ static bool watchdog_must_poll = false;
 static char *reportBuffer = nullptr;
 
 
-/**
- * https://android.googlesource.com/platform/art/+/master/runtime/signal_catcher.cc
- */
-
-/**
- * Signal the runtime handler using syscall() with SYS_tgkill and
- * SIGQUIT to target the Android handler thread
- */
-void raise_anr_signal() {
-    if (pid >= 0 && anr_monitor_tid >= 0) {
-        _LOGD("raise_anr_signal: pid [%d] tid [%d]", pid, anr_monitor_tid);
-        syscall(SYS_tgkill, pid, anr_monitor_tid, SIGQUIT);
-    }
-}
-
-[[noreturn]] void *anr_monitor_thread(__unused void *unused) {
+void *anr_monitor_thread(__unused void *unused) {
     static const useconds_t poll_sleep = 100000;
 
     _LOGD("anr_monitor_thread: started (enabled[%d])", (int) enabled);
@@ -71,7 +56,14 @@ void raise_anr_signal() {
         if (enabled) {
             // Raise SIGQUIT to alert ART's ANR processing
             _LOGD("anr_monitor_thread: raising ANR signal");
-            raise_anr_signal();
+            /*
+             * Signal the runtime handler using syscall() with SYS_tgkill and
+             * SIGQUIT to target the Android handler thread
+             */
+            if (pid >= 0 && anr_monitor_tid >= 0) {
+                _LOGD("raise_anr_signal: pid [%d] tid [%d]", pid, anr_monitor_tid);
+                syscall(SYS_tgkill, pid, anr_monitor_tid, SIGQUIT);
+            }
         }
 
         // Unblock SIGQUIT again so handler will run again.
@@ -172,8 +164,8 @@ bool detect_android_anr_handler() {
 void reset_android_anr_handler() {
     pid = 0;
     anr_monitor_tid = -1;
-    if(reportBuffer != nullptr) {
-        delete [] reportBuffer;
+    if (reportBuffer != nullptr) {
+        delete[] reportBuffer;
         reportBuffer = nullptr;
     }
 }
@@ -202,8 +194,7 @@ bool anr_handler_initialize() {
         _LOGW("Failed to init semaphore, revert to polling");
     }
 
-    // Install the new SIGQUIT (ANR) handler.
-    // The previous SIGQUIT handler must not be called
+    // Install the new SIGQUIT (ANR) handler. DO NOT CALL the previous SIGQUIT handler
     if (!sigutils::install_handler(SIGQUIT, anr_interceptor, nullptr, 0)) {
         _LOGE("Could not install SIGQUIT handler: ANR reports will not be collected.");
     }

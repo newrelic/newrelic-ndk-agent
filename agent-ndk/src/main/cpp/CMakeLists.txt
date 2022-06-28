@@ -10,7 +10,7 @@ project("agent-ndk" LANGUAGES CXX)
 include(FetchContent)
 
 add_compile_options(-Wall -Wextra -Wformat)
-add_compile_options(-fvisibility=hidden)
+add_compile_options(-fvisibility=hidden -funwind-tables -fexceptions -frtti)
 
 message(STATUS "Cmake build type is ${CMAKE_BUILD_TYPE}")
 

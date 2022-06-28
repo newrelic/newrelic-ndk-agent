@@ -5,8 +5,6 @@
 
 package com.newrelic.agent.android.ndk
 
-import android.os.Looper
-
 open class NativeException(val stackTraceAsJson: String? = null) :
     RuntimeException("New Relic native exception") {
 

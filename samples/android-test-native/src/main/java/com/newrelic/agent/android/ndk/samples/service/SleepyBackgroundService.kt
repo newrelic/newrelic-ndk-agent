@@ -36,7 +36,6 @@ class SleepyBackgroundService : Service() {
             } catch (e: Exception) {
                 // Restore interrupt status.
                 Thread.currentThread().interrupt()
-                e.printStackTrace()
             }
 
             // Stop the service using the startId, so that we don't stop

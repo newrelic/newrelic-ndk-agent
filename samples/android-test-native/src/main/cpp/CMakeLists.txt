@@ -9,6 +9,10 @@ cmake_minimum_required(VERSION 3.18.1)
 
 project("native_test")
 
+add_compile_options(-Wall -Wextra -Wformat)
+add_compile_options(-fvisibility=hidden -funwind-tables -fexceptions)
+message(STATUS "Cmake build type is ${CMAKE_BUILD_TYPE}")
+
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.

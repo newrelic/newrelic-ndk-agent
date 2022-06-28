@@ -9,7 +9,7 @@
 #pragma once
 
 #ifndef AGENT_VERSION
-#define AGENT_VERSION "0.5.0"
+#define AGENT_VERSION "1.0.0"
 #endif  // !AGENT_VERSION
 
 static const char *TAG = "com.newrelic.android";

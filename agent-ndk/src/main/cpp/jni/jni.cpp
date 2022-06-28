@@ -96,7 +96,7 @@ JNIEXPORT void JNI_OnUnload(JavaVM *vm, void *reserved) {
 
 namespace jni {
 
-    static void env_detach(JavaVM *jvm, void *env) {
+    __attribute__((unused)) static void env_detach(JavaVM *jvm, void *env) {
         if (jvm != NULL && env != NULL) {
             jvm->DetachCurrentThread();
         }

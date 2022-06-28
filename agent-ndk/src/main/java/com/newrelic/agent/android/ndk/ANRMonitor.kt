@@ -134,21 +134,20 @@ open class ANRMonitor {
                     val anrDetails = getProcessErrorStateOrNull()
 
                     if (anrDetails != null) {
-                        AgentNDK.log.debug("ANR monitor notified. Posting ANR report")
-
-                        attributes.put("pid", anrDetails?.pid)
-                        attributes.put("uid", anrDetails?.uid)
-                        attributes.put("processName", anrDetails?.processName)
-                        attributes.put("shortMsg", anrDetails?.shortMsg)
-                        attributes.put("longMsg", anrDetails?.longMsg)
-                        attributes.put("stackTrace", anrDetails?.stackTrace)
-                        attributes.put("tag", anrDetails?.tag)
-                        attributes.put("condition", anrDetails?.condition)
+                        attributes.put("pid", anrDetails.pid)
+                        attributes.put("uid", anrDetails.uid)
+                        attributes.put("processName", anrDetails.processName)
+                        attributes.put("shortMsg", anrDetails.shortMsg)
+                        attributes.put("longMsg", anrDetails.longMsg)
+                        attributes.put("stackTrace", anrDetails.stackTrace)
+                        attributes.put("tag", anrDetails.tag)
+                        attributes.put("condition", anrDetails.condition)
                         retries.set(0)
                     }
 
                     when (retries.getAndDecrement()) {
                         0 -> {
+                            AgentNDK.log.debug("ANR monitor notified. Posting ANR report")
                             if (!AgentDataController.sendAgentData(exception, attributes)) {
                                 exception.printStackTrace()
                             }
