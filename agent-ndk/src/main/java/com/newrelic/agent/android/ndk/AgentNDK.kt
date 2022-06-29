@@ -31,16 +31,16 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
         internal interface AnalyticsAttribute {
             companion object {
                 const val APPLICATION_PLATFORM_ATTRIBUTE = "platform"
-                const val APPLICATION_NOT_RESPONDING_ATTRIBUTE = "anr"
+                const val APPLICATION_NOT_RESPONDING_ATTRIBUTE = "ANR"
             }
         }
 
         internal interface MetricNames {
             companion object {
-                const val SUPPORTABILITY_NATIVE_CRASH =
-                    "Supportability/AgentHealth/Crash/NativeReporting"
-                const val SUPPORTABILITY_NATIVE_LOAD_ERR =
-                    "$SUPPORTABILITY_NATIVE_CRASH/Error/LoadLibrary"
+                const val SUPPORTABILITY_NATIVE_ROOT = "Supportability/AgentHealth/NativeReporting"
+                const val SUPPORTABILITY_NATIVE_CRASH = "$SUPPORTABILITY_NATIVE_ROOT/Crash"
+                const val SUPPORTABILITY_NATIVE_LOAD_ERR = "$SUPPORTABILITY_NATIVE_ROOT/Error/LoadLibrary"
+                const val SUPPORTABILITY_ANR_DETECTED = "$SUPPORTABILITY_NATIVE_ROOT/ANR/Detected"
             }
         }
 
@@ -59,12 +59,12 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
                 log.info("Agent NDK loaded")
                 StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_CRASH)
 
-            } catch (e: UnsatisfiedLinkError) {
-                if ("Dalvik".equals(System.getProperty("java.vm.name"))) {
-                    StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_LOAD_ERR)
-                    throw e
-                }
             } catch (e: Exception) {
+                log.info("Agent NDK load failed: " + e.localizedMessage)
+                StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_LOAD_ERR)
+                return false
+
+            } catch (e: UnsatisfiedLinkError) {
                 log.info("Agent NDK load failed: " + e.localizedMessage)
                 StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_LOAD_ERR)
                 return false
@@ -76,14 +76,6 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
         @JvmStatic
         fun getInstance() = agentNdk ?: synchronized(this) {
             agentNdk ?: AgentNDK().also { agentNdk = it }
-        }
-
-        @JvmStatic
-        fun shutdown(hardKill: Boolean = false) {
-            if (hardKill) {
-                TODO()
-            }
-            getInstance().stop()
         }
     }
 
@@ -142,11 +134,6 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
         }
     }
 
-    fun isRooted(): Boolean {
-        var rootBeer: RootBeer = RootBeer(managedContext?.getAgentNDKContext())
-        return rootBeer.isRooted();
-    }
-
     private fun postReport(report: File): Boolean {
         if (report.exists()) {
             log.info("Posting native report data from [${report.absolutePath}]")
@@ -179,6 +166,17 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
 
         return false
     }
+
+    /**
+     * Methods to access native capabilities
+     */
+
+    fun isRooted(): Boolean {
+        RootBeer(managedContext?.context).also {
+            return it.isRooted()
+        }
+    }
+
 
     /**
      * Builder to install or replace the agent instance
@@ -229,8 +227,8 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
             return this
         }
 
-        fun withANRMonitor(enabled: Boolean) : Builder {
-            managedContext?.anrMonitor = enabled
+        fun withANRMonitor(enabled: Boolean): Builder {
+            managedContext.anrMonitor = enabled
             return this
         }
 

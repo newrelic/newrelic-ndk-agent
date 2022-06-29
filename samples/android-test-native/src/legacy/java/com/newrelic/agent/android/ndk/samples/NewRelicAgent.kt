@@ -44,7 +44,7 @@ class NewRelicAgent(val activity: Activity) {
     fun onDestroy() {
         onStop();
         activity.findViewById<TextView>(R.id.text)?.text = "Destroyed"
-        agentLog?.info("Legacy agent destrpyed")
+        agentLog?.info("Legacy agent destroyed")
     }
 
 }

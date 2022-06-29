@@ -63,7 +63,7 @@ class ManagedContextTest : TestCase(), AgentNDKListener {
 
     @Test
     fun testGetANRMonitor() {
-        Assert.assertFalse(managedContext?.anrMonitor == true)
+        Assert.assertTrue(managedContext?.anrMonitor == true)
     }
 
     @Test

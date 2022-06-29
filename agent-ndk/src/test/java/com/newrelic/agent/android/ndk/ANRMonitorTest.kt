@@ -18,13 +18,6 @@ class ANRMonitorTest {
     }
 
     @Test
-    fun ignoreWhileDebugging() {
-        Assert.assertFalse(anrMonitor?.disableWhileDebugging == true)
-        anrMonitor?.disableWhileDebugging()
-        Assert.assertFalse(anrMonitor?.disableWhileDebugging == false)
-    }
-
-    @Test
     fun testGetHandler() {
         Assert.assertEquals(anrMonitor?.handler?.looper, Looper.getMainLooper())
     }

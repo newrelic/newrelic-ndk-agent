@@ -16,37 +16,6 @@
     <string name="threadedCrash">Background Crash</string>
     <string name="anr">ANR</string>
     <string name="cpuSample">CPU Sample</string>
-
-    <string-array name="signals">
-        <item>SIGQUIT (3)</item>
-        <item>SIGILL (4)</item>
-        <item>SIGTRAP (5)</item>
-        <item>SIGABRT (6)</item>
-        <item>SIGBUS (7)</item>
-        <item>SIGFPE (8)</item>
-        <item>SIGKILL (9)</item>
-        <item>SIGSEGV (11)</item>
-    </string-array>
-
-    <string-array name="exceptions">
-        <item>Logic error</item>
-        <item>Domain error</item>
-        <item>Invalid argument</item>
-        <item>Length error</item>
-        <item>Out of range</item>
-        <item>Runtime error</item>
-        <item>Range error</item>
-        <item>Overflow error </item>
-        <item>Underflow error</item>
-        <item>Bad cast</item>
-        <item>Bad alloc</item>
-    </string-array>
-
-    <string-array name="threaded_crashes">
-        <item>Detached</item>
-        <item>10 secs delay</item>
-        <item>13 threads</item>
-        <item>Join</item>
-    </string-array>
+    <string name="service_name">sleepy.background.service</string>
 
 </resources>

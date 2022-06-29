@@ -1,17 +1,19 @@
 /*
- * Copyright (c) 2021-present New Relic Corporation. All rights reserved.
+ * Copyright (c) 2022-present New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 package com.newrelic.agent.android.ndk
 
-class NativeException(val stackTraceAsJson: String? = null) : Exception("Native") {
+open class NativeException(val stackTraceAsJson: String? = null) :
+    RuntimeException("New Relic native exception") {
 
     var nativeStackTrace: NativeStackTrace? = null
 
     init {
-        stackTraceAsJson?.let {
-            nativeStackTrace = NativeStackTrace(stackTraceAsJson)
+        stackTrace = Thread.currentThread().stackTrace
+        stackTraceAsJson?.apply {
+            nativeStackTrace = NativeStackTrace(this)
             stackTrace = getStackTrace()
         }
     }
@@ -26,8 +28,8 @@ class NativeException(val stackTraceAsJson: String? = null) : Exception("Native"
     override fun getStackTrace(): Array<StackTraceElement> {
         val stacks = mutableListOf<StackTraceElement>()
         nativeStackTrace?.crashedThread?.getStackTrace()?.forEach {
-            it?.let {
-                stacks.add(it)
+            it?.apply {
+                stacks.add(this)
             }
         }
         return stacks.toTypedArray()

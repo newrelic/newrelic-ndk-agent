@@ -57,23 +57,26 @@ JNIEXPORT jboolean JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeSt
 
     native_context.initialized = bind_delegate(env, native_context);
     if (!native_context.initialized) {
-        _LOGE("Could not bind to JVM delegates. Reports will cached until the next app launch.");
+        _LOGW("Could not bind to JVM delegates. Reports will cached until the next app launch.");
     }
 
     if (!signal_handler_initialize()) {
         _LOGE("Error: Failed to initialize signal handlers!");
+    } else {
+        _LOGD("%s signal handler installed", get_arch());
     }
-    _LOGD("%s signal handler installed", get_arch());
 
     if (!anr_handler_initialize()) {
         _LOGE("Error: Failed to initialize ANR detection!");
+    } else {
+        _LOGD("ANR handler installed");
     }
-    _LOGD("ANR handler installed");
 
     if (!terminate_handler_initialize()) {
         _LOGE("Error: Failed to initialize exception handlers!");
+    } else {
+        _LOGD("Exception handler installed");
     }
-    _LOGD("Exception handler installed");
 
     initialized = true;
 
@@ -91,7 +94,7 @@ JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStop(J
 }
 
 extern "C"
-JNIEXPORT jstring JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_dumpStack(JNIEnv * env, jobject thiz) {
+JNIEXPORT jstring JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_dumpStack(JNIEnv *env, jobject thiz) {
     (void) env;
     (void) thiz;
 
@@ -100,8 +103,8 @@ JNIEXPORT jstring JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_dumpStack
     ucontext_t _sa_ucontext = {};
     if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, &_siginfo, &_sa_ucontext)) {
         jstring result = env->NewStringUTF(buffer);
-        delete [] buffer;
-        return result;       // FIXME leak
+        delete[] buffer;
+        return result;
     }
 
     return nullptr;

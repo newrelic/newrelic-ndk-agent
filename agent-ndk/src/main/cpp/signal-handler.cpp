@@ -39,6 +39,7 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 /* Collection of observed signals */
 static observed_signal_t observedSignals[] = {
         {SIGILL,  "SIGILL",  "Illegal instruction",                               {}},
+        {SIGTRAP, "SIGTRAP", "Trap (invalid memory reference)", {}},
         {SIGABRT, "SIGABRT", "Abnormal termination",                              {}},
         {SIGFPE,  "SIGFPE",  "Floating-point exception",                          {}},
         {SIGBUS,  "SIGBUS",  "Bus error (bad memory access)",                     {}},
@@ -54,7 +55,7 @@ static volatile sig_atomic_t intercepting = 0;
  * Intercept a raised signal
  */
 void interceptor(int signo, siginfo_t *_siginfo, void *ucontext) {
-    const ucontext_t *_ucontext = static_cast<const ucontext_t *>(ucontext);
+    const auto *_ucontext = static_cast<const ucontext_t *>(ucontext);
 
     if (!intercepting++) {
         char *buffer = new char[BACKTRACE_SZ_MAX];
@@ -135,7 +136,7 @@ void dealloc() {
     if (_stack.ss_sp != nullptr) {
         free(_stack.ss_sp);
         _stack.ss_sp = nullptr;
-        _LOGI("Handler stack memory freed(%zu bytes)", _stack.ss_size);
+        _LOGI("Handler signal stack freed(%zu bytes)", _stack.ss_size);
     }
 }
 
@@ -143,7 +144,7 @@ bool signal_handler_initialize() {
     pthread_mutex_lock(&mutex);
 
     if (!sigutils::set_sigstack(&_stack, SIGSTKSZ * 2)) {
-        _LOGE("Signal handlers are disabled: could not set the stack");
+        _LOGE("Signal handlers are disabled: could not set the handler signal stack");
         return false;
     }
 
@@ -152,7 +153,7 @@ bool signal_handler_initialize() {
     // using the signal mask of the parent thread.
 
     if (sigutils::block_signal(SIGQUIT)) {
-        pthread_t handlerThread = (pthread_t) nullptr;
+        auto handlerThread = (pthread_t) nullptr;
 
         // new thread will inherit the sigmask of the parent
         if (pthread_create(&handlerThread, nullptr, install_handler, nullptr) != 0) {

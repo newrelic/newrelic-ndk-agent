@@ -1,5 +1,5 @@
 /**
- * Copyright 2021-present New Relic Corporation. All rights reserved.
+ * Copyright 2022-present New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,9 +12,6 @@
 #ifndef PATH_MAX
 #define PATH_MAX 1024
 #endif  // !PATH_MAX
-
-#define CLASS_NAME_MAX  255
-#define METHOD_NAME_MAX 255
 
 /**
  * Supported ABIs: https://developer.android.com/ndk/guides/abis
