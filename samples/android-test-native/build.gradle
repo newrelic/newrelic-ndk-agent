@@ -16,6 +16,15 @@ android {
     ndkVersion versions.agp.ndk
     compileSdkVersion versions.agp.compileSdk
 
+    signingConfigs {
+        release {
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+            storeFile file("./.android/debug.keystore")
+            storePassword "android"
+        }
+    }
+
     defaultConfig {
         minSdkVersion versions.agp.minSdk
         targetSdkVersion versions.agp.targetSdk
@@ -50,6 +59,9 @@ android {
             ndk {
                 debugSymbolLevel = 'FULL'
             }
+        }
+        release {
+            signingConfig signingConfigs.release
         }
     }
 
