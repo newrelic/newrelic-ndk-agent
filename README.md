@@ -2,7 +2,8 @@
 
 # newrelic-android-ndk
 
-With [New Relic's Android native agent](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/), you can capture native crashes resulting from raised signals and uncaught runtime exceptions from C and C++ code used in your Android app.
+With [New Relic's Android native agent](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/install-configure/android-agent-native-crash-reporting/), 
+you can capture native crashes resulting from raised signals and uncaught runtime exceptions from C and C++ code used in your Android app.
 
 During startup, the native agent installs handlers for important signals, a C++ unhandled exception handler and a monitor to detect ANR conditions.
 
@@ -14,7 +15,7 @@ Android native agent releases follow [semantic versioning conventions](https://s
 
 The native agent will report three types of native events:
 
-* Raised signal (crash)
+* Raised signals (crash)
 
 * Unhandled exceptions
 
@@ -23,13 +24,13 @@ The native agent will report three types of native events:
 
 ## Getting started
 
-See the [getting started guide](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/getting-started) as well as the [compatibility and requirements documentation](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/getting-started/compatibility-requirements-java-agent) for an overview of what is supported by the Android native agent.
+See the [getting started guide](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/getting-started) as well as the [compatibility and requirements documentation](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile/get-started/introduction-mobile-monitoring) for an overview of what is supported by the Android native agent.
 
 ## Usage
 
 See the following documentation for specific use cases of the Android native agent:
-- [General configuration](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/configuration)
-- [Troubleshooting](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/troubleshooting)
+- [General configuration](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/install-configure/install-android-apps-gradle-android-studio)
+- [Troubleshooting](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/install-configure/android-agent-native-crash-reporting#troubleshooting)
 
 #### Add agent to build dependencies
 To add the Android native agent to your app, you simply need to declare a dependency in your app-level Gradle build file:
@@ -155,19 +156,14 @@ AgentNDK.Builder(context)
   .withStorageDir(context?.cacheDir)
 ```
 
-## Installation
-
 ## Known Issues
 
 #### Stack frames will be unsymbolicated
 Stacks will be reported with the symbols provided by the app. If symbols are stripped prior to release, nine will be available for crash stack frames.
 
-#### ARM ABI is not supported
-
 ### For full details see:
 
 - [General installation instructions](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/install-configure/)
-- [Additional installation instructions (Maven, Gradle, etc)](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/additional-installation)
 
 
 ## Building
@@ -230,7 +226,6 @@ If the issue has been confirmed as a bug or is a Feature request, please file a 
 
 * [New Relic Documentation](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/): Comprehensive guidance for using our platform
 * [New Relic Community](https://discuss.newrelic.com/tags/android-agent): The best place to engage in troubleshooting questions
-* [New Relic Technical Support](https://support.newrelic.com/) 24/7/365 ticketed support. Read more about our [Technical Support Offerings](https://docs.newrelic.com/docs/licenses/license-information/general-usage-licenses/support-plan).
 
 ## Privacy
 At New Relic we take your privacy and the security of your information seriously, and are committed to protecting your information. We must emphasize the importance of not sharing personal data in public forums, and ask all users to scrub logs and diagnostic information for sensitive information, whether personal, proprietary, or otherwise.
