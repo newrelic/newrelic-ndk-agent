@@ -1,15 +1,15 @@
 [![Community header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Project.png)](https://opensource.newrelic.com/oss-category/#community-project)
 
-# newrelic-android-ndk
+# newrelic-ndk-agent
 
-With [New Relic's Android native agent](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/install-configure/android-agent-native-crash-reporting/), 
+With [New Relic's Android NDK agent](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/install-configure/android-agent-native-crash-reporting/), 
 you can capture native crashes resulting from raised signals and uncaught runtime exceptions from C and C++ code used in your Android app.
 
 During startup, the native agent installs handlers for important signals, a C++ unhandled exception handler and a monitor to detect ANR conditions.
 
 In the event of a crash, the native agent will generally not have enough time or stability to process the report. Instead, the report data is quickly written to local storage, to be processed the next time the app is launched. It is up to the app to request reports when ready.
 
-Android native agent releases follow [semantic versioning conventions](https://semver.org/). See [Android native agent release notes](https://docs.newrelic.com/docs/release-notes/mobile-release-notes/android-release-notes/) for full details on releases and downloads. Android native agent artifacts can also be found on [Maven Central](https://search.maven.org/search?q=com.newrelic.agent.android).
+Android NDK agent releases follow [semantic versioning conventions](https://semver.org/). See [Android NDK agent release notes](https://docs.newrelic.com/docs/release-notes/mobile-release-notes/android-release-notes/) for full details on releases and downloads. Android NDK agent artifacts can also be found on [Maven Central](https://search.maven.org/search?q=com.newrelic.agent.android).
 
 ### Native Reports
 
@@ -24,16 +24,16 @@ The native agent will report three types of native events:
 
 ## Getting started
 
-See the [getting started guide](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/getting-started) as well as the [compatibility and requirements documentation](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile/get-started/introduction-mobile-monitoring) for an overview of what is supported by the Android native agent.
+See the [getting started guide](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/getting-started) as well as the [compatibility and requirements documentation](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile/get-started/introduction-mobile-monitoring) for an overview of what is supported by the Android NDK agent.
 
 ## Usage
 
-See the following documentation for specific use cases of the Android native agent:
+See the following documentation for specific use cases of the Android NDK agent:
 - [General configuration](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/install-configure/install-android-apps-gradle-android-studio)
 - [Troubleshooting](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/install-configure/android-agent-native-crash-reporting#troubleshooting)
 
 #### Add agent to build dependencies
-To add the Android native agent to your app, you simply need to declare a dependency in your app-level Gradle build file:
+To add the Android NDK agent to your app, you simply need to declare a dependency in your app-level Gradle build file:
 ```
 dependencies {
     implementation 'com.newrelic.agent.android:agent-ndk:<version>'
@@ -168,7 +168,7 @@ Stacks will be reported with the symbols provided by the app. If symbols are str
 
 ## Building
 
-The Android native agent requires the following tools to build:
+The Android NDK agent requires the following tools to build:
 
 |Dependency|Version| |
 |----------|-------|-----|
@@ -185,7 +185,7 @@ Dependencies must to be installed and configured for your environment prior to b
 
 ### Gradle build
 
-The Android native agent (`agent-ndk`) requires JDK 8 or higher to build; your `JAVA_HOME` must be set to this JDK version.
+The Android NDK agent (`agent-ndk`) requires JDK 8 or higher to build; your `JAVA_HOME` must be set to this JDK version.
 
 To build the `agent-ndk` AAR, run the following command from the project root directory:  
 
@@ -199,7 +199,7 @@ To build and run all checks:
 ./gradlew clean build
 ```
 
-After building, Android native agent artifacts are located in `agent-ndk/build/outputs/aar`
+After building, Android NDK agent artifacts are located in `agent-ndk/build/outputs/aar`
 
 ## Android Studio setup
 
@@ -251,4 +251,4 @@ If you believe you have found a security vulnerability in this project or any of
 ## License
 `android-agent-ndk` is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
 
-The `android-agent-ndk` also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in the third-party notices document and our [Android native agent licenses public documentation](https://docs.newrelic.com/docs/licenses/product-or-service-licenses/new-relic-apm/java-agent-licenses).
+The `android-agent-ndk` also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in the third-party notices document and our [Android NDK agent licenses public documentation](https://docs.newrelic.com/docs/licenses/product-or-service-licenses/new-relic-apm/java-agent-licenses).
