@@ -34,10 +34,9 @@ open class ANRMonitor {
     val anrMonitorRunner = Runnable {
         monitorThread.start()
 
+        val runner = WaitableRunner()
         while (!Thread.interrupted()) {
             try {
-                val runner = WaitableRunner()
-
                 synchronized(runner) {
                     if (!handler.post(runner)) {
                         // post returns false on failure, usually because the
