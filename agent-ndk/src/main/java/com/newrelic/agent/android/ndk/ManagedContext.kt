@@ -17,7 +17,7 @@ class ManagedContext(val context: Context? = null) {
     var buildId: String? = null
     var reportsDir: File? = getNativeReportsDir(context?.cacheDir)
     var nativeReportListener: AgentNDKListener? = null
-    var anrMonitor: Boolean = true
+    var anrMonitor: Boolean = false
     var expirationPeriod = DEFAULT_TTL
 
     fun getNativeReportsDir(rootDir: File?): File {
