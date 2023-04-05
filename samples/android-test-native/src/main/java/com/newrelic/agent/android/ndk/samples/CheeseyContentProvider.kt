@@ -49,23 +49,23 @@ class CheeseyContentProvider : ContentProvider() {
                     + " country TEXT NOT NULL, "
                     + " name TEXT NOT NULL);")
 
-            val STOCK = mutableMapOf<String, String>()
-
-            init {
-                STOCK.put("UK", "Wendsleydale")
-                STOCK.put("US", "Velveeta")
-                STOCK.put("FR", "Brie")
-                STOCK.put("MX", "Queso")
-            }
+            val STOCK = mutableMapOf(
+                "UK" to "Wendsleydale",
+                "US" to "Velveeta",
+                "FR" to "Brie",
+                "MX" to "Queso"
+            )
         }
 
         override fun onCreate(db: SQLiteDatabase) {
             db.execSQL(CREATE_DB_TABLE)
-            STOCK.forEach { k, v ->
-                val contentValues = ContentValues()
-                contentValues.put(CheeseyContentProvider.country, k)
-                contentValues.put(CheeseyContentProvider.name, v)
-                db.insert(TABLE_NAME, null, contentValues)
+            var e = STOCK.entries
+            STOCK.forEach { (k, v) ->
+                val contentValues = ContentValues().apply {
+                    put(CheeseyContentProvider.country, k)
+                    put(CheeseyContentProvider.name, v)
+                    db.insert(TABLE_NAME, null, this)
+                }
             }
         }
 
@@ -127,9 +127,9 @@ class CheeseyContentProvider : ContentProvider() {
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int {
         Thread.sleep(5000)
         var count = when (uriMatcher.match(uri)) {
-                uriCode -> db.delete(PATH, selection, selectionArgs)
-                else -> throw java.lang.IllegalArgumentException("Unknown URI $uri")
-            }
+            uriCode -> db.delete(PATH, selection, selectionArgs)
+            else -> throw java.lang.IllegalArgumentException("Unknown URI $uri")
+        }
         context?.contentResolver?.notifyChange(uri, null)
         return count
     }
