@@ -1,7 +1,6 @@
-[![Community header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Project.png)](https://opensource.newrelic.com/oss-category/#community-project)
+[![Community Plus header](https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
 
-# newrelic-ndk-agent
-
+# New Relic Android NDK agent
 With [New Relic's Android NDK agent](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/install-configure/android-agent-native-crash-reporting/), 
 you can capture native crashes resulting from raised signals and uncaught runtime exceptions from C and C++ code used in your Android app.
 
