@@ -17,6 +17,7 @@ buildscript {
         //noinspection DifferentKotlinGradleVersion
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin.plugin}"
         //noinspection GradleDynamicVersion,GradleDependency
+        classpath "org.owasp:dependency-check-gradle:${versions.test.owasp}"
     }
 }
 
