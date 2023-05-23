@@ -53,6 +53,9 @@ buildscript {
                 libraries  : [
                         rootbeer       : '0.1.0',
                 ],
+                java  : [
+                        nexus       : '1.1.0',
+                ],
         ]
 
         newrelic.agent.snapshotUri = uri("https://oss.sonatype.org/content/repositories/comnewrelic-$newrelic.agent.snapshot")
