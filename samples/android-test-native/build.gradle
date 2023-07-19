@@ -13,6 +13,7 @@ if (withLegacyAgent) {
 }
 
 android {
+    namespace "com.newrelic.agent.android.ndk.samples"
     ndkVersion versions.agp.ndk
     compileSdkVersion versions.agp.compileSdk
 
