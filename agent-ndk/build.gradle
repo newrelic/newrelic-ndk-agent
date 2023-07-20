@@ -54,6 +54,10 @@ android {
         }
     }
 
+    packagingOptions {
+        doNotStrip '**.so'
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -109,19 +113,6 @@ afterEvaluate {
                     (optionalOf("sonatypePassword", null) != null))
 
     publishing {
-        repositories {
-            if (isSnapshotDeploy) {
-                maven {
-                    name "snapshots"
-                    url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                    credentials {
-                        username = rootProject['sonatypeUsername']
-                        password = rootProject['sonatypePassword']
-                    }
-                }
-            }
-        }
-
         publications {
             release(MavenPublication) {
                 // The following applies a component to this publication
@@ -162,6 +153,11 @@ afterEvaluate {
     }
 
     signing {
+        useInMemoryPgpKeys(
+                project.findProperty("signingKeyId"),
+                project.findProperty("signingKey"),
+                project.findProperty("signingPassword")
+        )
         sign publishing.publications.release
         required {
             gradle.taskGraph.hasTask("publishReleasePublicationToSnapshotsRepository")

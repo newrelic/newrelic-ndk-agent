@@ -28,17 +28,3 @@ jobs:
       run: ./gradlew assemble
     - name: Run Tests and static analysis
       run: ./gradlew check
-
-  release:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: newrelic-ndk-agent ${{ github.ref }}
-          draft: true
-          prerelease: true
