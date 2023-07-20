@@ -1,14 +1,14 @@
-[![Community Plus header](https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
+<a href="https://opensource.newrelic.com/oss-category/#community-plus"><picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/dark/Community_Plus.png"><source media="(prefers-color-scheme: light)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png"><img alt="New Relic Open Source community plus project banner." src="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png"></picture></a>
 
 # New Relic Android NDK agent
-With [New Relic's Android NDK agent](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/install-configure/android-agent-native-crash-reporting/), 
+With [New Relic's Android NDK agent](https://docs.newrelic.com/docs/mobile-monitoring/mobile-monitoring-ui/crashes/investigate-mobile-app-crash-report/#android-native-reporting), 
 you can capture native crashes resulting from raised signals and uncaught runtime exceptions from C and C++ code used in your Android app.
 
 During startup, the native agent installs handlers for important signals, a C++ unhandled exception handler and a monitor to detect ANR conditions.
 
 In the event of a crash, the native agent will generally not have enough time or stability to process the report. Instead, the report data is quickly written to local storage, to be processed the next time the app is launched. It is up to the app to request reports when ready.
 
-Android NDK agent releases follow [semantic versioning conventions](https://semver.org/). See [Android NDK agent release notes](https://docs.newrelic.com/docs/release-notes/mobile-release-notes/android-release-notes/) for full details on releases and downloads. Android NDK agent artifacts can also be found on [Maven Central](https://search.maven.org/search?q=com.newrelic.agent.android).
+Android NDK agent releases follow [semantic versioning conventions](https://semver.org/). See [Android agent release notes](https://docs.newrelic.com/docs/release-notes/mobile-release-notes/android-release-notes/) for full details on releases and downloads. Android NDK agent artifacts can also be found on [Maven Central](https://search.maven.org/search?q=com.newrelic.agent.android).
 
 ### Native Reports
 
@@ -223,7 +223,7 @@ If the issue has been confirmed as a bug or is a Feature request, please file a 
 
 **Support Channels**
 
-* [New Relic Documentation](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/): Comprehensive guidance for using our platform
+* [New Relic Documentation](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/get-started/introduction-new-relic-mobile-android/): Comprehensive guidance for using our platform
 * [New Relic Community](https://discuss.newrelic.com/tags/android-agent): The best place to engage in troubleshooting questions
 
 ## Privacy
@@ -234,7 +234,7 @@ We define _personal data_ as any information relating to an identified or identi
 Please review [New Relic’s General Data Privacy Notice](https://newrelic.com/termsandconditions/privacy) for more information.
 
 ## Roadmap
-Our native agent [feature roadmap](/ROADMAP.md) contains more about our product vision, including our plans and rough time lines for introducing new features. Your feedback is encouraged.
+Our native agent [feature roadmap](ROADMAP.md) contains more about our product vision, including our plans and rough time lines for introducing new features. Your feedback is encouraged.
 
 ## Contribute
 We encourage your contributions to improve `android-agent-ndk`. Keep in mind when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.

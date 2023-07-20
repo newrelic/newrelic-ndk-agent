@@ -3,20 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-//
-// Include this file into the project's root-level build.gradle file.
-//
-// apply from: "$rootDir/buildconfig.gradle"
-//
-
 buildscript {
     ext {
         def hasOptional = { key, defaultValue -> rootProject.hasProperty(key) ? rootProject[key] : defaultValue }
 
         newrelic = [
-                version: hasOptional('newrelic.version', '1.0.+'),
+                version: hasOptional('newrelic.version', '+'),
                 agent: [
-                        version       : hasOptional('newrelic.agent.version', '6.5.+'),
+                        version       : hasOptional('newrelic.agent.version', '+'),
                         snapshot      : hasOptional('newrelic.agent.snapshot', null),
                 ]
         ]
@@ -81,6 +75,7 @@ subprojects {
         }
 
         dependencies {
+            //noinspection DependencyNotationArgument
             classpath newrelic.deps.plugin
         }
     }

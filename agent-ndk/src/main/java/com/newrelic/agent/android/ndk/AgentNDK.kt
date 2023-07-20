@@ -108,7 +108,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
                                     continue
                                 }
                             } catch (e: Exception) {
-                                log.warning("Failed to parse/write native report [${report.name}: $e")
+                                log.warn("Failed to parse/write native report [${report.name}: $e")
                             }
 
                             val expirationTimeMs: Long = (System.currentTimeMillis() -
@@ -124,10 +124,10 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
                         }
                     }
                 } else {
-                    log.warning("Native report directory [${absolutePath}] does not exist or not readable")
+                    log.warn("Native report directory [${absolutePath}] does not exist or not readable")
                 }
             } ?: run {
-                log.warning("Report directory has not been provided")
+                log.warn("Report directory has not been provided")
             }
         } finally {
             lock.unlock()
