@@ -3,12 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+apply plugin: 'maven-publish'
+apply plugin: 'io.github.gradle-nexus.publish-plugin'
+
 buildscript {
     apply from: "$rootDir/buildconfig.gradle"
 
     repositories {
         mavenCentral()
         google()
+        maven { url "https://plugins.gradle.org/m2/" }
+        maven { url "https://oss.sonatype.org/content/repositories/comnewrelic-${project.newrelic.version}" }
         mavenLocal()
     }
 
@@ -18,10 +23,15 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin.plugin}"
         //noinspection GradleDynamicVersion,GradleDependency
         classpath "org.owasp:dependency-check-gradle:${versions.test.owasp}"
+
+        classpath "io.github.gradle-nexus:publish-plugin:${versions.java.nexus}"
     }
 }
 
 allprojects {
+    version = project.newrelic.version
+    group = 'com.newrelic.agent.android'
+
     repositories {
         mavenCentral()
         google()
@@ -30,4 +40,16 @@ allprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+if (project.findProperty("sonatypeUsername") != null && project.findProperty("sonatypePassword") != null) {
+    nexusPublishing {
+        repositories {
+            sonatype {
+                stagingProfileId = sonatypeStagingProfileId
+                username = sonatypeUsername
+                password = sonatypePassword
+            }
+        }
+    }
 }
