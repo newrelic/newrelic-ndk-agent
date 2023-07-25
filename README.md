@@ -1,4 +1,4 @@
-<a href="https://opensource.newrelic.com/oss-category/#community-plus"><picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/dark/Community_Plus.png"><source media="(prefers-color-scheme: light)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png"><img alt="New Relic Open Source community plus project banner." src="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png"></picture></a>
+[![Community Plus header](https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
 
 # New Relic Android NDK agent
 With [New Relic's Android NDK agent](https://docs.newrelic.com/docs/mobile-monitoring/mobile-monitoring-ui/crashes/investigate-mobile-app-crash-report/#android-native-reporting), 
@@ -15,15 +15,12 @@ Android NDK agent releases follow [semantic versioning conventions](https://semv
 The native agent will report three types of native events:
 
 * Raised signals (crash)
-
 * Unhandled exceptions
-
 * Application Not responding (ANR)
-
 
 ## Getting started
 
-See the [getting started guide](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/getting-started) as well as the [compatibility and requirements documentation](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile/get-started/introduction-mobile-monitoring) for an overview of what is supported by the Android NDK agent.
+See the [getting started guide](https://docs.newrelic.com/docs/mobile-monitoring/mobile-monitoring-ui/crashes/investigate-mobile-app-crash-report/#android-native-reporting) as well as the [compatibility and requirements documentation](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile/get-started/introduction-mobile-monitoring) for an overview of what is supported by the Android NDK agent.
 
 ## Usage
 
@@ -158,7 +155,7 @@ AgentNDK.Builder(context)
 ## Known Issues
 
 #### Stack frames will be unsymbolicated
-Stacks will be reported with the symbols provided by the app. If symbols are stripped prior to release, nine will be available for crash stack frames.
+Stacks will be reported with the symbols provided by the app. If symbols are stripped prior to release, nine will be available for crash stack frames. We are working to address this.
 
 ### For full details see:
 
@@ -169,16 +166,17 @@ Stacks will be reported with the symbols provided by the app. If symbols are str
 
 The Android NDK agent requires the following tools to build:
 
-|Dependency|Version| |
-|----------|-------|-----|
-|Java| JDK 8 or higher||
-|Android Gradle Plugin|4.1 or higher|AGP 7 requires JDK 11|
-|Gradle|6.7.1|AGP 7 requires Gradle 7 or higher|
-|NDK|21.4.7075529 or higher||
-|CMake|3.18||
-|minSDK|24||
-|NDK|21.4.7075529 or higher||
-|Cmake|3.18.1 or higher
+| Dependency                  | Version                |                                                                             |
+|-----------------------------|------------------------|-----------------------------------------------------------------------------|
+| New Relic Android Agent | 6.11.0 or higher  | The NDK agent 1.0.0-1.0.2 is compatible with Android agent 6.10.0 and lower |
+| Java                        | JDK 8 or higher        ||
+| Android Gradle Plugin       | 4.1 or higher          | AGP 7 requires JDK 11                                                       |
+| Gradle                      | 6.7.1                  | AGP 7 requires Gradle 7 or higher                                           |
+| NDK                         | 21.4.7075529 or higher ||
+| CMake                       | 3.18                   ||
+| minSDK                      | 24                     ||
+| NDK                         | 21.4.7075529 or higher ||
+| Cmake                       | 3.18.1 or higher       
 
 Dependencies must to be installed and configured for your environment prior to building.
 
@@ -217,33 +215,44 @@ To run all unit tests from the command line:
 
 ## Support
 
-Should you need assistance with New Relic products, you are in good hands with several diagnostic tools and support channels.
+New Relic hosts and moderates an online forum where customers can interact with New Relic employees as well as other customers
+to get help and share best practices. Like all official New Relic open source projects, there's a related Community topic in
+the New Relic Explorers Hub. You can find this project's topic/threads [on the New Relic Explorer's Hub](https://discuss.newrelic.com/tags/android).
 
-If the issue has been confirmed as a bug or is a Feature request, please file a Github issue.
+### Support Channels
 
-**Support Channels**
+* [New Relic Documentation](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/get-started/introduction-new-relic-mobile-android): Comprehensive guidance for using our platform
+* [New Relic Community](https://discuss.newrelic.com/tags/android): The best place to engage in troubleshooting questions
+* [New Relic Developer](https://developer.newrelic.com/): Resources for building a custom observability applications
+* [New Relic University](https://learn.newrelic.com/): A range of online training for New Relic users of every level
+* [New Relic Technical Support](https://support.newrelic.com/) 24/7/365 ticketed support. Read more about our [Technical Support Offerings](https://docs.newrelic.com/docs/licenses/license-information/general-usage-licenses/support-plan).
 
-* [New Relic Documentation](https://docs.newrelic.com/docs/mobile-monitoring/new-relic-mobile-android/get-started/introduction-new-relic-mobile-android/): Comprehensive guidance for using our platform
-* [New Relic Community](https://discuss.newrelic.com/tags/android-agent): The best place to engage in troubleshooting questions
+## Github Issues
+[Github Issues](https://github.com/newrelic/newrelic-ndk-agent/issues) are not open to the public at the moment. Please contact our support team or one of the support channels to submit your issues, feature requests, etc.
+
 
 ## Privacy
-At New Relic we take your privacy and the security of your information seriously, and are committed to protecting your information. We must emphasize the importance of not sharing personal data in public forums, and ask all users to scrub logs and diagnostic information for sensitive information, whether personal, proprietary, or otherwise.
+At New Relic, we take your privacy and the security of your information seriously and are committed to protecting your information. We must emphasize the importance of not sharing personal data in public forums, and ask all users to scrub logs and diagnostic information for sensitive information, whether personal, proprietary, or otherwise.
 
-We define _personal data_ as any information relating to an identified or identifiable individual, including for example your name, phone number, post or zip code, the sender's IP or email address.
+We define “Personal Data” as any information relating to an identified or identifiable individual, including, for example, your name, phone number, post code or zip code, Device ID, IP address and email address.
 
 Please review [New Relic’s General Data Privacy Notice](https://newrelic.com/termsandconditions/privacy) for more information.
 
 ## Roadmap
-Our native agent [feature roadmap](ROADMAP.md) contains more about our product vision, including our plans and rough time lines for introducing new features. Your feedback is encouraged.
+See our [feature roadmap](roadmap.md), to learn more about our product vision, understand our plans, and provide us valuable feedback.
 
 ## Contribute
-We encourage your contributions to improve `android-agent-ndk`. Keep in mind when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.
 
-If you have any questions, or to execute our corporate CLA, required if your contribution is on behalf of a company, please drop us an email at opensource@newrelic.com.
+We encourage your contributions to improve the New Relic Android Agent! Keep in mind that when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.
 
-**A note about vulnerabilities**
+If you would like to contribute to this project, review [these guidelines](./CONTRIBUTING.md).
 
-As noted in our [security policy](https://github.com/newrelic/android-agent-ndk/security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
+To all contributors, we thank you!  Without your contribution, this project would not be what it is today.
+If you have any questions, or to execute our corporate CLA (which is required if your contribution is on behalf of a company), drop us an email at opensource@newrelic.com.
+
+### A note about vulnerabilities 
+
+As noted in our [security policy](https://docs.newrelic.com/docs/licenses/license-information/referenced-policies/security-policy/), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
 
 If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through [HackerOne](https://hackerone.com/newrelic).
 
