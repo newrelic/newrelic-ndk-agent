@@ -45,7 +45,11 @@ open class ANRMonitor {
                         return@Runnable
                     }
 
-                    runner.wait(ANR_TIMEOUT)
+                    try {
+                        Thread.sleep(ANR_TIMEOUT)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
 
                     if (!runner.signaled) {
                         notify()
@@ -152,6 +156,7 @@ open class ANRMonitor {
                                 exception.printStackTrace()
                             }
                         }
+
                         else -> {
                             handler.postDelayed(this, 50)
                         }
