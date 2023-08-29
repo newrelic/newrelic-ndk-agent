@@ -194,8 +194,7 @@ open class ANRMonitor {
         // The default Android ANR timeout is ~5 seconds.
         // Setting timeout to 1 second captures code execution leading
         // up to a reported ANR
-        val ANR_TIMEOUT =
-            TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS) //test here of the sleep
+        val ANR_TIMEOUT = TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS)
 
         @Volatile
         var anrMonitor: ANRMonitor? = null
