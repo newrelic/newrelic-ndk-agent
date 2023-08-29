@@ -34,26 +34,26 @@ open class ANRMonitor {
     val anrMonitorRunner = Runnable {
         monitorThread.start()
 
+        val runner = WaitableRunner()
         while (!Thread.interrupted()) {
             try {
-                val runner = WaitableRunner()
-
                 synchronized(runner) {
                     if (!handler.post(runner)) {
+                        AgentNDK.log.debug("ANR monitor runner returns false")
                         // post returns false on failure, usually because the
                         // looper processing the message queue is exiting
                         return@Runnable
                     }
 
-                    try {
-                        Thread.sleep(ANR_TIMEOUT)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
+                    runner.wait(ANR_TIMEOUT)
 
                     if (!runner.signaled) {
+                        AgentNDK.log.error("ANR monitor signaled false, ANR detected")
                         notify()
                         runner.wait()
+                    } else {
+                        AgentNDK.log.audit("ANR monitor signaled true, reset to false")
+                        runner.signaled = false
                     }
 
                     Thread.yield()
@@ -194,7 +194,8 @@ open class ANRMonitor {
         // The default Android ANR timeout is ~5 seconds.
         // Setting timeout to 1 second captures code execution leading
         // up to a reported ANR
-        val ANR_TIMEOUT = TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS)
+        val ANR_TIMEOUT =
+            TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS) //test here of the sleep
 
         @Volatile
         var anrMonitor: ANRMonitor? = null
