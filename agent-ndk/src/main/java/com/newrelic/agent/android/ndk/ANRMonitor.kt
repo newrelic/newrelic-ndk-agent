@@ -62,7 +62,7 @@ open class ANRMonitor {
                 // e.printStackTrace()
             } finally {
                 runner.signaled = false
-                notifyAll()
+                notify()
             }
         }
         monitorThread.quitSafely()
