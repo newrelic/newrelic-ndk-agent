@@ -60,6 +60,9 @@ open class ANRMonitor {
                 }
             } catch (e: InterruptedException) {
                 // e.printStackTrace()
+            } finally {
+                runner.signaled = false
+                notifyAll()
             }
         }
         monitorThread.quitSafely()
