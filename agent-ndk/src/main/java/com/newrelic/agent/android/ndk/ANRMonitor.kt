@@ -36,8 +36,9 @@ open class ANRMonitor {
 
         val runner = WaitableRunner()
         while (!Thread.interrupted()) {
-            try {
-                synchronized(runner) {
+
+            synchronized(runner) {
+                try {
                     if (!handler.post(runner)) {
                         AgentNDK.log.debug("ANR monitor runner returns false")
                         // post returns false on failure, usually because the
@@ -48,27 +49,24 @@ open class ANRMonitor {
                     runner.wait(ANR_TIMEOUT)
 
                     if (!runner.signaled) {
-                        AgentNDK.log.error("ANR monitor signaled false, ANR detected")
-                        notify()
-                        runner.wait()
+                        AgentNDK.log.debug("ANR monitor signaled false, ANR detected")
+                        createANRReport()
                     } else {
                         AgentNDK.log.audit("ANR monitor signaled true, reset to false")
-                        runner.signaled = false
                     }
-
+                } catch (e: InterruptedException) {
+                    AgentNDK.log.error("ANR monitor exception caught: " + e.message)
+                } finally {
+                    runner.signaled = false
+                    runner.notifyAll()
                     Thread.yield()
                 }
-            } catch (e: InterruptedException) {
-                // e.printStackTrace()
-            } finally {
-                runner.signaled = false
-                notify()
             }
         }
         monitorThread.quitSafely()
     }
 
-    fun notify(anrAsJson: String? = null) {
+    fun createANRReport(anrAsJson: String? = null) {
         StatsEngine.get()
             .inc(AgentNDK.Companion.MetricNames.SUPPORTABILITY_ANR_DETECTED)
 
