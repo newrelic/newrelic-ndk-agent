@@ -51,8 +51,7 @@ open class ANRMonitor {
                     if (!runner.signaled) {
                         AgentNDK.log.debug("ANR monitor signaled false, ANR detected")
                         createANRReport()
-                    } else {
-                        AgentNDK.log.audit("ANR monitor signaled true, reset to false")
+                        runner.wait()
                     }
                 } catch (e: InterruptedException) {
                     AgentNDK.log.error("ANR monitor exception caught: " + e.message)
