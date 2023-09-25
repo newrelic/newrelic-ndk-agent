@@ -35,7 +35,7 @@ class JVMDelegate() {
         AgentNDK.log.debug("onApplicationNotResponding: $anrAsString")
 
         if (ANRMonitor.getInstance().isRunning()) {
-            ANRMonitor.getInstance().notify(anrAsString)
+            ANRMonitor.getInstance().createANRReport(anrAsString)
 
         } else {
             AgentNDK.getInstance().managedContext?.nativeReportListener?.run {
