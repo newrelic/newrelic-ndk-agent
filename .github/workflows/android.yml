@@ -28,3 +28,12 @@ jobs:
       run: ./gradlew assemble
     - name: Run Tests and static analysis
       run: ./gradlew check
+
+    - name: Run jacoco
+      run: ./gradlew connectedCheck
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: '**/index.html'
