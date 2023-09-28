@@ -36,4 +36,4 @@ jobs:
       uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        files: './build/reports/coverage/androidTest/debug/connected/index.html'
+        files: './agent-ndk/build/reports/coverage/androidTest/debug/connected/index.html'
