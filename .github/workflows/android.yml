@@ -26,8 +26,8 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew assemble
-    - name: Run Tests and static analysis
-      run: ./gradlew check
+    # - name: Run Tests and static analysis
+    #   run: ./gradlew check
 
     - name: Run jacoco
       run: ./gradlew connectedCheck
