@@ -24,35 +24,7 @@ jobs:
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-    # - name: Build with Gradle
-    #   run: ./gradlew assemble
-    # - name: Run Tests and static analysis
-    #   run: ./gradlew check
-
-    - name: Run jacoco
-      run: ./gradlew connectedCheck
-
-    - name: Generate report
-      uses: actions/upload-artifact@v2
-      with:
-        name: report 
-        path: ./agent-ndk/build/reports/coverage/androidTest/debug/connected
-
-
-    - name: Download Test Reports Folder
-      uses: actions/download-artifact@v2
-      with:
-        name: report
-        path: ./agent-ndk/build/reports/coverage/androidTest/debug/connected
-
-    - name: Upload Test Report
-      uses: codecov/codecov-action@v2
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: "./agent-ndk/build/reports/coverage/androidTest/debug/connected/report.xml"
-
-    # - name: Upload coverage to Codecov
-    #   uses: codecov/codecov-action@v3
-    #   with:
-    #     token: ${{ secrets.CODECOV_TOKEN }}
-    #     files: './agent-ndk/build/reports/coverage/androidTest/debug/connected/index.html'
+    - name: Build with Gradle
+      run: ./gradlew assemble
+    - name: Run Tests and static analysis
+      run: ./gradlew check
