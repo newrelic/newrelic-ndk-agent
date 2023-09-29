@@ -26,7 +26,7 @@ jobs:
       run: chmod +x gradlew
 
     - name: Run jacoco
-      run: ./gradlew connectedCheck
+      run: ./gradlew jacocoTestReport
 
     - name: Generate report
       uses: actions/upload-artifact@v2
