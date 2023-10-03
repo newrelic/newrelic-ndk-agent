@@ -7,6 +7,27 @@ plugins {
     id "com.android.library"
     id "kotlin-android"
     id 'org.owasp.dependencycheck'
+    id 'jacoco'
+}
+
+tasks.register('jacocoTestReport', JacocoReport) {
+    dependsOn('testDebugUnitTest', 'createDebugCoverageReport')
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    doLast {
+        def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*', 'android/**/*.*']
+        def debugTree = fileTree(dir: "${buildDir}/intermediates/classes/debug", excludes: fileFilter)
+        def mainSrc = "${project.projectDir}/src/main/java"
+
+        sourceDirectories.setFrom(files([mainSrc]))
+        classDirectories.setFrom(files([debugTree]))
+        executionData.setFrom(fileTree(dir: "$buildDir", includes: [
+                "jacoco/testDebugUnitTest.exec",
+                "outputs/code-coverage/connected/*coverage.ec"
+        ]))
+    }
 }
 
 android {
@@ -40,6 +61,7 @@ android {
     buildTypes {
         debug {
             minifyEnabled false
+            testCoverageEnabled true
         }
         release {
             minifyEnabled false
@@ -78,8 +100,13 @@ android {
                     outputs.upToDateWhen { false }
                     showStandardStreams = true
                 }
+                jacoco {
+                    includeNoLocationClasses = true
+                    excludes = ['jdk.internal.*']
+                }
             }
         }
+        unitTests.returnDefaultValues = true
     }
 }
 
