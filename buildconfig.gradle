@@ -28,6 +28,7 @@ buildscript {
                         robolectric : '4.6.+',
                         androidxCore: '1.4.+',
                         owasp: '8.1.2',
+                        jacoco: '0.8.4',
                 ],
                 kotlin: [
                         plugin : "1.6.0",
