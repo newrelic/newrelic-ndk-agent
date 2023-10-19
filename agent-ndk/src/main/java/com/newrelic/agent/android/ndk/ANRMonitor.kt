@@ -34,12 +34,13 @@ open class ANRMonitor {
     val anrMonitorRunner = Runnable {
         monitorThread.start()
 
+        val runner = WaitableRunner()
         while (!Thread.interrupted()) {
-            try {
-                val runner = WaitableRunner()
 
-                synchronized(runner) {
+            synchronized(runner) {
+                try {
                     if (!handler.post(runner)) {
+                        AgentNDK.log.debug("ANR monitor runner returns false")
                         // post returns false on failure, usually because the
                         // looper processing the message queue is exiting
                         return@Runnable
@@ -48,20 +49,23 @@ open class ANRMonitor {
                     runner.wait(ANR_TIMEOUT)
 
                     if (!runner.signaled) {
-                        notify()
+                        AgentNDK.log.debug("ANR monitor signaled false, ANR detected")
+                        createANRReport()
                         runner.wait()
                     }
-
+                } catch (e: InterruptedException) {
+                    AgentNDK.log.error("ANR monitor exception caught: " + e.message)
+                } finally {
+                    runner.signaled = false
+                    runner.notifyAll()
                     Thread.yield()
                 }
-            } catch (e: InterruptedException) {
-                // e.printStackTrace()
             }
         }
         monitorThread.quitSafely()
     }
 
-    fun notify(anrAsJson: String? = null) {
+    fun createANRReport(anrAsJson: String? = null) {
         StatsEngine.get()
             .inc(AgentNDK.Companion.MetricNames.SUPPORTABILITY_ANR_DETECTED)
 
@@ -152,6 +156,7 @@ open class ANRMonitor {
                                 exception.printStackTrace()
                             }
                         }
+
                         else -> {
                             handler.postDelayed(this, 50)
                         }
