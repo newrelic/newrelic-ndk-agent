@@ -1,5 +1,4 @@
-[![Community Plus header](https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
-
+<a href="https://opensource.newrelic.com/oss-category/#community-plus"><picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/dark/Community_Plus.png"><source media="(prefers-color-scheme: light)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png"><img alt="New Relic Open Source community plus project banner." src="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png"></picture></a>
 # New Relic Android NDK agent
 With [New Relic's Android NDK agent](https://docs.newrelic.com/docs/mobile-monitoring/mobile-monitoring-ui/crashes/investigate-mobile-app-crash-report/#android-native-reporting), 
 you can capture native crashes resulting from raised signals and uncaught runtime exceptions from C and C++ code used in your Android app.
@@ -217,7 +216,7 @@ To run all unit tests from the command line:
 
 New Relic hosts and moderates an online forum where customers can interact with New Relic employees as well as other customers
 to get help and share best practices. Like all official New Relic open source projects, there's a related Community topic in
-the New Relic Explorers Hub. You can find this project's topic/threads [on the New Relic Explorer's Hub](https://discuss.newrelic.com/tags/android).
+the New Relic Explorers Hub. You can find this project's topic/threads [on the New Relic Explorer's Hub](https://forum.newrelic.com/s/search#searchString%3Dandroid%26pageNum%3D1%26sortBy%3D_score%26orderBy%3Ddesc%26resultsPerPage%3D10%26pageSizeAdv%3D10%26exactPhrase%3D%26withOneOrMore%3D%26withoutTheWords%3D%26selectedType%3D%255B%257B%2522type%2522%253A%2522server_salesforce_production___topic__c___Tag_Assignments__c%2522%252C%2522filter%2522%253A%255B%2522android%2522%255D%257D%255D%26smartFacets%3Dfalse).
 
 ### Support Channels
 
@@ -252,7 +251,7 @@ If you have any questions, or to execute our corporate CLA (which is required if
 
 ### A note about vulnerabilities 
 
-As noted in our [security policy](https://docs.newrelic.com/docs/licenses/license-information/referenced-policies/security-policy/), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
+As noted in our [security policy](https://github.com/newrelic/.github/security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
 
 If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through [HackerOne](https://hackerone.com/newrelic).
 
