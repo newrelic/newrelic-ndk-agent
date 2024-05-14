@@ -48,7 +48,7 @@ android {
                 targets "agent-ndk", "agent-ndk-test"
 
                 // Passes optional arguments to CMake.
-                arguments "-DCMAKE_BUILD_TYPE=Debug"
+                arguments "-DCMAKE_BUILD_TYPE=Release"
             }
         }
 
@@ -77,7 +77,7 @@ android {
     }
 
     packagingOptions {
-        doNotStrip '**.so'
+        doNotStrip '**/debug/**/*.so'
     }
 
     compileOptions {
