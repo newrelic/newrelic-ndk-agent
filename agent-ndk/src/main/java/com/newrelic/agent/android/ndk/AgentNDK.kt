@@ -6,6 +6,7 @@
 package com.newrelic.agent.android.ndk
 
 import android.content.Context
+import android.util.Log
 import com.newrelic.agent.android.logging.AgentLog
 import com.newrelic.agent.android.logging.ConsoleAgentLog
 import com.newrelic.agent.android.stats.StatsEngine
@@ -39,7 +40,8 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
             companion object {
                 const val SUPPORTABILITY_NATIVE_ROOT = "Supportability/AgentHealth/NativeReporting"
                 const val SUPPORTABILITY_NATIVE_CRASH = "$SUPPORTABILITY_NATIVE_ROOT/Crash"
-                const val SUPPORTABILITY_NATIVE_LOAD_ERR = "$SUPPORTABILITY_NATIVE_ROOT/Error/LoadLibrary"
+                const val SUPPORTABILITY_NATIVE_LOAD_ERR =
+                    "$SUPPORTABILITY_NATIVE_ROOT/Error/LoadLibrary"
                 const val SUPPORTABILITY_ANR_DETECTED = "$SUPPORTABILITY_NATIVE_ROOT/ANR/Detected"
             }
         }
@@ -81,6 +83,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
 
     fun start(): Boolean {
         if (managedContext?.anrMonitor == true) {
+            Log.d("AgentNDK", "Starting ANR monitor")
             ANRMonitor.getInstance().startMonitor()
         }
 
@@ -144,9 +147,11 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
                     report.name.startsWith("crash-", true) -> {
                         consumed = onNativeCrash(report.readText(Charsets.UTF_8))
                     }
+
                     report.name.startsWith("ex-", true) -> {
                         consumed = onNativeException(report.readText(Charsets.UTF_8))
                     }
+
                     report.name.startsWith("anr-", true) -> {
                         consumed = onApplicationNotResponding(report.readText(Charsets.UTF_8))
                     }
@@ -173,7 +178,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
 
     fun isRooted(): Boolean {
         RootBeer(managedContext?.context).also {
-            return it.isRooted()
+            return it.isRooted
         }
     }
 
