@@ -36,7 +36,11 @@ namespace jni {
 
     jobject env_get_object_field(JNIEnv *, jobject, jfieldID);
 
+    jboolean env_get_boolean_field(JNIEnv *, jobject, jfieldID);
+
+
     const char *env_get_string_UTF_chars(JNIEnv *, jstring);
+
 
 }   // namespace procfs
 

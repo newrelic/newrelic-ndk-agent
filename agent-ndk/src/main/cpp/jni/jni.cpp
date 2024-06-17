@@ -146,7 +146,7 @@ namespace jni {
     }
 
     jfieldID env_get_fieldid(JNIEnv *env, jclass _jclass,
-                               const char *field_name, const char *field_sig) {
+                             const char *field_name, const char *field_sig) {
         if (env != nullptr) {
             if (_jclass != nullptr && field_name != nullptr && field_sig != nullptr) {
                 jfieldID fieldId = env->GetFieldID(_jclass, field_name, field_sig);
@@ -305,11 +305,26 @@ namespace jni {
         return nullptr;
     }
 
-    const char* env_get_string_UTF_chars(JNIEnv *env, jstring _jstring) {
+    jboolean env_get_boolean_field(JNIEnv *env, jobject _jobject, jfieldID _jfieldID) {
+        if (env != nullptr) {
+            if (_jobject != nullptr && _jfieldID != nullptr) {
+                jboolean result = env->GetBooleanField(_jobject, _jfieldID);
+                env_check_and_clear_ex(env);
+                return result;
+            } else {
+                _LOGE("env_get_boolean_field: class or field ID is null");
+            }
+        } else {
+            _LOGE("env_get_boolean_field: JNIEnv is null");
+        }
+        return false;
+    }
+
+    const char *env_get_string_UTF_chars(JNIEnv *env, jstring _jstring) {
         if (env != nullptr) {
             if (_jstring != nullptr) {
                 jboolean isCopy;
-                const char* result = env->GetStringUTFChars(_jstring, &isCopy);
+                const char *result = env->GetStringUTFChars(_jstring, &isCopy);
                 env_check_and_clear_ex(env);
                 return result;
             } else {
