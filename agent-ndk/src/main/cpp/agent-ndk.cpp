@@ -44,7 +44,9 @@ bool arch_is_32b() {
 volatile bool initialized = false;
 
 extern "C"
-JNIEXPORT jboolean JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStart(JNIEnv *env,jobject thz, jobject managedContext) {
+JNIEXPORT jboolean JNICALL
+Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStart(JNIEnv *env, jobject thz,
+                                                         jobject managedContext) {
     (void) env;
     (void) thz;
     std::string cstr;
@@ -66,10 +68,12 @@ JNIEXPORT jboolean JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeSt
         _LOGD("%s signal handler installed", get_arch());
     }
 
-    if (!anr_handler_initialize()) {
-        _LOGE("Error: Failed to initialize ANR detection!");
-    } else {
-        _LOGD("ANR handler installed");
+    if (native_context.anrMonitorEnabled) {
+        if (!anr_handler_initialize()) {
+            _LOGE("Error: Failed to initialize ANR detection!");
+        } else {
+            _LOGD("ANR handler installed");
+        }
     }
 
     if (!terminate_handler_initialize()) {
@@ -84,17 +88,22 @@ JNIEXPORT jboolean JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeSt
 }
 
 extern "C"
-JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStop(JNIEnv *env, jobject thiz) {
+JNIEXPORT void JNICALL
+Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStop(JNIEnv *env, jobject thiz) {
     (void) env;
     (void) thiz;
 
+
     signal_handler_shutdown();
-    anr_handler_shutdown();
+    if (jni::get_native_context().anrMonitorEnabled) {
+        anr_handler_shutdown();
+    }
     terminate_handler_shutdown();
 }
 
 extern "C"
-JNIEXPORT jstring JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_dumpStack(JNIEnv *env, jobject thiz) {
+JNIEXPORT jstring JNICALL
+Java_com_newrelic_agent_android_ndk_AgentNDK_dumpStack(JNIEnv *env, jobject thiz) {
     (void) env;
     (void) thiz;
 
@@ -111,7 +120,8 @@ JNIEXPORT jstring JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_dumpStack
 }
 
 extern "C"
-JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_crashNow(JNIEnv *env, jobject thiz, jstring cause) {
+JNIEXPORT void JNICALL
+Java_com_newrelic_agent_android_ndk_AgentNDK_crashNow(JNIEnv *env, jobject thiz, jstring cause) {
     (void) env;
     (void) thiz;
 
@@ -119,7 +129,9 @@ JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_crashNow(JNI
 }
 
 extern "C"
-JNIEXPORT void JNICALL Java_com_newrelic_agent_android_ndk_AgentNDK_nativeSetContext(JNIEnv *env, jobject thiz, jobject managedContext) {
+JNIEXPORT void JNICALL
+Java_com_newrelic_agent_android_ndk_AgentNDK_nativeSetContext(JNIEnv *env, jobject thiz,
+                                                              jobject managedContext) {
     (void) thiz;
     jni::set_native_context(env, managedContext);
 }

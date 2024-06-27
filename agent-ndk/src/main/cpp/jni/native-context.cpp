@@ -64,7 +64,7 @@ namespace jni {
                                                                   static_cast<jstring>(fieldObject));
             std::strncpy(native_context.sessionId, sessionId, sizeof(native_context.sessionId));
 
-            // copy the session ID field
+            // copy the build Id field
             fieldId = jni::env_get_fieldid(env,
                                            managedContextClass,
                                            "buildId",
@@ -73,6 +73,17 @@ namespace jni {
             const char *buildId = jni::env_get_string_UTF_chars(env,
                                                                 static_cast<jstring>(fieldObject));
             std::strncpy(native_context.buildId, buildId, sizeof(native_context.buildId));
+
+            // copy the anr monitor field
+
+            fieldId = jni::env_get_fieldid(env,
+                                           managedContextClass,
+                                           "anrMonitor",
+                                           "Z");
+            jboolean anrMonitorEnabled = jni::env_get_boolean_field(env, managedContext, fieldId);
+            _LOGD("anrMonitorEnabled Value for Native %d", anrMonitorEnabled);
+
+            native_context.anrMonitorEnabled = anrMonitorEnabled;
 
         }
 
