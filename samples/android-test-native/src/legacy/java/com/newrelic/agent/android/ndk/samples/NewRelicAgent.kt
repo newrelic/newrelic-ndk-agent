@@ -20,8 +20,10 @@ class NewRelicAgent(val activity: Activity) {
 
     fun onCreate() {
         NewRelic.enableFeature(FeatureFlag.NativeReporting)
+        NewRelic.disableFeature(FeatureFlag.ApplicationExitReporting)
+        NewRelic.disableFeature(FeatureFlag.LogReporting)
 
-        legacyAgent = NewRelic.withApplicationToken("<app-token>")
+        legacyAgent = NewRelic.withApplicationToken("<APP-TOKEN>")
             .withLogLevel(AgentLog.DEBUG)
             .withApplicationBuild("Legacy Native agent")
 

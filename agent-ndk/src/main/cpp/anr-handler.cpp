@@ -84,7 +84,7 @@ void anr_interceptor(__unused int signo, siginfo_t *_siginfo, void *ucontext) {
         const ucontext_t *_ucontext = static_cast<const ucontext_t *>(ucontext);
 
         if (collect_backtrace(reportBuffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
-            serializer::from_anr(reportBuffer, std::strlen(reportBuffer));
+            serializer::from_anr(reportBuffer, BACKTRACE_SZ_MAX);
         }
     }
 
@@ -179,12 +179,12 @@ bool anr_handler_initialize() {
 
     // detect the Android runtime's ANR signal handler
     if (!detect_android_anr_handler()) {
-        _LOGE("Failed to detect Google ANR monitor thread. ANR report will not be sent to Google.");
+        _LOGE("Failed to detect the Android ANR monitor thread. Native ANR reports will not be sent to New Relic.");
     }
 
     // Start a watchdog thread
     if (pthread_create(&watchdog_thread, nullptr, anr_monitor_thread, nullptr) != 0) {
-        _LOGE("Could not create ANR watchdog thread. ANR reports will not be collected.");
+        _LOGE("Could not create an ANR watchdog thread. ANR reports will not be collected.");
         return false;
     }
 

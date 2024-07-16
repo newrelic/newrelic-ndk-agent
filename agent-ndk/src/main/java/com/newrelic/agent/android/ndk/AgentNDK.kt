@@ -40,8 +40,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
             companion object {
                 const val SUPPORTABILITY_NATIVE_ROOT = "Supportability/AgentHealth/NativeReporting"
                 const val SUPPORTABILITY_NATIVE_CRASH = "$SUPPORTABILITY_NATIVE_ROOT/Crash"
-                const val SUPPORTABILITY_NATIVE_LOAD_ERR =
-                    "$SUPPORTABILITY_NATIVE_ROOT/Error/LoadLibrary"
+                const val SUPPORTABILITY_NATIVE_LOAD_ERR = "$SUPPORTABILITY_NATIVE_ROOT/Error/LoadLibrary"
                 const val SUPPORTABILITY_ANR_DETECTED = "$SUPPORTABILITY_NATIVE_ROOT/ANR/Detected"
             }
         }
@@ -83,15 +82,15 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
 
     fun start(): Boolean {
         if (managedContext?.anrMonitor == true) {
-            Log.d("AgentNDK", "Starting ANR monitor")
             ANRMonitor.getInstance().startMonitor()
+            Log.d("AgentNDK", "Main thread ANR monitor started")
         }
 
         return nativeStart(managedContext!!)
     }
 
     fun stop() {
-        managedContext?.anrMonitor.let {
+        if (managedContext?.anrMonitor == true) {
             ANRMonitor.getInstance().stopMonitor()
         }
         nativeStop()
@@ -116,8 +115,8 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
 
                             val expirationTimeMs: Long = (System.currentTimeMillis() -
                                     TimeUnit.MILLISECONDS.convert(
-                                        managedContext.expirationPeriod,
-                                        TimeUnit.SECONDS
+                                            managedContext.expirationPeriod,
+                                            TimeUnit.SECONDS
                                     ))
 
                             if (report.exists() && (report.lastModified() < expirationTimeMs)) {

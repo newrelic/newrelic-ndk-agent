@@ -20,7 +20,7 @@ namespace sigutils {
         _LOGD("sigutils::set_sigstack (%zu) bytes to stack[%p]", stackSize, _stack);
 
         // caller must release this memory
-        _stack->ss_sp = calloc(1, stackSize);
+        _stack->ss_sp = malloc(stackSize);
         if (_stack->ss_sp != nullptr) {
             _stack->ss_size = stackSize;
             _stack->ss_flags = 0;
