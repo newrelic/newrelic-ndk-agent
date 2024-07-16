@@ -37,7 +37,7 @@ void collect_thread_info(int tid, threadinfo_t &threadinfo) {
             token = strtok_r(nullptr, ")", &ppos);
             if (token) {
                 if (std::sscanf(token, "(%[A-Za-z0-9 _.:-])", value) == 1) {
-                    std::strncpy(threadinfo.thread_name, value, sizeof(threadinfo.thread_name));
+                    std::strncpy(threadinfo.thread_name, value, sizeof(threadinfo.thread_name) - 1);
                 }
             }
             token = strtok_r(nullptr, delim, &ppos);
@@ -70,7 +70,7 @@ void collect_thread_info(int tid, threadinfo_t &threadinfo) {
                         rstate = "PARKED";
                         break;
                 };  // switch
-                std::strncpy(threadinfo.thread_state, rstate, sizeof(threadinfo.thread_state));
+                std::strncpy(threadinfo.thread_state, rstate, sizeof(threadinfo.thread_state) - 1);
             }
             token = strtok_r(nullptr, delim, &ppos);    // skip ppid
             token = strtok_r(nullptr, delim, &ppos);    // skip pgrp
@@ -149,10 +149,10 @@ bool collect_backtrace(char *backtrace_buffer,
     // unwind the current thread's stacktrace asap
     unwind_backtrace(backtrace.state);
 
-    std::strncpy(backtrace.arch, get_arch(), sizeof(backtrace.arch));
+    std::strncpy(backtrace.arch, get_arch(), sizeof(backtrace.arch) - 1);
     std::strncpy(backtrace.description,
                  sigutils::get_signal_description(siginfo->si_signo, siginfo->si_code),
-                 sizeof(backtrace.description));
+                 sizeof(backtrace.description) - 1);
 
     backtrace.timestamp = time(0L);
     backtrace.uid = getuid();

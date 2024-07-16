@@ -10,6 +10,7 @@
 #include <semaphore.h>
 
 #include <agent-ndk.h>
+#include <errno.h>
 #include "procfs.h"
 #include "signal-utils.h"
 #include "backtrace.h"
@@ -38,7 +39,9 @@ void *anr_monitor_thread(__unused void *unused) {
     static const useconds_t poll_sleep = 100000;
 
     _LOGD("anr_monitor_thread: started (enabled[%d])", (int) enabled);
-    pthread_setname_np(pthread_self(), "NR-ANR-Monitor");
+    if (0 != pthread_setname_np(pthread_self(), "NR-ANR-Monitor")) {
+        _LOGE_POSIX("pthread_setname_np()");
+    }
 
     while (enabled) {
         watchdog_triggered = false;
@@ -83,8 +86,14 @@ void anr_interceptor(__unused int signo, siginfo_t *_siginfo, void *ucontext) {
         _LOGD("Notify the JVM delegate an ANR has occurred");
         const ucontext_t *_ucontext = static_cast<const ucontext_t *>(ucontext);
 
-        if (collect_backtrace(reportBuffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
-            serializer::from_anr(reportBuffer, BACKTRACE_SZ_MAX);
+        _LOGI("ANR interceptor invoked:");
+        if (reportBuffer != nullptr) {
+            if (collect_backtrace(reportBuffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
+                serializer::from_anr(reportBuffer, BACKTRACE_SZ_MAX);
+                _LOGI("ANR report posted from Android handler");
+            }
+        } else {
+            _LOGE("Buffer not allocated for ANR report!");
         }
     }
 
@@ -124,7 +133,7 @@ bool detect_android_anr_handler() {
         std::string threadName;
         procfs::get_thread_name(pid, tid, threadName);
 
-        if (strncmp(threadName.c_str(), ANR_THREAD_NAME, ANR_THREAD_NAME_LEN) == 0) {
+        if (std::strncmp(threadName.c_str(), ANR_THREAD_NAME, ANR_THREAD_NAME_LEN) == 0) {
             char buff[1024];
             uint64_t sigblk = 0;
             std::string threadStatus;
@@ -183,7 +192,7 @@ bool anr_handler_initialize() {
     }
 
     // Start a watchdog thread
-    if (pthread_create(&watchdog_thread, nullptr, anr_monitor_thread, nullptr) != 0) {
+    if (0 != pthread_create(&watchdog_thread, nullptr, anr_monitor_thread, nullptr)) {
         _LOGE("Could not create an ANR watchdog thread. ANR reports will not be collected.");
         return false;
     }
@@ -221,7 +230,9 @@ void anr_handler_shutdown() {
     }
 
     if (watchdog_thread != 0) {
-        pthread_join(watchdog_thread, nullptr);
+        if (0 != pthread_join(watchdog_thread, nullptr)) {
+            _LOGE_POSIX("pthread_join failed");
+        }
         watchdog_thread = (pthread_t) nullptr;
     }
 

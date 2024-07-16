@@ -115,6 +115,7 @@ Java_com_newrelic_agent_android_ndk_AgentNDK_dumpStack(JNIEnv *env, jobject thiz
         delete[] buffer;
         return result;
     }
+    delete[] buffer;
 
     return nullptr;
 }
