@@ -72,7 +72,7 @@ Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStart(JNIEnv *env, jobject th
         if (!anr_handler_initialize()) {
             _LOGE("Error: Failed to initialize ANR detection!");
         } else {
-            _LOGD("ANR handler installed");
+            _LOGD("Native ANR handler installed");
         }
     }
 
@@ -115,6 +115,7 @@ Java_com_newrelic_agent_android_ndk_AgentNDK_dumpStack(JNIEnv *env, jobject thiz
         delete[] buffer;
         return result;
     }
+    delete[] buffer;
 
     return nullptr;
 }

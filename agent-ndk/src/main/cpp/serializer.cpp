@@ -22,19 +22,17 @@ namespace serializer {
 
     void from_crash(const char *buffer, size_t buffsz) {
         to_storage("crash-", buffer, buffsz);
-        // Crashes are best left in storage and processed
-        // on the next app launch
+        // Crashes are left in storage and processed on the next app launch
     }
 
     void from_exception(const char *buffer, size_t buffsz) {
         to_storage("ex-", buffer, buffsz);
-        // Exceptions are best left in storage and processed
-        // on the next app launch
+        // Exceptions are left in storage and processed on the next app launch
     }
 
     void from_anr(const char *buffer, size_t buffsz) {
         to_storage("anr-", buffer, buffsz);
-        jni::on_application_not_responding(buffer);
+        // ANRs are left in storage and processed on the next app launch
     }
 
     /**
@@ -48,7 +46,7 @@ namespace serializer {
         std::ofstream os{storagePath.c_str(), std::ios::out | std::ios::binary};
 
         if (!os) {
-            _LOGE("serializer::to_storage error %d: %s", errno, strerror(errno));
+            _LOGE_POSIX("serializer::to_storage error");
         } else {
             os.write(payload, payload_size);
             os.flush();

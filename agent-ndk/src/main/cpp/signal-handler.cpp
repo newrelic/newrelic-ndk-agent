@@ -7,6 +7,7 @@
 #include <pthread.h>
 
 #include <agent-ndk.h>
+#include <errno.h>
 #include "signal-utils.h"
 #include "backtrace.h"
 #include "serializer.h"
@@ -39,7 +40,7 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 /* Collection of observed signals */
 static observed_signal_t observedSignals[] = {
         {SIGILL,  "SIGILL",  "Illegal instruction",                               {}},
-        {SIGTRAP, "SIGTRAP", "Trap (invalid memory reference)", {}},
+        {SIGTRAP, "SIGTRAP", "Trap (invalid memory reference)",                   {}},
         {SIGABRT, "SIGABRT", "Abnormal termination",                              {}},
         {SIGFPE,  "SIGFPE",  "Floating-point exception",                          {}},
         {SIGBUS,  "SIGBUS",  "Bus error (bad memory access)",                     {}},
@@ -71,7 +72,7 @@ void interceptor(int signo, siginfo_t *_siginfo, void *ucontext) {
             serializer::from_crash(buffer, std::strlen(buffer));
         }
 
-        delete [] buffer;
+        delete[] buffer;
 
         // Uninstall the custom handler prior to calling the previous sigaction (to prevent recursion)
         uninstall_handler();
@@ -89,21 +90,24 @@ void interceptor(int signo, siginfo_t *_siginfo, void *ucontext) {
 void *install_handler(__unused void *unused) {
 
     if (!initialized++) {
-        pthread_setname_np(pthread_self(), "NR-Signal-Monitor");
-        for (size_t i = 0; i < observedSignalCnt; i++) {
-            const observed_signal_t *signal = &observedSignals[i];
-            // SA_ONSTACK: handle the signal on separate stack
-            if (sigutils::install_handler(signal->signo, interceptor,
-                                          &signal->sa_previous, SA_ONSTACK)) {
-                _LOGI("Signal %d [%s] handler installed", signal->signo, signal->description);
-            } else {
-                _LOGE("Unable to install signal %d handler", signal->signo);
+        if (0 == pthread_setname_np(pthread_self(), "NR-Signal-Monitor")) {
+            for (size_t i = 0; i < observedSignalCnt; i++) {
+                const observed_signal_t *signal = &observedSignals[i];
+                // SA_ONSTACK: handle the signal on separate stack
+                if (sigutils::install_handler(signal->signo, interceptor,
+                                              &signal->sa_previous, SA_ONSTACK)) {
+                    _LOGI("Signal %d [%s] handler installed", signal->signo, signal->description);
+                } else {
+                    _LOGE("Unable to install signal %d handler", signal->signo);
+                }
             }
+
+            intercepting = 0;
+
+            _LOGI("Signal handler initialized");
+        } else {
+            _LOGE_POSIX("pthread_setname_np()");
         }
-
-        intercepting = 0;
-
-        _LOGI("Signal handler initialized");
     }
 
     return nullptr;
@@ -131,8 +135,6 @@ void uninstall_handler() {
  * release all alloc'd heap:
  */
 void dealloc() {
-    _LOGD("dealloc called");
-
     if (_stack.ss_sp != nullptr) {
         free(_stack.ss_sp);
         _stack.ss_sp = nullptr;
@@ -141,30 +143,35 @@ void dealloc() {
 }
 
 bool signal_handler_initialize() {
-    pthread_mutex_lock(&mutex);
+    if (0 == pthread_mutex_lock(&mutex)) {
 
-    if (!sigutils::set_sigstack(&_stack, SIGSTKSZ * 2)) {
-        _LOGE("Signal handlers are disabled: could not set the handler signal stack");
-        return false;
-    }
-
-    // Main thread does not block SIGQUIT by default.
-    // Block it and start a new thread to handle all signals,
-    // using the signal mask of the parent thread.
-
-    if (sigutils::block_signal(SIGQUIT)) {
-        auto handlerThread = (pthread_t) nullptr;
-
-        // new thread will inherit the sigmask of the parent
-        if (pthread_create(&handlerThread, nullptr, install_handler, nullptr) != 0) {
-            _LOGE("Unable to create watchdog thread");
+        if (!sigutils::set_sigstack(&_stack, SIGSTKSZ * 2)) {
+            _LOGE("Signal handlers are disabled: could not set the handler signal stack");
+            return false;
         }
 
-        // restore SIGQUIT on this thread
-        sigutils::unblock_signal(SIGQUIT);
-    }
+        // Main thread does not block SIGQUIT by default.
+        // Block it and start a new thread to handle all signals,
+        // using the signal mask of the parent thread.
 
-    pthread_mutex_unlock(&mutex);
+        if (sigutils::block_signal(SIGQUIT)) {
+            auto handlerThread = (pthread_t) nullptr;
+
+            // new thread will inherit the sigmask of the parent
+            if (0 != pthread_create(&handlerThread, nullptr, install_handler, nullptr)) {
+                _LOGE_POSIX("Unable to create watchdog thread");
+            }
+
+            // restore SIGQUIT on this thread
+            sigutils::unblock_signal(SIGQUIT);
+        }
+
+        if (0 != pthread_mutex_unlock(&mutex)) {
+            _LOGE_POSIX("pthread_mutex_unlock()");
+        }
+    } else {
+        _LOGE_POSIX("pthread_mutex_lock() failed");
+    }
 
     return true;
 }
@@ -174,17 +181,22 @@ bool signal_handler_initialize() {
  */
 void signal_handler_shutdown() {
     _LOGI("Shutting down signal handler");
-    pthread_mutex_lock(&mutex);
-    uninstall_handler();
-    dealloc();
-    pthread_mutex_unlock(&mutex);
-    _LOGI("The signal handler has shutdown");
+    if (0 == pthread_mutex_lock(&mutex)) {
+        uninstall_handler();
+        dealloc();
+        if (0 == pthread_mutex_unlock(&mutex)) {
+            _LOGI("The signal handler has shutdown");
+            return;
+        }
+    }
+    _LOGE_POSIX("pthread_mutex_lock() failed");
 }
 
 /**
  * Invoke the proper handler for a passed signal
  */
-void invoke_sigaction(int signo, struct sigaction *_sigaction, siginfo_t *_siginfo, void *ucontext) {
+void
+invoke_sigaction(int signo, struct sigaction *_sigaction, siginfo_t *_siginfo, void *ucontext) {
     if (_sigaction->sa_flags & SA_SIGINFO) {
         _LOGD("Signal %d: calling sigaction w/siginfo", signo);
         _sigaction->sa_sigaction(signo, _siginfo, ucontext);
@@ -204,15 +216,18 @@ void invoke_sigaction(int signo, struct sigaction *_sigaction, siginfo_t *_sigin
  * The process may be killed during this function execution and may never return
  */
 void invoke_previous_sigaction(int signo, siginfo_t *_siginfo, void *ucontext) {
-    pthread_mutex_lock(&mutex);
-
-    for (size_t i = 0; i < observedSignalCnt; ++i) {
-        observed_signal_t signal = observedSignals[i];
-        if (signal.signo == signo) {
-            _LOGI("Invoking previous handler for signal %d", signal.signo);
-            invoke_sigaction(signo, &signal.sa_previous, _siginfo, ucontext);
+    if (0 == pthread_mutex_lock(&mutex)) {
+        for (size_t i = 0; i < observedSignalCnt; ++i) {
+            observed_signal_t signal = observedSignals[i];
+            if (signal.signo == signo) {
+                _LOGI("Invoking previous handler for signal %d", signal.signo);
+                invoke_sigaction(signo, &signal.sa_previous, _siginfo, ucontext);
+            }
         }
+        if (0 != pthread_mutex_unlock(&mutex)) {
+            _LOGE_POSIX("pthread_mutex_unlock() failed");
+        }
+    } else {
+        _LOGE_POSIX("pthread_mutex_lock() failed");
     }
-
-    pthread_mutex_unlock(&mutex);
 }

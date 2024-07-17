@@ -11,7 +11,7 @@ import org.json.JSONObject
 
 class NativeThreadInfo(nativeException: NativeException?) : ThreadInfo(nativeException) {
 
-    constructor() : this(NativeException()) {}
+    constructor() : this(NativeException())
 
     constructor(threadInfoAsJson: String?) : this() {
         fromJson(threadInfoAsJson)
@@ -35,24 +35,24 @@ class NativeThreadInfo(nativeException: NativeException?) : ThreadInfo(nativeExc
     }
 
     fun fromJson(threadInfoAsJsonStr: String?): NativeThreadInfo {
-        return fromJsonObject(JSONObject(threadInfoAsJsonStr))
+        return fromJsonObject(threadInfoAsJsonStr?.let { JSONObject(it) })
     }
 
-    fun stackTraceFromJson(allFrames: JSONArray?): Array<StackTraceElement?>? {
+    private fun stackTraceFromJson(allFrames: JSONArray?): Array<StackTraceElement?> {
         var stack = arrayOfNulls<StackTraceElement>(0)
 
         try {
             allFrames?.apply {
                 val ukn = "<unknown>"
-                stack = arrayOfNulls<StackTraceElement>(allFrames.length())
+                stack = arrayOfNulls(allFrames.length())
                 for (i in 0 until length()) {
                     if (!isNull(i)) {
                         try {
                             val frame = get(i) as JSONObject
                             val nativeFrame = NativeStackFrame().fromJson(frame)
-                            stack.set(i, nativeFrame.asStackTraceElement());
+                            stack[i] = nativeFrame.asStackTraceElement()
                         } catch (e: Exception) {
-                            stack.set(i, StackTraceElement(ukn, ukn, ukn, -2));
+                            stack[i] = StackTraceElement(ukn, ukn, ukn, -2)
                         }
                     }
                 }
@@ -65,7 +65,7 @@ class NativeThreadInfo(nativeException: NativeException?) : ThreadInfo(nativeExc
     }
 
     fun isCrashingThread(): Boolean {
-        return crashed;
+        return crashed
     }
 
     fun getStackTrace(): Array<StackTraceElement?>? {
