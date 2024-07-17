@@ -158,7 +158,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
 
                 if (consumed) {
                     if (report.delete()) {
-                        log.info("Deleted native report data [${report.absolutePath}")
+                        log.info("Deleted native report data [${report.absolutePath}]")
                     } else {
                         log.error("Failed to delete native report [${report.absolutePath}]")
                     }
