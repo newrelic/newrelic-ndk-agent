@@ -19,7 +19,7 @@
 
 namespace jni {
 
-    pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
     native_context_t &get_native_context() {
         static native_context_t instance = {};
@@ -91,23 +91,26 @@ namespace jni {
      * Release and reset any global JNI resources
      */
     void release_native_context(JNIEnv *env, native_context_t &native_context) {
-        if (0 == pthread_mutex_lock(&lock)) {
+        if (0 == pthread_mutex_lock(&mutex)) {
             if (native_context.initialized) {
                 release_delegate(env, native_context);
 
-                if (0 != pthread_mutex_unlock(&lock)) {
+                if (0 != pthread_mutex_unlock(&mutex)) {
                     _LOGE_POSIX("pthread_mutex_unlock()");
                 }
-                if (0 != pthread_mutex_destroy(&lock)) {
+
+                /* FIXME "FORTIFY: pthread_mutex_lock called on a destroyed mutex"
+                if (0 != pthread_mutex_destroy(&mutex)) {
                     _LOGE_POSIX("pthread_mutex_destroy()");
                 }
+                mutex = PTHREAD_MUTEX_INITIALIZER;
+                */
 
-                lock = PTHREAD_MUTEX_INITIALIZER;
                 native_context.initialized = false;
 
                 return;
             }
-            if (0 != pthread_mutex_unlock(&lock)) {
+            if (0 != pthread_mutex_unlock(&mutex)) {
                 _LOGE_POSIX("pthread_mutex_unlock()");
             }
         } else {
