@@ -33,7 +33,7 @@ open class ANRMonitor {
 
     var future: Future<*>? = null
     val handler = Handler(Looper.getMainLooper())
-    val monitorThread = HandlerThread("NR-ANRMonitor")
+    val monitorThread = HandlerThread("NR-ANR-Monitor")
     val executor: ExecutorService = Executors.newSingleThreadExecutor()
     var anrSampleCnt: AtomicInteger = AtomicInteger(ANR_SAMPLE_CNT)
     val anrMonitorRunner = Runnable {

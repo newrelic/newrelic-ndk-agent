@@ -45,6 +45,9 @@ namespace serializer {
         std::string storagePath = generateTmpFilename(filepath).c_str();
         std::ofstream os{storagePath.c_str(), std::ios::out | std::ios::binary};
 
+        size_t payload_len = std::strlen(payload);
+        payload_size = (payload_size < payload_len ? payload_size : payload_len);
+
         if (!os) {
             _LOGE_POSIX("serializer::to_storage error");
         } else {
