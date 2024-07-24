@@ -5,9 +5,9 @@
 
 #include <cstring>
 #include <pthread.h>
+#include <errno.h>
 
 #include <agent-ndk.h>
-#include <errno.h>
 #include "signal-utils.h"
 #include "backtrace.h"
 #include "serializer.h"
@@ -26,8 +26,6 @@ typedef struct observed_signal {
 void invoke_sigaction(int signo, struct sigaction *_sigaction, siginfo_t *_siginfo, void *context);
 
 void invoke_previous_sigaction(int signo, siginfo_t *_siginfo, void *context);
-
-void install_handler();
 
 void uninstall_handler();
 
@@ -59,31 +57,29 @@ static volatile sig_atomic_t intercepting = 0;
  */
 void interceptor(int signo, siginfo_t *_siginfo, void *ucontext) {
     const auto *_ucontext = static_cast<const ucontext_t *>(ucontext);
-    observed_signal_t *signal = observed_signal_get_or_null(signo);
-
-    if (nullptr == signal) {
-        _LOGE("Can't reference observed_signal element for signal[%d]", signo);
-        return;
-    }
 
     if (!intercepting++) {
+        observed_signal_t *signal = observed_signal_get_or_null(signo);
+
+        if (nullptr == signal) {
+            _LOGE("Can't reference observed_signal element for signal[%d]", signo);
+            return;
+        }
+
         _LOGD("Signal %d intercepted: %s", signal->signo, signal->description);
 
         signal->intercepting++;
         _LOGD("Observer for signal[%d] is intercepting [%d callers]", signal->signo,
               signal->intercepting);
 
-        if (1 == signal->intercepting) {
-            char *buffer = new char[BACKTRACE_SZ_MAX];
-            if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
-                serializer::from_crash(buffer, std::strlen(buffer));
-            }
-            delete[] buffer;
+        char *buffer = new char[BACKTRACE_SZ_MAX];
+        if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, _siginfo, _ucontext)) {
+            serializer::from_crash(buffer, std::strlen(buffer));
         }
+        delete[] buffer;
 
         // Uninstall the custom handler prior to calling the previous sigaction (to prevent recursion)
-        // uninstall_handler();
-        sigutils::uninstall_handler(signal->signo, &signal->sa_previous);
+        uninstall_handler();
 
         // chain to previous signo handler for abend
         invoke_previous_sigaction(signo, _siginfo, ucontext);
@@ -91,11 +87,6 @@ void interceptor(int signo, siginfo_t *_siginfo, void *ucontext) {
         signal->intercepting--;
 
         intercepting--;
-    } else {
-        _LOGE("Interceptor for signal[%d] is already intercepting, delegating to previous sigaction",
-              signo);
-        // chain to previous signo handler for abend
-        invoke_previous_sigaction(signo, _siginfo, ucontext);
     }
 }
 
@@ -137,10 +128,7 @@ void uninstall_handler() {
     if (initialized > 0) {
         for (size_t i = 0; i < observedSignalCnt; i++) {
             observed_signal_t signal = observedSignals[i];
-            // sigaction(signal.signo, &signal.sa_previous, nullptr);
-            if (!sigutils::uninstall_handler(signal.signo, &signal.sa_previous)) {
-                _LOGE_POSIX(signal.name);
-            }
+            sigaction(signal.signo, &signal.sa_previous, nullptr);
         }
 
         initialized--;
@@ -213,8 +201,8 @@ void signal_handler_shutdown() {
 /**
  * Invoke the default handler for a passed signal
  */
-void invoke_sigaction(int signo, struct sigaction *_sigaction,
-                      siginfo_t *_siginfo, void *ucontext) {
+void
+invoke_sigaction(int signo, struct sigaction *_sigaction, siginfo_t *_siginfo, void *ucontext) {
     if (_sigaction->sa_flags & SA_SIGINFO) {
         _LOGD("Calling signal[%d] sigaction w/siginfo", signo);
         _sigaction->sa_sigaction(signo, _siginfo, ucontext);
@@ -224,7 +212,7 @@ void invoke_sigaction(int signo, struct sigaction *_sigaction,
         raise(signo);
 
     } else if (_sigaction->sa_handler != SIG_IGN) {
-        _LOGD("Signal [%d] action gnored", signo);
+        _LOGD("Signal [%d] action ignored", signo);
         void (*handler)(int) = _sigaction->sa_handler;
         handler(signo);
     }
