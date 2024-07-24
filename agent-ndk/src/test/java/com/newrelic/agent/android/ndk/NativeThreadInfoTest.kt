@@ -17,7 +17,7 @@ class NativeThreadInfoLegacyTest : TestCase() {
     }
 
     fun testFromJsonObject() {
-        nativeThreadInfo = NativeThreadInfo().fromJsonObject(JSONObject(threadInfo))
+        nativeThreadInfo = NativeThreadInfo().fromJsonObject(threadInfo?.let { JSONObject(it) })
         Assert.assertTrue(nativeThreadInfo.threadId > 0)
     }
 
@@ -27,7 +27,7 @@ class NativeThreadInfoLegacyTest : TestCase() {
     }
 
     fun testAllThreads() {
-        val threads = JSONObject(backtrace).getJSONObject("backtrace").getJSONArray("threads")
+        val threads = backtrace?.let { JSONObject(it).getJSONObject("backtrace").getJSONArray("threads") }
         val allThreads = NativeThreadInfo.allThreads(threads)
         Assert.assertTrue(allThreads.size > 1)
     }

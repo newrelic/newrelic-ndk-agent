@@ -19,7 +19,7 @@
 
 namespace jni {
 
-    pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
     native_context_t &get_native_context() {
         static native_context_t instance = {};
@@ -51,7 +51,7 @@ namespace jni {
                                                                     static_cast<jstring>(pathObject));
 
             std::strncpy(native_context.reportPathAbsolute, reportsPath,
-                         sizeof(native_context.reportPathAbsolute));
+                         sizeof(native_context.reportPathAbsolute) - 1);
 
 
             // copy the session ID field
@@ -62,7 +62,7 @@ namespace jni {
             jobject fieldObject = jni::env_get_object_field(env, managedContext, fieldId);
             const char *sessionId = jni::env_get_string_UTF_chars(env,
                                                                   static_cast<jstring>(fieldObject));
-            std::strncpy(native_context.sessionId, sessionId, sizeof(native_context.sessionId));
+            std::strncpy(native_context.sessionId, sessionId, sizeof(native_context.sessionId) - 1);
 
             // copy the build Id field
             fieldId = jni::env_get_fieldid(env,
@@ -72,7 +72,7 @@ namespace jni {
             fieldObject = jni::env_get_object_field(env, managedContext, fieldId);
             const char *buildId = jni::env_get_string_UTF_chars(env,
                                                                 static_cast<jstring>(fieldObject));
-            std::strncpy(native_context.buildId, buildId, sizeof(native_context.buildId));
+            std::strncpy(native_context.buildId, buildId, sizeof(native_context.buildId) - 1);
 
             // copy the anr monitor field
 
@@ -81,10 +81,7 @@ namespace jni {
                                            "anrMonitor",
                                            "Z");
             jboolean anrMonitorEnabled = jni::env_get_boolean_field(env, managedContext, fieldId);
-            _LOGD("anrMonitorEnabled Value for Native %d", anrMonitorEnabled);
-
             native_context.anrMonitorEnabled = anrMonitorEnabled;
-
         }
 
         return instance;
@@ -94,19 +91,31 @@ namespace jni {
      * Release and reset any global JNI resources
      */
     void release_native_context(JNIEnv *env, native_context_t &native_context) {
-        pthread_mutex_lock(&lock);
-        if (native_context.initialized) {
-            release_delegate(env, native_context);
+        if (0 == pthread_mutex_lock(&mutex)) {
+            if (native_context.initialized) {
+                release_delegate(env, native_context);
 
-            pthread_mutex_unlock(&lock);
-            pthread_mutex_destroy(&lock);
+                if (0 != pthread_mutex_unlock(&mutex)) {
+                    _LOGE_POSIX("pthread_mutex_unlock()");
+                }
 
-            lock = PTHREAD_MUTEX_INITIALIZER;
-            native_context.initialized = false;
+                /* FIXME "FORTIFY: pthread_mutex_lock called on a destroyed mutex"
+                if (0 != pthread_mutex_destroy(&mutex)) {
+                    _LOGE_POSIX("pthread_mutex_destroy()");
+                }
+                mutex = PTHREAD_MUTEX_INITIALIZER;
+                */
 
-            return;
+                native_context.initialized = false;
+
+                return;
+            }
+            if (0 != pthread_mutex_unlock(&mutex)) {
+                _LOGE_POSIX("pthread_mutex_unlock()");
+            }
+        } else {
+            _LOGE_POSIX("pthread_mutex_lock()");
         }
-        pthread_mutex_unlock(&lock);
     }
 
 }   // namespace jni

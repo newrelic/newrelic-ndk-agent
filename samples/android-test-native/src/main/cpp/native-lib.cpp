@@ -9,6 +9,7 @@
 #include <sys/wait.h>
 #include <sys/syscall.h>
 #include <pthread.h>
+#include <errno.h>
 #include "procfs.h"
 
 const char *get_arch() {
@@ -105,7 +106,8 @@ Java_com_newrelic_agent_android_ndk_samples_MainActivity_raiseSignal(__unused JN
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_com_newrelic_agent_android_ndk_samples_MainActivity_raiseException(JNIEnv *env, jobject thiz, jint exception_name_id) {
+Java_com_newrelic_agent_android_ndk_samples_MainActivity_raiseException(JNIEnv *env, jobject thiz,
+                                                                        jint exception_name_id) {
     using namespace std;
 
     switch (exception_name_id) {
@@ -152,7 +154,9 @@ void *crashing_thread(void *args) {
 
     std::snprintf(buffer, sizeof(buffer) - 1, "Worker-%d-%d", gettid(), thread_args->signo);
     _LOGD("Detached thread running on thread [%s]", buffer);
-    pthread_setname_np(pthread_self(), buffer);
+    if (0 != pthread_setname_np(pthread_self(), buffer)) {
+        _LOGE_POSIX("pthread_setname_np");
+    }
 
     sleep(thread_args->sleepSec);
     crashBySignal(thread_args->signo);
@@ -184,8 +188,8 @@ Java_com_newrelic_agent_android_ndk_samples_MainActivity_backgroundCrash(JNIEnv 
     }
 
     for (int i = 0; i < thread_cnt; i++) {
-        if (pthread_create(&threadInfo, &threadAttr, crashing_thread, thread_args) != 0) {
-            _LOGE("threaded_delegate_call: thread creation failed");
+        if (0 != pthread_create(&threadInfo, &threadAttr, crashing_thread, thread_args)) {
+            _LOGE_POSIX("pthread_create()");
             // release the memory alloc'd above
             pthread_attr_destroy(&threadAttr);
             free(thread_args);

@@ -14,8 +14,10 @@ static const char *TAG = "newrelic";
 #define  _LOGW(...)  __android_log_print(ANDROID_LOG_WARN,    TAG, __VA_ARGS__)
 #define  _LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,   TAG, __VA_ARGS__)
 #define  _LOGI(...)  __android_log_print(ANDROID_LOG_INFO,    TAG, __VA_ARGS__)
-#define  _LOGV(...)  __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)
 
+#include <errno.h>
+#include <string.h>
+#define  _LOGE_POSIX(msg)  __android_log_print(ANDROID_LOG_INFO, TAG, "%s: %s (errno %d - %s)", __PRETTY_FUNCTION__, msg, errno, std::strerror(errno))
 
 #ifdef __cplusplus
 extern "C" {

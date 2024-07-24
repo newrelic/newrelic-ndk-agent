@@ -21,7 +21,7 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 /**
  * Report exception via agent HandledException
  */
-static void terminateHandler() {
+static void terminateHandler() noexcept {
     try {
         std::type_info *tinfo = __cxxabiv1::__cxa_current_exception_type();
 
@@ -84,6 +84,7 @@ std::unexpected_handler currentUnexpectedHandler;
 
 void unexpectedHandler() {
     char *buffer = new char[BACKTRACE_SZ_MAX];
+
     if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, nullptr, nullptr)) {
         serializer::from_exception(buffer, std::strlen(buffer));
     }
@@ -94,24 +95,38 @@ void unexpectedHandler() {
 
 
 bool terminate_handler_initialize() {
-    pthread_mutex_lock(&mutex);
-    currentHandler = std::set_terminate(terminateHandler);
+    if (0 == pthread_mutex_lock(&mutex)) {
+        currentHandler = std::set_terminate(terminateHandler);
 #if _LIBCPP_STD_VER <= 14
-    currentUnexpectedHandler = std::set_unexpected(unexpectedHandler);
+        currentUnexpectedHandler = std::set_unexpected(unexpectedHandler);
 #endif // LIBCPP_STD_VER <= 14
-    pthread_mutex_unlock(&mutex);
+        if (0 != pthread_mutex_unlock(&mutex)) {
+            _LOGE_POSIX("pthread_mutex_unlock()");
+            return false;
+        }
 
-    return true;
+        return true;
+
+    } else {
+        _LOGE_POSIX("pthread_mutex_lock()");
+    }
+
+    return false;
 }
 
 void terminate_handler_shutdown() {
-    pthread_mutex_lock(&mutex);
-    std::set_terminate(currentHandler);
-    currentHandler = nullptr;
+    if (0 == pthread_mutex_lock(&mutex)) {
+        std::set_terminate(currentHandler);
+        currentHandler = nullptr;
 #if _LIBCPP_STD_VER <= 14
-    std::set_unexpected(currentUnexpectedHandler);
+        std::set_unexpected(currentUnexpectedHandler);
 #endif // LIBCPP_STD_VER <= 14
-    pthread_mutex_unlock(&mutex);
+        if (0 != pthread_mutex_unlock(&mutex)) {
+            _LOGE_POSIX("pthread_mutex_unlock()");
+        }
+    } else {
+        _LOGE_POSIX("pthread_mutex_lock()");
+    }
 }
 
 

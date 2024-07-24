@@ -20,68 +20,82 @@ namespace sigutils {
         _LOGD("sigutils::set_sigstack (%zu) bytes to stack[%p]", stackSize, _stack);
 
         // caller must release this memory
-        _stack->ss_sp = calloc(1, stackSize);
+        _stack->ss_sp = malloc(stackSize);
         if (_stack->ss_sp != nullptr) {
             _stack->ss_size = stackSize;
             _stack->ss_flags = 0;
-            int rc = sigaltstack(_stack, 0);
-            if (rc != 0) {
-                _LOGE("Could not set the stack: %s", std::strerror(rc));
-                return false;
+            if (0 == sigaltstack(_stack, 0)) {
+                return true;
             }
+            _LOGE_POSIX("sigaltstack()");
         } else {
             _LOGE("Signal handler is disabled: could not alloc %zu-byte stack", stackSize);
-            return false;
         }
 
-        return true;
+        return false;
+
     }
 
     bool block_signal(int signo) {
         _LOGD("sigutils::block_signal(%d) on thread [%d]", signo, gettid());
 
         sigset_t sigmask;
-        sigemptyset(&sigmask);
-        sigaddset(&sigmask, signo);
-        if (pthread_sigmask(SIG_BLOCK, &sigmask, nullptr) != 0) {
-            _LOGE("Could not block signal [%d]: %s", signo, std::strerror(errno));
-            return false;
+        if (0 == sigemptyset(&sigmask)) {
+            if (0 == sigaddset(&sigmask, signo)) {
+                if (0 == pthread_sigmask(SIG_BLOCK, &sigmask, nullptr)) {
+                    return true;
+                }
+            }
         }
+        _LOGE("Could not block signal [%d]: %s", signo, std::strerror(errno));
 
-        return true;
+        return false;
     }
 
     bool unblock_signal(int signo) {
         _LOGD("sigutils::unblock_signal(%d) on thread [%d]", signo, gettid());
 
         sigset_t sigmask;
-        sigemptyset(&sigmask);
-        sigaddset(&sigmask, signo);
-        if (pthread_sigmask(SIG_UNBLOCK, &sigmask, nullptr) != 0) {
-            _LOGE("Could not unblock signal [%d]: %s", signo, std::strerror(errno));
-            return false;
+        if (0 == sigemptyset(&sigmask)) {
+            if (0 == sigaddset(&sigmask, signo)) {
+                if (0 == pthread_sigmask(SIG_UNBLOCK, &sigmask, nullptr)) {
+                    return true;
+                }
+            }
         }
+        _LOGE("Could not unblock signal [%d]: %s", signo, std::strerror(errno));
 
-        return true;
+        return false;
     }
 
     bool install_handler(int signo,
                          void sig_action(int, siginfo_t *, void *),
-                         const struct sigaction *current_sig_action, int sa_flags) {
-        _LOGD("sigutils::install_handler(%d, %p, %p) on thread [%d]",
-              signo, sig_action, current_sig_action, gettid());
-
+                         const struct sigaction *current_sigaction, int sa_flags) {
         struct sigaction handler = {};
-        sigemptyset(&handler.sa_mask);
-        handler.sa_flags = SA_SIGINFO | sa_flags;
-        handler.sa_sigaction = sig_action;
+        if (0 == sigemptyset(&handler.sa_mask)) {
+            handler.sa_flags = SA_SIGINFO | sa_flags;
+            handler.sa_sigaction = sig_action;
+            if (0 == sigaction(signo, &handler,
+                               const_cast<struct sigaction *>(current_sigaction))) {
 
-        if (sigaction(signo, &handler, const_cast<struct sigaction *>(current_sig_action)) != 0) {
-            _LOGD("Could not install signal[%d] handler: %s.", signo, strerror(errno));
-            return false;
+                _LOGD("sigutils::install_signal_observers(%d, %p, %p) on thread [%d]",
+                      signo, sig_action, current_sigaction, gettid());
+
+                return true;
+            }
         }
+        _LOGW("Could not install signal[%d] handler: %s.", signo, strerror(errno));
 
-        return true;
+        return false;
+    }
+
+    bool uninstall_handler(int signo, const struct sigaction *_sigaction) {
+        if (0 == sigaction(signo, _sigaction, nullptr)) {
+            return true;
+        }
+        _LOGE_POSIX("uninstall_handler");
+
+        return false;
     }
 
     const char *get_subcode_description(int code, const char *default_description) {

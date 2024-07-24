@@ -21,15 +21,15 @@ class ManagedContext(val context: Context? = null) {
     var expirationPeriod = DEFAULT_TTL
 
     fun getNativeReportsDir(rootDir: File?): File {
-        return File("${rootDir?.absolutePath}/newrelic/reports")
+        return File("${rootDir?.absolutePath}/newrelic/nativeReporting")
     }
 
     fun getNativeLibraryDir(context: Context?): File {
-        val packageName = context?.packageName
-        val packageManager = context?.packageManager
-        context?.apply {
+        val packageName = context!!.packageName as String
+        val packageManager = context.packageManager
+        context.apply {
             val ainfo: ApplicationInfo? = packageManager?.getApplicationInfo(
-                packageName, PackageManager.GET_SHARED_LIBRARY_FILES
+                    packageName, PackageManager.GET_SHARED_LIBRARY_FILES
             )
             ainfo?.nativeLibraryDir?.apply {
                 return File(this)

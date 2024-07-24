@@ -72,7 +72,7 @@ Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStart(JNIEnv *env, jobject th
         if (!anr_handler_initialize()) {
             _LOGE("Error: Failed to initialize ANR detection!");
         } else {
-            _LOGD("ANR handler installed");
+            _LOGD("Native ANR handler installed");
         }
     }
 
@@ -88,17 +88,18 @@ Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStart(JNIEnv *env, jobject th
 }
 
 extern "C"
-JNIEXPORT void JNICALL
+JNIEXPORT jboolean JNICALL
 Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStop(JNIEnv *env, jobject thiz) {
     (void) env;
     (void) thiz;
-
 
     signal_handler_shutdown();
     if (jni::get_native_context().anrMonitorEnabled) {
         anr_handler_shutdown();
     }
     terminate_handler_shutdown();
+
+    return true;
 }
 
 extern "C"
@@ -115,6 +116,7 @@ Java_com_newrelic_agent_android_ndk_AgentNDK_dumpStack(JNIEnv *env, jobject thiz
         delete[] buffer;
         return result;
     }
+    delete[] buffer;
 
     return nullptr;
 }

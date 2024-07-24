@@ -48,7 +48,7 @@ static bool record_frame(uintptr_t ip, backtrace_state_t *state) {
 
     if (state->frame_cnt > 0) {
         // ignore null frames
-        if (ip == (uintptr_t) nullptr ) {
+        if (ip == (uintptr_t) nullptr) {
             _LOGW("record_frame[%zu]: Ignoring null ip", state->frame_cnt);
             state->skipped_frames++;
             return true;
@@ -58,8 +58,8 @@ static bool record_frame(uintptr_t ip, backtrace_state_t *state) {
         if (ip == state->frames[state->frame_cnt - 1]) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat"
-            // _LOGD("record_frame[%zu]: ip[%zu] duplicate of frame[%lu]: ip[%zu]",
-            //      state->frame_cnt, ip, state->frame_cnt - 1, state->frames[state->frame_cnt - 1]);
+            _LOGD("record_frame[%zu]: ip[%zu] duplicate of frame[%lu]: ip[%zu]",
+                  state->frame_cnt, ip, state->frame_cnt - 1, state->frames[state->frame_cnt - 1]);
 #pragma clang diagnostic pop
             state->skipped_frames++;
             return true;
@@ -83,7 +83,7 @@ void transform_addr_to_stackframe(size_t index, uintptr_t address, stackframe_t 
     if (dladdr(reinterpret_cast<void *>(address), &info)) {
 
         if (info.dli_fname) {
-            std::strncpy(stackframe.so_path, info.dli_fname, sizeof(stackframe.so_path));
+            std::strncpy(stackframe.so_path, info.dli_fname, sizeof(stackframe.so_path) - 1);
         }
 
         if (info.dli_sname) {
@@ -93,7 +93,7 @@ void transform_addr_to_stackframe(size_t index, uintptr_t address, stackframe_t 
             if (demangled != nullptr && status == 0) {
                 symbol = demangled;
             }
-            std::strncpy(stackframe.sym_name, symbol, sizeof(stackframe.sym_name));
+            std::strncpy(stackframe.sym_name, symbol, sizeof(stackframe.sym_name) - 1);
         }
 
         // Relative addresses appear when code is compiled with
@@ -117,11 +117,11 @@ _Unwind_Reason_Code unwinder_cb(struct _Unwind_Context *ucontext, void *arg) {
 
     if (ip_before != 0) {
         // IP is before or after first not yet fully executed instruction
-        // _LOGD("unwinder_cb[%zu]: ip_before[%d]: address[%zu]", state->frame_cnt, ip_before, ip);
+        _LOGD("unwinder_cb[%zu]: ip_before[%d]: address[%zu]", state->frame_cnt, ip_before, ip);
     }
 
     if (ip == state->crash_ip) {
-        // _LOGV("unwinder_cb[%zu]: crash address[%zu]", state->frame_cnt, ip);
+        _LOGD("unwinder_cb[%zu]: crash address[%zu]", state->frame_cnt, ip);
         state->skipped_frames = state->frame_cnt;
         state->frame_cnt = 0;   // reset the index
     } else if (ip > 0) {

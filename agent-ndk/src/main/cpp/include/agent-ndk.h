@@ -9,7 +9,7 @@
 #pragma once
 
 #ifndef AGENT_VERSION
-#define AGENT_VERSION "1.1.0" // Update it Every Release
+#define AGENT_VERSION "1.1.1" // Update it Every Release
 #endif  // !AGENT_VERSION
 
 static const char *TAG = "com.newrelic.android";
@@ -44,5 +44,9 @@ bool collect_backtrace(char *, size_t, const siginfo_t *, const ucontext_t *);
 #define  _LOGW(...)  __android_log_print(ANDROID_LOG_WARN,    TAG, __VA_ARGS__)
 #define  _LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,   TAG, __VA_ARGS__)
 #define  _LOGI(...)  __android_log_print(ANDROID_LOG_INFO,    TAG, __VA_ARGS__)
+
+#include <errno.h>
+#include <string.h>
+#define  _LOGE_POSIX(msg)  __android_log_print(ANDROID_LOG_INFO, TAG, "%s: %s (errno %d - %s)", __PRETTY_FUNCTION__, msg, errno, std::strerror(errno))
 
 #endif // _AGENT_NDK_AGENT_NDK_H

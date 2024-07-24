@@ -45,7 +45,7 @@ class ManagedContextTest : TestCase(), AgentNDKListener {
 
     @Test
     fun testGetReportDirectory() {
-        val target = File("${context?.cacheDir?.absolutePath}/newrelic/reports")
+        val target = File("${context?.cacheDir?.absolutePath}/newrelic/nativeReporting")
         Assert.assertEquals(target.absolutePath, managedContext?.reportsDir?.absolutePath)
     }
 
