@@ -11,9 +11,8 @@ import com.newrelic.agent.android.FeatureFlag
 import com.newrelic.agent.android.NewRelic
 import com.newrelic.agent.android.logging.AgentLog
 import com.newrelic.agent.android.logging.AgentLogManager
-import com.newrelic.agent.android.ndk.AgentNDK
 
-class NewRelicAgent(val activity: Activity) {
+class NewRelicAgent(private val activity: Activity) {
 
     private var legacyAgent: NewRelic? = null
     private var agentLog: AgentLog? = AgentLogManager.getAgentLog()
@@ -27,25 +26,25 @@ class NewRelicAgent(val activity: Activity) {
             .withLogLevel(AgentLog.DEBUG)
             .withApplicationBuild("Legacy Native agent")
 
-        activity.findViewById<TextView>(R.id.text)?.text = "Created"
+        activity.findViewById<TextView>(R.id.text)?.text = activity.getString(R.string.created)
         agentLog?.info("Legacy agent was created")
 
     }
 
     fun onStart() {
         legacyAgent?.start(activity.applicationContext)
-        activity.findViewById<TextView>(R.id.text)?.text = "Started"
+        activity.findViewById<TextView>(R.id.text)?.text = activity.getString(R.string.started)
         agentLog?.info("Legacy agent has started")
     }
 
     fun onStop() {
-        activity.findViewById<TextView>(R.id.text)?.text = "Stopped"
+        activity.findViewById<TextView>(R.id.text)?.text = activity.getString(R.string.stopped)
         agentLog?.info("Legacy agent has stopped")
     }
 
     fun onDestroy() {
-        onStop();
-        activity.findViewById<TextView>(R.id.text)?.text = "Destroyed"
+        onStop()
+        activity.findViewById<TextView>(R.id.text)?.text = activity.getString(R.string.destroyed)
         agentLog?.info("Legacy agent destroyed")
     }
 

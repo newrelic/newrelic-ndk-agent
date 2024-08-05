@@ -21,9 +21,11 @@ namespace sigutils {
     bool install_handler(int signo, void sig_action(int, siginfo_t *, void *),
                          const struct sigaction *, int);
 
+    bool uninstall_handler(int signo, const struct sigaction *);
+
     const char *get_signal_description(int signo, int code);
 
-    }   // namespace sigutils
+}   // namespace sigutils
 
 #ifdef __cplusplus
 }

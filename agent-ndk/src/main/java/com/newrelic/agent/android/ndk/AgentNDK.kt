@@ -21,7 +21,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
      * API methods
      **/
     external fun nativeStart(context: ManagedContext? = null): Boolean
-    external fun nativeStop()
+    external fun nativeStop(): Boolean
     external fun nativeSetContext(context: ManagedContext)
 
     external fun crashNow(cause: String? = "This is a demonstration native crash courtesy of New Relic")
@@ -51,7 +51,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
         var log: AgentLog = ConsoleAgentLog()
 
         @Volatile
-        private var agentNdk: AgentNDK? = null
+        var agentNdk: AgentNDK? = null
 
         @JvmStatic
         fun loadAgent(): Boolean {
@@ -61,12 +61,12 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
                 StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_CRASH)
 
             } catch (e: Exception) {
-                log.info("Agent NDK load failed: " + e.localizedMessage)
+                log.error("Agent NDK load failed: " + e.localizedMessage)
                 StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_LOAD_ERR)
                 return false
 
             } catch (e: UnsatisfiedLinkError) {
-                log.info("Agent NDK load failed: " + e.localizedMessage)
+                log.error("Agent NDK load failed: " + e.localizedMessage)
                 StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_LOAD_ERR)
                 return false
             }
@@ -89,11 +89,12 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
         return nativeStart(managedContext!!)
     }
 
-    fun stop() {
+    fun stop(): Boolean {
         if (managedContext?.anrMonitor == true) {
             ANRMonitor.getInstance().stopMonitor()
         }
-        nativeStop()
+
+        return nativeStop()
     }
 
     fun flushPendingReports() {
@@ -115,8 +116,8 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
 
                             val expirationTimeMs: Long = (System.currentTimeMillis() -
                                     TimeUnit.MILLISECONDS.convert(
-                                            managedContext.expirationPeriod,
-                                            TimeUnit.SECONDS
+                                        managedContext.expirationPeriod,
+                                        TimeUnit.SECONDS
                                     ))
 
                             if (report.exists() && (report.lastModified() < expirationTimeMs)) {
@@ -136,7 +137,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
         }
     }
 
-    private fun postReport(report: File): Boolean {
+    protected fun postReport(report: File): Boolean {
         if (report.exists()) {
             log.info("Posting native report data from [${report.absolutePath}]")
             managedContext?.nativeReportListener?.apply {
@@ -158,7 +159,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
 
                 if (consumed) {
                     if (report.delete()) {
-                        log.info("Deleted native report data [${report.absolutePath}")
+                        log.debug("Deleted native report data [${report.absolutePath}]")
                     } else {
                         log.error("Failed to delete native report [${report.absolutePath}]")
                     }
@@ -202,7 +203,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
             return this
         }
 
-        fun withStorageDir(storageRootDir: File): Builder {
+        fun withStorageDir(storageRootDir: File?): Builder {
             managedContext.reportsDir = managedContext.getNativeReportsDir(storageRootDir)
             managedContext.reportsDir?.mkdirs()
             return this

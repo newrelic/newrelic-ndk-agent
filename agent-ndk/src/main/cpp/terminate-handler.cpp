@@ -21,7 +21,7 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 /**
  * Report exception via agent HandledException
  */
-static void terminateHandler() {
+static void terminateHandler() noexcept {
     try {
         std::type_info *tinfo = __cxxabiv1::__cxa_current_exception_type();
 
@@ -84,6 +84,7 @@ std::unexpected_handler currentUnexpectedHandler;
 
 void unexpectedHandler() {
     char *buffer = new char[BACKTRACE_SZ_MAX];
+
     if (collect_backtrace(buffer, BACKTRACE_SZ_MAX, nullptr, nullptr)) {
         serializer::from_exception(buffer, std::strlen(buffer));
     }

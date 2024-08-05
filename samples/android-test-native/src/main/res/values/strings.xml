@@ -17,5 +17,9 @@
     <string name="anr">ANR</string>
     <string name="cpuSample">CPU Sample</string>
     <string name="service_name">sleepy.background.service</string>
+    <string name="created">Created</string>
+    <string name="started">Started</string>
+    <string name="stopped">Stopped</string>
+    <string name="destroyed">Destroyed</string>
 
 </resources>

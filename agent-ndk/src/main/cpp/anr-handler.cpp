@@ -39,7 +39,7 @@ void *anr_monitor_thread(__unused void *unused) {
     static const useconds_t poll_sleep = 100000;
 
     _LOGD("anr_monitor_thread: started (enabled[%d])", (int) enabled);
-    if (0 != pthread_setname_np(pthread_self(), "NR-ANR-Monitor")) {
+    if (0 != pthread_setname_np(pthread_self(), "NR-ANR-Handler")) {
         _LOGE_POSIX("pthread_setname_np()");
     }
 

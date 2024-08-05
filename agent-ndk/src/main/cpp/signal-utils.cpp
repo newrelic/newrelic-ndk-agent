@@ -70,19 +70,30 @@ namespace sigutils {
 
     bool install_handler(int signo,
                          void sig_action(int, siginfo_t *, void *),
-                         const struct sigaction *current_sig_action, int sa_flags) {
-        _LOGD("sigutils::install_handler(%d, %p, %p) on thread [%d]",
-              signo, sig_action, current_sig_action, gettid());
-
+                         const struct sigaction *current_sigaction, int sa_flags) {
         struct sigaction handler = {};
         if (0 == sigemptyset(&handler.sa_mask)) {
             handler.sa_flags = SA_SIGINFO | sa_flags;
             handler.sa_sigaction = sig_action;
-            if (0 == sigaction(signo, &handler, const_cast<struct sigaction *>(current_sig_action))) {
+            if (0 == sigaction(signo, &handler,
+                               const_cast<struct sigaction *>(current_sigaction))) {
+
+                _LOGD("sigutils::install_signal_observers(%d, %p, %p) on thread [%d]",
+                      signo, sig_action, current_sigaction, gettid());
+
                 return true;
             }
         }
-        _LOGD("Could not install signal[%d] handler: %s.", signo, strerror(errno));
+        _LOGW("Could not install signal[%d] handler: %s.", signo, strerror(errno));
+
+        return false;
+    }
+
+    bool uninstall_handler(int signo, const struct sigaction *_sigaction) {
+        if (0 == sigaction(signo, _sigaction, nullptr)) {
+            return true;
+        }
+        _LOGE_POSIX("uninstall_handler");
 
         return false;
     }
