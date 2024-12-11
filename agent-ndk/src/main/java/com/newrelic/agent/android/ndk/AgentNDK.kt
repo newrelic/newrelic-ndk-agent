@@ -40,7 +40,8 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
             companion object {
                 const val SUPPORTABILITY_NATIVE_ROOT = "Supportability/AgentHealth/NativeReporting"
                 const val SUPPORTABILITY_NATIVE_CRASH = "$SUPPORTABILITY_NATIVE_ROOT/Crash"
-                const val SUPPORTABILITY_NATIVE_LOAD_ERR = "$SUPPORTABILITY_NATIVE_ROOT/Error/LoadLibrary"
+                const val SUPPORTABILITY_NATIVE_LOAD_ERR =
+                    "$SUPPORTABILITY_NATIVE_ROOT/Error/LoadLibrary"
                 const val SUPPORTABILITY_ANR_DETECTED = "$SUPPORTABILITY_NATIVE_ROOT/ANR/Detected"
             }
         }
@@ -176,9 +177,11 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
      */
 
     fun isRooted(): Boolean {
-        RootBeer(managedContext?.context).also {
-            return it.isRooted
-        }
+
+        var rootBeer = RootBeer(managedContext?.context)
+
+        rootBeer.setLogging(false)
+        return rootBeer.isRooted
     }
 
 
