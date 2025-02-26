@@ -1,4 +1,7 @@
 <a href="https://opensource.newrelic.com/oss-category/#community-plus"><picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/dark/Community_Plus.png"><source media="(prefers-color-scheme: light)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png"><img alt="New Relic Open Source community plus project banner." src="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png"></picture></a>
+
+:warning: ”The New Relic NDK agent and native crash reporting is an incubating product feature. It should be treated as experimental and tested thoroughly in your application before using it in production. If you have specific features or needs in this area, please reach out to your New Relic account representative to partner with our engineering team.”
+
 # New Relic Android NDK agent
 With [New Relic's Android NDK agent](https://docs.newrelic.com/docs/mobile-monitoring/mobile-monitoring-ui/crashes/investigate-mobile-app-crash-report/#android-native-reporting), 
 you can capture native crashes resulting from raised signals and uncaught runtime exceptions from C and C++ code used in your Android app.
