@@ -21,7 +21,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
      * API methods
      **/
     external fun nativeStart(context: ManagedContext? = null): Boolean
-    external fun nativeStop(): Boolean
+    external fun nativeStop()
     external fun nativeSetContext(context: ManagedContext)
 
     external fun crashNow(cause: String? = "This is a demonstration native crash courtesy of New Relic")
@@ -40,7 +40,8 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
             companion object {
                 const val SUPPORTABILITY_NATIVE_ROOT = "Supportability/AgentHealth/NativeReporting"
                 const val SUPPORTABILITY_NATIVE_CRASH = "$SUPPORTABILITY_NATIVE_ROOT/Crash"
-                const val SUPPORTABILITY_NATIVE_LOAD_ERR = "$SUPPORTABILITY_NATIVE_ROOT/Error/LoadLibrary"
+                const val SUPPORTABILITY_NATIVE_LOAD_ERR =
+                    "$SUPPORTABILITY_NATIVE_ROOT/Error/LoadLibrary"
                 const val SUPPORTABILITY_ANR_DETECTED = "$SUPPORTABILITY_NATIVE_ROOT/ANR/Detected"
             }
         }
@@ -51,7 +52,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
         var log: AgentLog = ConsoleAgentLog()
 
         @Volatile
-        var agentNdk: AgentNDK? = null
+        private var agentNdk: AgentNDK? = null
 
         @JvmStatic
         fun loadAgent(): Boolean {
@@ -89,12 +90,11 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
         return nativeStart(managedContext!!)
     }
 
-    fun stop(): Boolean {
+    fun stop() {
         if (managedContext?.anrMonitor == true) {
             ANRMonitor.getInstance().stopMonitor()
         }
-
-        return nativeStop()
+        nativeStop()
     }
 
     fun flushPendingReports() {
@@ -177,9 +177,11 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
      */
 
     fun isRooted(): Boolean {
-        RootBeer(managedContext?.context).also {
-            return it.isRooted
-        }
+
+        var rootBeer = RootBeer(managedContext?.context)
+
+        rootBeer.setLogging(false)
+        return rootBeer.isRooted
     }
 
 

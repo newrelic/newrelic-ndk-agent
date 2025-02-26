@@ -88,7 +88,7 @@ Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStart(JNIEnv *env, jobject th
 }
 
 extern "C"
-JNIEXPORT jboolean JNICALL
+JNIEXPORT void JNICALL
 Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStop(JNIEnv *env, jobject thiz) {
     (void) env;
     (void) thiz;
@@ -98,8 +98,6 @@ Java_com_newrelic_agent_android_ndk_AgentNDK_nativeStop(JNIEnv *env, jobject thi
         anr_handler_shutdown();
     }
     terminate_handler_shutdown();
-
-    return true;
 }
 
 extern "C"
