@@ -6,6 +6,7 @@
 package com.newrelic.agent.android.ndk
 
 import android.content.Context
+import android.util.Log
 import com.newrelic.agent.android.logging.AgentLog
 import com.newrelic.agent.android.logging.ConsoleAgentLog
 import com.newrelic.agent.android.stats.StatsEngine
@@ -39,7 +40,8 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
             companion object {
                 const val SUPPORTABILITY_NATIVE_ROOT = "Supportability/AgentHealth/NativeReporting"
                 const val SUPPORTABILITY_NATIVE_CRASH = "$SUPPORTABILITY_NATIVE_ROOT/Crash"
-                const val SUPPORTABILITY_NATIVE_LOAD_ERR = "$SUPPORTABILITY_NATIVE_ROOT/Error/LoadLibrary"
+                const val SUPPORTABILITY_NATIVE_LOAD_ERR =
+                    "$SUPPORTABILITY_NATIVE_ROOT/Error/LoadLibrary"
                 const val SUPPORTABILITY_ANR_DETECTED = "$SUPPORTABILITY_NATIVE_ROOT/ANR/Detected"
             }
         }
@@ -60,12 +62,12 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
                 StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_CRASH)
 
             } catch (e: Exception) {
-                log.info("Agent NDK load failed: " + e.localizedMessage)
+                log.error("Agent NDK load failed: " + e.localizedMessage)
                 StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_LOAD_ERR)
                 return false
 
             } catch (e: UnsatisfiedLinkError) {
-                log.info("Agent NDK load failed: " + e.localizedMessage)
+                log.error("Agent NDK load failed: " + e.localizedMessage)
                 StatsEngine.get().inc(MetricNames.SUPPORTABILITY_NATIVE_LOAD_ERR)
                 return false
             }
@@ -82,13 +84,14 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
     fun start(): Boolean {
         if (managedContext?.anrMonitor == true) {
             ANRMonitor.getInstance().startMonitor()
+            Log.d("AgentNDK", "Main thread ANR monitor started")
         }
 
         return nativeStart(managedContext!!)
     }
 
     fun stop() {
-        managedContext?.anrMonitor.let {
+        if (managedContext?.anrMonitor == true) {
             ANRMonitor.getInstance().stopMonitor()
         }
         nativeStop()
@@ -134,7 +137,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
         }
     }
 
-    private fun postReport(report: File): Boolean {
+    protected fun postReport(report: File): Boolean {
         if (report.exists()) {
             log.info("Posting native report data from [${report.absolutePath}]")
             managedContext?.nativeReportListener?.apply {
@@ -144,9 +147,11 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
                     report.name.startsWith("crash-", true) -> {
                         consumed = onNativeCrash(report.readText(Charsets.UTF_8))
                     }
+
                     report.name.startsWith("ex-", true) -> {
                         consumed = onNativeException(report.readText(Charsets.UTF_8))
                     }
+
                     report.name.startsWith("anr-", true) -> {
                         consumed = onApplicationNotResponding(report.readText(Charsets.UTF_8))
                     }
@@ -154,7 +159,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
 
                 if (consumed) {
                     if (report.delete()) {
-                        log.info("Deleted native report data [${report.absolutePath}")
+                        log.debug("Deleted native report data [${report.absolutePath}]")
                     } else {
                         log.error("Failed to delete native report [${report.absolutePath}]")
                     }
@@ -172,9 +177,11 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
      */
 
     fun isRooted(): Boolean {
-        RootBeer(managedContext?.context).also {
-            return it.isRooted()
-        }
+
+        var rootBeer = RootBeer(managedContext?.context)
+
+        rootBeer.setLogging(false)
+        return rootBeer.isRooted
     }
 
 
@@ -198,7 +205,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
             return this
         }
 
-        fun withStorageDir(storageRootDir: File): Builder {
+        fun withStorageDir(storageRootDir: File?): Builder {
             managedContext.reportsDir = managedContext.getNativeReportsDir(storageRootDir)
             managedContext.reportsDir?.mkdirs()
             return this

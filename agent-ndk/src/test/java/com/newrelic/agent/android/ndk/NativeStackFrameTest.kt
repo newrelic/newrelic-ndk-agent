@@ -43,7 +43,7 @@ class NativeStackFrameTest : TestCase() {
     }
 
     fun testFromJson() {
-        nativeStackFrame.fromJson(stackframe)
+        stackframe?.let { nativeStackFrame.fromJson(it) }
         val element = nativeStackFrame.asStackTraceElement()
         Assert.assertEquals(element.className, "0x75450c88ee18")
         Assert.assertEquals(element.methodName, "crashBySignal(int)")
@@ -52,7 +52,7 @@ class NativeStackFrameTest : TestCase() {
     }
 
     fun testFromJsonObj() {
-        nativeStackFrame.fromJson(JSONObject(stackframe))
+        nativeStackFrame.fromJson(JSONObject(stackframe!!))
         val element = nativeStackFrame.asStackTraceElement()
         Assert.assertEquals(element.className, "0x75450c88ee18")
         Assert.assertEquals(element.methodName, "crashBySignal(int)")
@@ -67,7 +67,7 @@ class NativeStackFrameTest : TestCase() {
     }
 
     fun testAllNativeFrames() {
-        val stackFrames = JSONObject(backtrace)
+        val stackFrames = JSONObject(backtrace!!)
             .getJSONObject("backtrace")
             .getJSONArray("threads")
             .getJSONObject(0)

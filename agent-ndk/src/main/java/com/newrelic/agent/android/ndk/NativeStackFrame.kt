@@ -43,13 +43,13 @@ class NativeStackFrame(
         return this
     }
 
-    fun fromJson(stackFrameAsStr: String?): NativeStackFrame {
+    fun fromJson(stackFrameAsStr: String): NativeStackFrame {
         return fromJson(JSONObject(stackFrameAsStr))
     }
 
     companion object {
         fun allFrames(allFrames: JSONArray?): MutableList<StackTraceElement> {
-            var stackFrames: MutableList<StackTraceElement> = mutableListOf<StackTraceElement>()
+            val stackFrames: MutableList<StackTraceElement> = mutableListOf()
 
             allFrames?.apply {
                 for (i in 0 until length()) {
@@ -74,7 +74,7 @@ class NativeStackFrame(
         }
 
         fun allNativeFrames(allFrames: JSONArray?): MutableList<NativeStackFrame> {
-            var stackFrames: MutableList<NativeStackFrame> = mutableListOf<NativeStackFrame>()
+            val stackFrames: MutableList<NativeStackFrame> = mutableListOf()
 
             allFrames?.apply {
                 for (i in 0 until length()) {

@@ -18,22 +18,22 @@ class NativeStackTrace(stackTraceAsString: String? = null) {
         }
     }
 
-    private fun transformNativeStackTrace(stackTraceAsString: String?): NativeStackTrace {
+    private fun transformNativeStackTrace(stackTraceAsString: String): NativeStackTrace {
         return transformNativeStackTrace(JSONObject(stackTraceAsString))
     }
 
     private fun transformNativeStackTrace(jsonObj: JSONObject): NativeStackTrace {
         try {
             jsonObj.apply {
-                getJSONObject("backtrace")?.apply {
+                getJSONObject("backtrace").apply {
                     try {
-                        getJSONObject("exception")?.apply {
+                        getJSONObject("exception").apply {
                             val cause = optString("cause", "")
-                            exceptionMessage = "${getString("name")}: ${cause}"
-                            getJSONObject("signalInfo")?.apply {
+                            exceptionMessage = "${getString("name")}: $cause"
+                            getJSONObject("signalInfo").apply {
                                 exceptionMessage =
                                     "${getString("signalName")} " +
-                                            "(code ${getInt("signalCode")}) ${cause} " +
+                                            "(code ${getInt("signalCode")}) $cause " +
                                             "at 0x${getLong("faultAddress").toString(16)}"
                             }
                         }
@@ -42,11 +42,11 @@ class NativeStackTrace(stackTraceAsString: String? = null) {
                     }
 
                     try {
-                        getJSONArray("threads")?.apply {
+                        getJSONArray("threads").apply {
                             threads = NativeThreadInfo.allThreads(this)
-                            threads.find() {
+                            threads.find {
                                 it.isCrashingThread()
-                            }?.apply {
+                            }.apply {
                                 crashedThread = this
                             }
                         }

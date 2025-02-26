@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity(), AgentNDKListener {
             btnANR.text = "Sleeping..."    // needs some user input
             btnANR.setPressed(true);
             btnANR.invalidate();
-            Thread.sleep(8000)
+            Thread.sleep(10000)
             btnANR.text = getString(R.string.anr)
         }
     }
@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity(), AgentNDKListener {
         contentProvider.query(
             CheeseyContentProvider.CONTENT_URI,
             null, null, null, null
-        ).apply {
+        )?.apply {
             val stock = StringBuilder("CONTENT_URI: " + contentType + "\n");
             if (moveToFirst()) {
                 while (!isAfterLast()) {
