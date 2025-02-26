@@ -30,6 +30,8 @@ namespace jni {
         // build id passed from client
         char buildId[40];
 
+        bool anrMonitorEnabled;
+
     } native_context_t;
 
     /**

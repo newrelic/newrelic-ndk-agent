@@ -201,12 +201,14 @@ namespace jni {
         pthread_attr_init(&thread_attr);
         pthread_attr_setdetachstate(&thread_attr, PTHREAD_CREATE_DETACHED);
 
-        if (pthread_create(&delegate_thread, &thread_attr, delegate_worker_thread,
-                           delegate_thread_args) != 0) {
-            _LOGE("threaded_delegate_call: thread creation failed");
+        if (0 != pthread_create(&delegate_thread, &thread_attr, delegate_worker_thread,
+                                delegate_thread_args)) {
+            _LOGE_POSIX("pthread_create()");
 
             // release the memory alloc'd above
-            pthread_attr_destroy(&thread_attr);
+            if (0 != pthread_attr_destroy(&thread_attr)) {
+                _LOGE_POSIX("pthread_attr_destroy()");
+            }
             jni::env_delete_global_ref(env, jBacktraceRef);
             delete delegate_thread_args;
 
@@ -216,8 +218,9 @@ namespace jni {
         _LOGD("threaded_delegate_call: delegate running on thread [%p]", (void *) delegate_thread);
         pthread_attr_destroy(&thread_attr);
 
-        pthread_join(delegate_thread, nullptr);
-
+        if (0 != pthread_join(delegate_thread, nullptr)) {
+            _LOGE_POSIX("pthread_join()");
+        }
         if (jni_attached) {
             native_context.jvm->DetachCurrentThread();
         }
