@@ -37,6 +37,11 @@ target_include_directories(agent-ndk PUBLIC include)
 target_include_directories(agent-ndk PRIVATE .)
 target_link_libraries(agent-ndk ${log-lib})
 
+# 16 KB page size compatibility
+target_link_options(agent-ndk PRIVATE "-Wl,-z,max-page-size=16384")
+target_link_options(agent-ndk PRIVATE "-Wl,-z,common-page-size=16384")
+
+
 ##
 # For tests and debugging
 ##
