@@ -21,7 +21,7 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
      * API methods
      **/
     external fun nativeStart(context: ManagedContext? = null): Boolean
-    external fun nativeStop()
+    external fun nativeStop() : Boolean
     external fun nativeSetContext(context: ManagedContext)
 
     external fun crashNow(cause: String? = "This is a demonstration native crash courtesy of New Relic")
@@ -90,11 +90,11 @@ open class AgentNDK(val managedContext: ManagedContext? = ManagedContext()) {
         return nativeStart(managedContext!!)
     }
 
-    fun stop() {
+    fun stop() : Boolean{
         if (managedContext?.anrMonitor == true) {
             ANRMonitor.getInstance().stopMonitor()
         }
-        nativeStop()
+        return nativeStop()
     }
 
     fun flushPendingReports() {
