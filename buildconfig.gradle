@@ -46,14 +46,14 @@ buildscript {
                         cmake     : '3.22.1'
                 ],
                 libraries: [
-                        rootbeer: '0.1.0',
+                        rootbeer: '0.1.1',
                 ],
                 java     : [
                         nexus: '1.1.0',
                 ],
         ]
 
-        newrelic.agent.snapshotUri = uri("https://oss.sonatype.org/content/repositories/comnewrelic-$newrelic.agent.snapshot")
+        newrelic.agent.snapshotUri = uri("https://ossrh-staging-api.central.sonatype.com/content/repositories/comnewrelic-$newrelic.agent.snapshot")
     }
 
     repositories {
