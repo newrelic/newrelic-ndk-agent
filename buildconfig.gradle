@@ -53,7 +53,7 @@ buildscript {
                 ],
         ]
 
-        newrelic.agent.snapshotUri = uri("https://oss.sonatype.org/content/repositories/comnewrelic-$newrelic.agent.snapshot")
+        newrelic.agent.snapshotUri = uri("https://ossrh-staging-api.central.sonatype.com/content/repositories/comnewrelic-$newrelic.agent.snapshot")
     }
 
     repositories {
