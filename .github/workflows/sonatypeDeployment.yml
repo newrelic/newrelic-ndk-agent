@@ -10,6 +10,9 @@ on:
         default: '1.+'
         required: false
 
+permissions:
+  contents: read
+
 jobs:
   assemble_project:
     name: Assemble project
