@@ -25,10 +25,10 @@ buildscript {
                 test     : [
                         junit       : '4.12',
                         mockitoCore : '2.28.2',
-                        robolectric : '4.6.+',
+                        robolectric : '4.11.+',
                         androidxCore: '1.4.+',
                         owasp       : '8.1.2',
-                        jacoco      : '0.8.4',
+                        jacoco      : '0.8.11',
                 ],
                 kotlin   : [
                         plugin : "1.6.0",
