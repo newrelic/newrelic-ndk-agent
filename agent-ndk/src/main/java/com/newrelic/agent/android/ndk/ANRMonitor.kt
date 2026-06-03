@@ -41,42 +41,59 @@ open class ANRMonitor {
 
         val runner = WaitableRunner()
 
-        while (!Thread.interrupted()) {
+        try {
+            while (!Thread.interrupted()) {
+                var isANR = false
+                var tRemaining = 0L
 
-            synchronized(runner) {
-                try {
-                    if (!handler.post(runner)) {
-                        // post() returns false on failure, usually because the
-                        // looper processing the message queue is exiting
-                        AgentNDK.log.debug("Could not post the waitable runner to the main UI handler")
-                        return@Runnable
-                    }
+                synchronized(runner) {
+                    try {
+                        // Drop any stale runner still queued on the main handler
+                        // from a prior iteration before posting a new one. Without
+                        // this, a backlog can build up and a queued runner can hit
+                        // WaitableRunner.run()'s @Synchronized lock while the
+                        // monitor thread is parked below, freezing the main thread.
+                        handler.removeCallbacks(runner)
 
-                    val tStart = System.currentTimeMillis()
-                    runner.wait(ANR_TIMEOUT)
-
-                    if (runner.inANRState()) {
-                        if (0 == anrSampleCnt.decrementAndGet()) {
-                            AgentNDK.log.debug("ANR monitor is blocked, ANR detected")
-                            createANRReport()
-                            anrSampleCnt.set(ANR_SAMPLE_CNT)
+                        if (!handler.post(runner)) {
+                            // post() returns false on failure, usually because the
+                            // looper processing the message queue is exiting
+                            AgentNDK.log.debug("Could not post the waitable runner to the main UI handler")
+                            return@Runnable
                         }
-                    } else {
-                        // park the monitor for the remaining period
-                        val tRemaining = ANR_TIMEOUT - (System.currentTimeMillis() - tStart)
-                        Thread.sleep(Math.max(0, tRemaining))
+
+                        val tStart = System.currentTimeMillis()
+                        runner.wait(ANR_TIMEOUT)
+
+                        isANR = runner.inANRState()
+                        if (!isANR) {
+                            tRemaining = (ANR_TIMEOUT - (System.currentTimeMillis() - tStart)).coerceAtLeast(0)
+                        }
+                    } finally {
+                        runner.reset()
                     }
+                }
 
-                } catch (e: InterruptedException) {
-                    AgentNDK.log.error("ANR monitor caught $e")
-
-                } finally {
-                    runner.reset()
+                // Anything that blocks must run OUTSIDE synchronized(runner):
+                // WaitableRunner.run() is @Synchronized and fires on the main
+                // thread, so holding the lock here would stall the UI.
+                if (isANR) {
+                    if (0 == anrSampleCnt.decrementAndGet()) {
+                        AgentNDK.log.debug("ANR monitor is blocked, ANR detected")
+                        createANRReport()
+                        anrSampleCnt.set(ANR_SAMPLE_CNT)
+                    }
+                } else if (tRemaining > 0) {
+                    Thread.sleep(tRemaining)
                 }
             }
+        } catch (e: InterruptedException) {
+            AgentNDK.log.error("ANR monitor caught $e")
+            Thread.currentThread().interrupt()
+        } finally {
+            handler.removeCallbacks(runner)
+            monitorThread.quitSafely()
         }
-
-        monitorThread.quitSafely()
     }
 
     fun createANRReport(anrAsJson: String? = null) {
