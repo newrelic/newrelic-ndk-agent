@@ -6,6 +6,7 @@
 
 #include <unistd.h>
 #include <dirent.h>
+#include <cinttypes>
 #include <string>
 #include <sys/ucontext.h>
 #include <asm/sigcontext.h>
@@ -121,9 +122,10 @@ static std::string _EMIT_A(std::string &state, const char *name, const char *cst
 }
 
 __unused static const char *frame_to_string(stackframe_t &stackframe, std::string &frame) {
-    _EMIT_F(frame, "#%02zu pc %016x %s", stackframe.index, stackframe.pc, stackframe.so_path);
+    _EMIT_F(frame, "#%02zu pc %016" PRIxPTR " %s", stackframe.index, stackframe.pc,
+            stackframe.so_path);
     if (*stackframe.sym_name != '\0') {
-        _EMIT_F(frame, " (%s+%d)", stackframe.sym_name, stackframe.sym_addr_offset);
+        _EMIT_F(frame, " (%s+%" PRIuPTR ")", stackframe.sym_name, stackframe.sym_addr_offset);
     }
     if (*stackframe.build_id != '\0') {
         _EMIT_F(frame, " (BuildId: %s)", stackframe.build_id);
@@ -135,7 +137,7 @@ static const char *frame_to_json(stackframe_t &stackframe, std::string &state) {
     std::string frame, cstr;
 
     _EMIT_F(frame, "'cstr':'%s',", frame_to_string(stackframe, cstr));
-    _EMIT_F(frame, "'index':%d,", stackframe.index);
+    _EMIT_F(frame, "'index':%zu,", stackframe.index);
     _EMIT_F(frame, "'address':%zu,", stackframe.address);
     _EMIT_F(frame, "'pc':%zu,", stackframe.pc);
     _EMIT_F(frame, "'so_base':%zu,", stackframe.so_base);
