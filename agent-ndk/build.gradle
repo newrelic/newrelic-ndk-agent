@@ -94,6 +94,15 @@ android {
         jvmTarget = "1.8"
     }
 
+    // Kotlin is held at 1.7 to stay readable by the main agent. The test-only libraries pulled in
+    // by Robolectric (androidx.test, kotlin-stdlib 1.9) are newer than that compiler can read, so
+    // skip the metadata check for test compilation only; the shipped artifact is unaffected.
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        if (name.contains("UnitTest")) {
+            kotlinOptions.freeCompilerArgs += ["-Xskip-metadata-version-check"]
+        }
+    }
+
     testOptions {
         unitTests {
             returnDefaultValues = true
