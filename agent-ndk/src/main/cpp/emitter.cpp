@@ -273,13 +273,14 @@ const char *emit_registers(const ucontext_t *sa_ucontext, std::string &state) {
     _EMIT_F(registers, "'fault_address':'%p'", mcontext->fault_address);
 
 #elif defined(__aarch64__)
+    // registers are 64-bit, regardless of how the kernel headers declare them (__u64)
     for (int i = 0; i < 30; i++) {
-        _EMIT_F(registers, "'x%d':'%016x',", i, mcontext->regs[i]);
+        _EMIT_F(registers, "'x%d':'%016" PRIx64 "',", i, static_cast<uint64_t>(mcontext->regs[i]));
     }
-    _EMIT_F(registers, "'lr':'%016x',", mcontext->regs[30]);        // == r30
-    _EMIT_F(registers, "'sp':'%016x',", mcontext->sp);              // == r31
-    _EMIT_F(registers, "'pc':'%016x',", mcontext->pc);              // == r32
-    _EMIT_F(registers, "'pst':'%016x',", mcontext->pstate);         // == r33
+    _EMIT_F(registers, "'lr':'%016" PRIx64 "',", static_cast<uint64_t>(mcontext->regs[30]));    // == r30
+    _EMIT_F(registers, "'sp':'%016" PRIx64 "',", static_cast<uint64_t>(mcontext->sp));          // == r31
+    _EMIT_F(registers, "'pc':'%016" PRIx64 "',", static_cast<uint64_t>(mcontext->pc));          // == r32
+    _EMIT_F(registers, "'pst':'%016" PRIx64 "',", static_cast<uint64_t>(mcontext->pstate));     // == r33
     _EMIT_F(registers, "'fault_address':'%016p'", mcontext->fault_address);
 
 #else

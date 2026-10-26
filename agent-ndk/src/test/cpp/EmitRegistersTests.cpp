@@ -10,11 +10,11 @@
 
 #include "emitter.h"
 
-#if defined(__arm__)
-
-// The expected value of the register is its own value, not its index
+// The expected value of the register is its own value, not its index or a truncation of it
 #define EXPECT_REGISTER(state, name, value) \
     EXPECT_NE(std::string::npos, (state).find("'" name "':'" value "'")) << (state)
+
+#if defined(__arm__)
 
 TEST(EmitRegistersTest, ArmRegistersReportTheirValues) {
     ucontext_t context;
@@ -59,6 +59,36 @@ TEST(EmitRegistersTest, ArmRegistersReportTheirValues) {
     EXPECT_REGISTER(state, "lr", "b000000e");
     EXPECT_REGISTER(state, "pc", "b000000f");
     EXPECT_REGISTER(state, "cpsr", "b0000010");
+}
+
+#elif defined(__aarch64__)
+
+TEST(EmitRegistersTest, Arm64RegistersReportAll64Bits) {
+    ucontext_t context;
+    std::memset(&context, 0, sizeof(context));
+
+    // addresses on 64-bit devices need more than 32 bits
+    mcontext_t &mcontext = context.uc_mcontext;
+    mcontext.regs[0] = 0x7fabcdef12345678ULL;
+    mcontext.regs[1] = 0x0000000000000001ULL;
+    mcontext.regs[28] = 0xb400007a1b2c3d4eULL;
+    mcontext.regs[29] = 0x7ffd00112233aabbULL;
+    mcontext.regs[30] = 0x7a00000000abcdefULL;
+    mcontext.sp = 0x7ffe8000deadbeefULL;
+    mcontext.pc = 0x7b12345678900000ULL;
+    mcontext.pstate = 0x8000000060000000ULL;
+
+    std::string state;
+    emit_registers(&context, state);
+
+    EXPECT_REGISTER(state, "x0", "7fabcdef12345678");
+    EXPECT_REGISTER(state, "x1", "0000000000000001");
+    EXPECT_REGISTER(state, "x28", "b400007a1b2c3d4e");
+    EXPECT_REGISTER(state, "x29", "7ffd00112233aabb");
+    EXPECT_REGISTER(state, "lr", "7a00000000abcdef");
+    EXPECT_REGISTER(state, "sp", "7ffe8000deadbeef");
+    EXPECT_REGISTER(state, "pc", "7b12345678900000");
+    EXPECT_REGISTER(state, "pst", "8000000060000000");
 }
 
 #endif  // defined(__arm__)
