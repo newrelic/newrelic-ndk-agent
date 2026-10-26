@@ -52,9 +52,9 @@ class NativeStackFrame(
             buildId = frame.optString("build_id", "")
 
             // The absolute address is randomized per process (ASLR) and useless for symbolication
-            // without the so base. Prefer the module-relative pc, which is unresolved (0) only
-            // when dladdr failed to locate the frame.
-            val location = if (pc != 0L) pc else frame.optLong("address", frame.optLong("so_base", -1L))
+            // without the so base. Prefer the module-relative pc; a library base is only recorded
+            // when dladdr located the frame, so without one pc is unresolved, not 0.
+            val location = if (pc != 0L || soBase != 0L) pc else frame.optLong("address", frame.optLong("so_base", -1L))
             val symName = frame.optString("sym_name", "")
             delegate = StackTraceElement(
                 "0x" + location.toString(16),

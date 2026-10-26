@@ -119,6 +119,14 @@ class NativeStackFrameTest : TestCase() {
         Assert.assertEquals("???", element.methodName)
     }
 
+    fun testFromJsonKeepsZeroPcWhenLibraryWasResolved() {
+        // pc is legitimately 0 for the very start of a library; only an unresolved frame
+        // (no library base) should fall back to the absolute address
+        val frame = JSONObject("""{"index":3,"address":4096,"pc":0,"so_base":4096}""")
+        val element = nativeStackFrame.fromJson(frame).asStackTraceElement()
+        Assert.assertEquals("0x0", element.className)
+    }
+
     fun testFromJsonFallsBackToAddressWhenPcUnresolved() {
         // dladdr failed, so only the absolute address is known
         val frame = JSONObject("""{"index":2,"address":2048,"pc":0,"so_base":0}""")
