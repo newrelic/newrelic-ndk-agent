@@ -251,17 +251,17 @@ const char *emit_registers(const ucontext_t *sa_ucontext, std::string &state) {
     _EMIT_F(registers, "'error_code':%d", mcontext->gregs[REG_ERR]);
 
 #elif defined(__arm__)
-    _EMIT_F(registers, "'r0':'%08x',", REG_R0, mcontext->arm_r0);
-    _EMIT_F(registers, "'r1':'%08x',", REG_R1, mcontext->arm_r1);
-    _EMIT_F(registers, "'r2':'%08x',", REG_R2, mcontext->arm_r2);
-    _EMIT_F(registers, "'r3':'%08x',", REG_R3, mcontext->arm_r3);
-    _EMIT_F(registers, "'r4':'%08x',", REG_R4, mcontext->arm_r4);
-    _EMIT_F(registers, "'r5':'%08x',", REG_R5, mcontext->arm_r5);
-    _EMIT_F(registers, "'r6':'%08x',", REG_R6, mcontext->arm_r6);
-    _EMIT_F(registers, "'r7':'%08x',", REG_R7, mcontext->arm_r7);
-    _EMIT_F(registers, "'r8':'%08x',", REG_R8, mcontext->arm_r8);
-    _EMIT_F(registers, "'r9':'%08x',", REG_R9, mcontext->arm_r9);
-    _EMIT_F(registers, "'r10':'%08x',", REG_R10, mcontext->arm_r10);
+    _EMIT_F(registers, "'r0':'%08x',", mcontext->arm_r0);
+    _EMIT_F(registers, "'r1':'%08x',", mcontext->arm_r1);
+    _EMIT_F(registers, "'r2':'%08x',", mcontext->arm_r2);
+    _EMIT_F(registers, "'r3':'%08x',", mcontext->arm_r3);
+    _EMIT_F(registers, "'r4':'%08x',", mcontext->arm_r4);
+    _EMIT_F(registers, "'r5':'%08x',", mcontext->arm_r5);
+    _EMIT_F(registers, "'r6':'%08x',", mcontext->arm_r6);
+    _EMIT_F(registers, "'r7':'%08x',", mcontext->arm_r7);
+    _EMIT_F(registers, "'r8':'%08x',", mcontext->arm_r8);
+    _EMIT_F(registers, "'r9':'%08x',", mcontext->arm_r9);
+    _EMIT_F(registers, "'r10':'%08x',", mcontext->arm_r10);
     _EMIT_F(registers, "'fp':'%08x',", mcontext->arm_fp);
     _EMIT_F(registers, "'ip':'%08x',", mcontext->arm_ip);
     _EMIT_F(registers, "'sp':'%08x',", mcontext->arm_sp);

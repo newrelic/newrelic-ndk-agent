@@ -27,6 +27,7 @@ set(TEST_SOURCES
         ${TEST_SRC_DIR}/AgentNDKTests.cpp
         ${TEST_SRC_DIR}/TestFixtures.cpp
         ${TEST_SRC_DIR}/ElfBuildIdTests.cpp
+        ${TEST_SRC_DIR}/EmitRegistersTests.cpp
         )
 
 add_executable(
