@@ -31,6 +31,7 @@ tasks.register('jacocoTestReport', JacocoReport) {
 }
 
 android {
+    namespace "com.newrelic.agent.android.ndk"
     compileSdkVersion versions.agp.compileSdk
     ndkVersion versions.agp.ndk
 
