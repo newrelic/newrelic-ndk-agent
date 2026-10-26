@@ -16,17 +16,26 @@
 
 namespace sigutils {
 
-    bool set_sigstack(stack_t *_stack, size_t stackSize) {
-        _LOGD("sigutils::set_sigstack (%zu) bytes to stack[%p]", stackSize, _stack);
+    bool ensure_sigstack(size_t stackSize) {
+        _LOGD("sigutils::ensure_sigstack (%zu) bytes on thread [%d]", stackSize, gettid());
 
-        // caller must release this memory
-        _stack->ss_sp = malloc(stackSize);
-        if (_stack->ss_sp != nullptr) {
-            _stack->ss_size = stackSize;
-            _stack->ss_flags = 0;
-            if (0 == sigaltstack(_stack, 0)) {
+        // The runtime gives its threads a stack: replacing it would leave it unowned
+        stack_t current = {};
+        if (0 == sigaltstack(nullptr, &current) && !(current.ss_flags & SS_DISABLE)) {
+            return true;
+        }
+
+        // The stack is per-thread and cannot be unregistered from the other threads, so it is
+        // never freed: a signal delivered on a freed stack corrupts whoever now owns the memory
+        stack_t _stack = {};
+        _stack.ss_sp = malloc(stackSize);
+        if (_stack.ss_sp != nullptr) {
+            _stack.ss_size = stackSize;
+            _stack.ss_flags = 0;
+            if (0 == sigaltstack(&_stack, nullptr)) {
                 return true;
             }
+            free(_stack.ss_sp);
             _LOGE_POSIX("sigaltstack()");
         } else {
             _LOGE("Signal handler is disabled: could not alloc %zu-byte stack", stackSize);

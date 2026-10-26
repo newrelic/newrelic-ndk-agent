@@ -12,7 +12,7 @@ extern "C" {
 
 namespace sigutils {
 
-    bool set_sigstack(stack_t *_stack, size_t stackSize);
+    bool ensure_sigstack(size_t stackSize);
 
     bool block_signal(int signo);
 
