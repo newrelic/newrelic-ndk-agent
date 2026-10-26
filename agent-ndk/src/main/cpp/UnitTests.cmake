@@ -27,7 +27,6 @@ set(TEST_SOURCES
         ${TEST_SRC_DIR}/AgentNDKTests.cpp
         ${TEST_SRC_DIR}/TestFixtures.cpp
         ${TEST_SRC_DIR}/ElfBuildIdTests.cpp
-        ${CMAKE_HOME_DIRECTORY}/elf-build-id.cpp
         )
 
 add_executable(
@@ -37,9 +36,10 @@ add_executable(
 
 target_include_directories(agent-ndk-test PRIVATE ${CMAKE_HOME_DIRECTORY})
 
+# Link the static library: the shared one hides its symbols, so tests could not call into it
 target_link_libraries(
         agent-ndk-test
-        agent-ndk
+        agent-ndk-a
         gtest_main
         gmock_main
 )
