@@ -81,6 +81,10 @@ android {
         doNotStrip '**/debug/**/*.so'
     }
 
+    publishing {
+        singleVariant("release")
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
