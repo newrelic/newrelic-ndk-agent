@@ -24,15 +24,37 @@ class NativeStackFrame(
     var delegate: StackTraceElement =
         StackTraceElement(className, methodName, fileName, lineNumber)
 
+    /** Absolute runtime address of the frame (varies per run due to ASLR) */
+    var address: Long = 0L
+
+    /** Address relative to the base of the containing shared object, as needed by symbolication */
+    var pc: Long = 0L
+
+    /** Base address of the containing shared object */
+    var soBase: Long = 0L
+
+    /** Offset of the frame from the start of the nearest symbol */
+    var symAddrOffset: Long = 0L
+
     fun asStackTraceElement(): StackTraceElement {
         return delegate
     }
 
     fun fromJson(frame: JSONObject): NativeStackFrame {
         try {
+            address = frame.optLong("address", 0L)
+            pc = frame.optLong("pc", 0L)
+            soBase = frame.optLong("so_base", 0L)
+            symAddrOffset = frame.optLong("sym_addr_offset", 0L)
+
+            // The absolute address is randomized per process (ASLR) and useless for symbolication
+            // without the so base. Prefer the module-relative pc, which is unresolved (0) only
+            // when dladdr failed to locate the frame.
+            val location = if (pc != 0L) pc else frame.optLong("address", frame.optLong("so_base", -1L))
+            val symName = frame.optString("sym_name", "")
             delegate = StackTraceElement(
-                "0x" + frame.optLong("address", frame.optLong("so_base", -1L)).toString(16),
-                frame.optString("sym_name", "???"), // "0x" + frame.optLong("sym_addr", -1L).toString(16)),
+                "0x" + location.toString(16),
+                if (symName.isEmpty()) "???" else "$symName+$symAddrOffset",
                 frame.optString("so_path", "0x" + frame.optLong("so_base", -1L).toString(16)),
                 frame.optInt("lineNumber", -2)
             )
