@@ -18,6 +18,10 @@
 #include "signal-utils.h"
 #include "jni/native-context.h"
 
+#ifndef SI_TKILL
+#define SI_TKILL -6
+#endif
+
 /**
  * Append a formatted string to the output state
  * This method can only emit up to 2K characters
@@ -176,6 +180,14 @@ const char *emit_signal_context(const siginfo_t *siginfo, std::string &state) {
                 sigutils::get_signal_description(siginfo->si_signo, -1));
         _EMIT_F(csiginfo, "'signalCode':%d,", siginfo->si_code);
         _EMIT_F(csiginfo, "'faultAddress':%zu", siginfo->si_addr);
+
+        // si_addr is not an address for signals sent by a process: it overlaps the sender's
+        // si_pid and si_uid, which are only valid for these codes
+        if (siginfo->si_code == SI_USER || siginfo->si_code == SI_QUEUE ||
+            siginfo->si_code == SI_TKILL) {
+            _EMIT_F(csiginfo, ",'senderPid':%d,", siginfo->si_pid);
+            _EMIT_F(csiginfo, "'senderUid':%u", siginfo->si_uid);
+        }
 
         _EMIT_E(exception, "signalInfo", csiginfo.c_str(), nullptr);
     }
