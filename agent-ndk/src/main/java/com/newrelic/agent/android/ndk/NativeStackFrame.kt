@@ -36,6 +36,9 @@ class NativeStackFrame(
     /** Offset of the frame from the start of the nearest symbol */
     var symAddrOffset: Long = 0L
 
+    /** GNU build id (hex) of the containing shared object, empty if it has none */
+    var buildId: String = ""
+
     fun asStackTraceElement(): StackTraceElement {
         return delegate
     }
@@ -46,6 +49,7 @@ class NativeStackFrame(
             pc = frame.optLong("pc", 0L)
             soBase = frame.optLong("so_base", 0L)
             symAddrOffset = frame.optLong("sym_addr_offset", 0L)
+            buildId = frame.optString("build_id", "")
 
             // The absolute address is randomized per process (ASLR) and useless for symbolication
             // without the so base. Prefer the module-relative pc, which is unresolved (0) only
@@ -55,7 +59,9 @@ class NativeStackFrame(
             delegate = StackTraceElement(
                 "0x" + location.toString(16),
                 if (symName.isEmpty()) "???" else "$symName+$symAddrOffset",
-                frame.optString("so_path", "0x" + frame.optLong("so_base", -1L).toString(16)),
+                libraryWithBuildId(
+                    frame.optString("so_path", "0x" + frame.optLong("so_base", -1L).toString(16))
+                ),
                 frame.optInt("lineNumber", -2)
             )
         } catch (e: Exception) {
@@ -63,6 +69,14 @@ class NativeStackFrame(
         }
 
         return this
+    }
+
+    /**
+     * A stack trace element has no field for the build id, which is what matches a frame to the
+     * symbols of the library it is in, so it is reported with the library path.
+     */
+    private fun libraryWithBuildId(library: String): String {
+        return if (buildId.isEmpty()) library else "$library (BuildId: $buildId)"
     }
 
     fun fromJson(stackFrameAsStr: String): NativeStackFrame {

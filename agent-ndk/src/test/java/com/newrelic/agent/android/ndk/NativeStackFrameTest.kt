@@ -68,6 +68,32 @@ class NativeStackFrameTest : TestCase() {
         Assert.assertEquals(136L, nativeStackFrame.symAddrOffset)
     }
 
+    fun testFromJsonExposesBuildId() {
+        nativeStackFrame.fromJson(stackframe!!)
+        Assert.assertEquals("5a1b981dacc1ec9dbd70a074a87b5195c6280545", nativeStackFrame.buildId)
+    }
+
+    fun testFromJsonReportsBuildIdWithLibraryPath() {
+        // the build id is needed to find the matching symbols, and the stack trace element has
+        // no other place to carry it
+        val element = nativeStackFrame.fromJson(stackframe!!).asStackTraceElement()
+        Assert.assertTrue(element.fileName.startsWith("/data/app/~~"))
+        Assert.assertTrue(
+            element.fileName.endsWith(
+                "libnative-lib.so (BuildId: 5a1b981dacc1ec9dbd70a074a87b5195c6280545)"
+            )
+        )
+    }
+
+    fun testFromJsonWithoutBuildIdLeavesLibraryPathUnchanged() {
+        val frame = JSONObject(
+            """{"index":1,"address":100,"pc":4096,"so_base":0,"so_path":"/system/lib64/libc.so"}"""
+        )
+        val nativeFrame = nativeStackFrame.fromJson(frame)
+        Assert.assertEquals("", nativeFrame.buildId)
+        Assert.assertEquals("/system/lib64/libc.so", nativeFrame.asStackTraceElement().fileName)
+    }
+
     fun testFromJsonReportsModuleRelativePcNotAbsoluteAddress() {
         // frame 0 of the sample app crash: the absolute address changes on every run (ASLR),
         // only the module-relative pc and symbol offset can be symbolicated
