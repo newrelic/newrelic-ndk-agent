@@ -26,12 +26,16 @@ set(TEST_SRC_DIR ${CMAKE_HOME_DIRECTORY}/../../test/cpp)
 set(TEST_SOURCES
         ${TEST_SRC_DIR}/AgentNDKTests.cpp
         ${TEST_SRC_DIR}/TestFixtures.cpp
+        ${TEST_SRC_DIR}/ElfBuildIdTests.cpp
+        ${CMAKE_HOME_DIRECTORY}/elf-build-id.cpp
         )
 
 add_executable(
         agent-ndk-test
         ${TEST_SOURCES}
 )
+
+target_include_directories(agent-ndk-test PRIVATE ${CMAKE_HOME_DIRECTORY})
 
 target_link_libraries(
         agent-ndk-test

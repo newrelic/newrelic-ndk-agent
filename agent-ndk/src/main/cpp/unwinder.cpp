@@ -100,6 +100,8 @@ void transform_addr_to_stackframe(size_t index, uintptr_t address, stackframe_t 
         // _position-independent code_ (-fPIC, -pie) options.
         // Android requires position-independent code since Android 5.0.
         stackframe.so_base = reinterpret_cast<uintptr_t>(info.dli_fbase);
+        elfutil::get_gnu_build_id(info.dli_fbase, stackframe.build_id,
+                                  sizeof(stackframe.build_id));
         stackframe.sym_addr = reinterpret_cast<uintptr_t>(info.dli_saddr);
         if (stackframe.sym_addr != 0) {
             stackframe.sym_addr_offset = reinterpret_cast<uintptr_t>(address - stackframe.sym_addr);

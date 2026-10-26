@@ -125,6 +125,9 @@ __unused static const char *frame_to_string(stackframe_t &stackframe, std::strin
     if (*stackframe.sym_name != '\0') {
         _EMIT_F(frame, " (%s+%d)", stackframe.sym_name, stackframe.sym_addr_offset);
     }
+    if (*stackframe.build_id != '\0') {
+        _EMIT_F(frame, " (BuildId: %s)", stackframe.build_id);
+    }
     return frame.c_str();
 }
 
@@ -144,6 +147,9 @@ static const char *frame_to_json(stackframe_t &stackframe, std::string &state) {
     }
     if (*stackframe.sym_name != '\0') {
         _EMIT_F(frame, ",'sym_name':'%s'", stackframe.sym_name);
+    }
+    if (*stackframe.build_id != '\0') {
+        _EMIT_F(frame, ",'build_id':'%s'", stackframe.build_id);
     }
 
     _EMIT_E(state, nullptr, frame.c_str(), nullptr);
