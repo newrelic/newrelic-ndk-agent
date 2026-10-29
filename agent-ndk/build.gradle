@@ -31,6 +31,7 @@ tasks.register('jacocoTestReport', JacocoReport) {
 }
 
 android {
+    namespace "com.newrelic.agent.android.ndk"
     compileSdkVersion versions.agp.compileSdk
     ndkVersion versions.agp.ndk
 
@@ -80,6 +81,10 @@ android {
         doNotStrip '**/debug/**/*.so'
     }
 
+    publishing {
+        singleVariant("release")
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -87,6 +92,15 @@ android {
 
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+
+    // Kotlin is held at 1.7 to stay readable by the main agent. The test-only libraries pulled in
+    // by Robolectric (androidx.test, kotlin-stdlib 1.9) are newer than that compiler can read, so
+    // skip the metadata check for test compilation only; the shipped artifact is unaffected.
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        if (name.contains("UnitTest")) {
+            kotlinOptions.freeCompilerArgs += ["-Xskip-metadata-version-check"]
+        }
     }
 
     testOptions {
