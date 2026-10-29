@@ -1,5 +1,5 @@
 {
-  "cstr": "#01 pc 000000000000ee18 /data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so (crashBySignal(int) + 136)",
+  "cstr": "#01 pc 000000000000ee18 /data/app/~~drCMAmz0dSQm6mlONCOjVg==/com.newrelic.agent.android.ndk.test-e5mUVFTNlXK8Pham88uhow==/base.apk!/lib/x86_64/libnative-lib.so (crashBySignal(int) + 136) (BuildId: 5a1b981dacc1ec9dbd70a074a87b5195c6280545)",
   "index": 1,
   "address": 128939423493656,
   "pc": 60952,
@@ -7,5 +7,6 @@
   "sym_name": "crashBySignal(int)",
   "so_base": 128939423432704,
   "sym_addr": 128939423493520,
-  "sym_addr_offset": 136
+  "sym_addr_offset": 136,
+  "build_id": "5a1b981dacc1ec9dbd70a074a87b5195c6280545"
 }

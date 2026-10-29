@@ -31,9 +31,6 @@ void uninstall_handler();
 
 observed_signal_t *observed_signal_get_or_null(int);
 
-/* replacement stack */
-static stack_t _stack = {};
-
 /* Module-wide mutex */
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -137,21 +134,10 @@ void uninstall_handler() {
     }
 }
 
-/**
- * release all alloc'd heap:
- */
-void dealloc() {
-    if (_stack.ss_sp != nullptr) {
-        free(_stack.ss_sp);
-        _stack.ss_sp = nullptr;
-        _LOGI("Handler signal stack freed(%zu bytes)", _stack.ss_size);
-    }
-}
-
 bool signal_handler_initialize() {
     if (0 == pthread_mutex_lock(&mutex)) {
 
-        if (!sigutils::set_sigstack(&_stack, SIGSTKSZ * 2)) {
+        if (!sigutils::ensure_sigstack(SIGSTKSZ * 2)) {
             _LOGE("Signal handlers are disabled: could not set the handler signal stack");
             return false;
         }
@@ -183,13 +169,12 @@ bool signal_handler_initialize() {
 }
 
 /**
- * Remove all installed signal interceptors, clean up all alloc'd memory
+ * Remove all installed signal interceptors
  */
 void signal_handler_shutdown() {
     _LOGI("Shutting down signal handler");
     if (0 == pthread_mutex_lock(&mutex)) {
         uninstall_handler();
-        dealloc();
         if (0 == pthread_mutex_unlock(&mutex)) {
             _LOGI("The signal handler has shutdown");
             return;
