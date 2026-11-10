@@ -24,16 +24,44 @@ class NativeStackFrame(
     var delegate: StackTraceElement =
         StackTraceElement(className, methodName, fileName, lineNumber)
 
+    /** Absolute runtime address of the frame (varies per run due to ASLR) */
+    var address: Long = 0L
+
+    /** Address relative to the base of the containing shared object, as needed by symbolication */
+    var pc: Long = 0L
+
+    /** Base address of the containing shared object */
+    var soBase: Long = 0L
+
+    /** Offset of the frame from the start of the nearest symbol */
+    var symAddrOffset: Long = 0L
+
+    /** GNU build id (hex) of the containing shared object, empty if it has none */
+    var buildId: String = ""
+
     fun asStackTraceElement(): StackTraceElement {
         return delegate
     }
 
     fun fromJson(frame: JSONObject): NativeStackFrame {
         try {
+            address = frame.optLong("address", 0L)
+            pc = frame.optLong("pc", 0L)
+            soBase = frame.optLong("so_base", 0L)
+            symAddrOffset = frame.optLong("sym_addr_offset", 0L)
+            buildId = frame.optString("build_id", "")
+
+            // The absolute address is randomized per process (ASLR) and useless for symbolication
+            // without the so base. Prefer the module-relative pc; a library base is only recorded
+            // when dladdr located the frame, so without one pc is unresolved, not 0.
+            val location = if (pc != 0L || soBase != 0L) pc else frame.optLong("address", frame.optLong("so_base", -1L))
+            val symName = frame.optString("sym_name", "")
             delegate = StackTraceElement(
-                "0x" + frame.optLong("address", frame.optLong("so_base", -1L)).toString(16),
-                frame.optString("sym_name", "???"), // "0x" + frame.optLong("sym_addr", -1L).toString(16)),
-                frame.optString("so_path", "0x" + frame.optLong("so_base", -1L).toString(16)),
+                "0x" + location.toString(16),
+                if (symName.isEmpty()) "???" else "$symName+$symAddrOffset",
+                libraryWithBuildId(
+                    frame.optString("so_path", "0x" + frame.optLong("so_base", -1L).toString(16))
+                ),
                 frame.optInt("lineNumber", -2)
             )
         } catch (e: Exception) {
@@ -41,6 +69,14 @@ class NativeStackFrame(
         }
 
         return this
+    }
+
+    /**
+     * A stack trace element has no field for the build id, which is what matches a frame to the
+     * symbols of the library it is in, so it is reported with the library path.
+     */
+    private fun libraryWithBuildId(library: String): String {
+        return if (buildId.isEmpty()) library else "$library (BuildId: $buildId)"
     }
 
     fun fromJson(stackFrameAsStr: String): NativeStackFrame {

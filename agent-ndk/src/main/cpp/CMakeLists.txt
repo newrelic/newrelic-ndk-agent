@@ -29,6 +29,7 @@ add_library(agent-ndk
         serializer.cpp
         backtrace.cpp
         emitter.cpp
+        elf-build-id.cpp
         )
 
 find_library(log-lib log)
@@ -60,6 +61,7 @@ add_library(agent-ndk-a
         serializer.cpp
         backtrace.cpp
         emitter.cpp
+        elf-build-id.cpp
         )
 
 target_include_directories(agent-ndk-a PUBLIC include)

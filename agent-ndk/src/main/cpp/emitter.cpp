@@ -6,6 +6,7 @@
 
 #include <unistd.h>
 #include <dirent.h>
+#include <cinttypes>
 #include <string>
 #include <sys/ucontext.h>
 #include <asm/sigcontext.h>
@@ -17,6 +18,10 @@
 #include "procfs.h"
 #include "signal-utils.h"
 #include "jni/native-context.h"
+
+#ifndef SI_TKILL
+#define SI_TKILL -6
+#endif
 
 /**
  * Append a formatted string to the output state
@@ -117,9 +122,13 @@ static std::string _EMIT_A(std::string &state, const char *name, const char *cst
 }
 
 __unused static const char *frame_to_string(stackframe_t &stackframe, std::string &frame) {
-    _EMIT_F(frame, "#%02zu pc %016x %s", stackframe.index, stackframe.pc, stackframe.so_path);
+    _EMIT_F(frame, "#%02zu pc %016" PRIxPTR " %s", stackframe.index, stackframe.pc,
+            stackframe.so_path);
     if (*stackframe.sym_name != '\0') {
-        _EMIT_F(frame, " (%s+%d)", stackframe.sym_name, stackframe.sym_addr_offset);
+        _EMIT_F(frame, " (%s+%" PRIuPTR ")", stackframe.sym_name, stackframe.sym_addr_offset);
+    }
+    if (*stackframe.build_id != '\0') {
+        _EMIT_F(frame, " (BuildId: %s)", stackframe.build_id);
     }
     return frame.c_str();
 }
@@ -128,7 +137,7 @@ static const char *frame_to_json(stackframe_t &stackframe, std::string &state) {
     std::string frame, cstr;
 
     _EMIT_F(frame, "'cstr':'%s',", frame_to_string(stackframe, cstr));
-    _EMIT_F(frame, "'index':%d,", stackframe.index);
+    _EMIT_F(frame, "'index':%zu,", stackframe.index);
     _EMIT_F(frame, "'address':%zu,", stackframe.address);
     _EMIT_F(frame, "'pc':%zu,", stackframe.pc);
     _EMIT_F(frame, "'so_base':%zu,", stackframe.so_base);
@@ -140,6 +149,9 @@ static const char *frame_to_json(stackframe_t &stackframe, std::string &state) {
     }
     if (*stackframe.sym_name != '\0') {
         _EMIT_F(frame, ",'sym_name':'%s'", stackframe.sym_name);
+    }
+    if (*stackframe.build_id != '\0') {
+        _EMIT_F(frame, ",'build_id':'%s'", stackframe.build_id);
     }
 
     _EMIT_E(state, nullptr, frame.c_str(), nullptr);
@@ -176,6 +188,14 @@ const char *emit_signal_context(const siginfo_t *siginfo, std::string &state) {
                 sigutils::get_signal_description(siginfo->si_signo, -1));
         _EMIT_F(csiginfo, "'signalCode':%d,", siginfo->si_code);
         _EMIT_F(csiginfo, "'faultAddress':%zu", siginfo->si_addr);
+
+        // si_addr is not an address for signals sent by a process: it overlaps the sender's
+        // si_pid and si_uid, which are only valid for these codes
+        if (siginfo->si_code == SI_USER || siginfo->si_code == SI_QUEUE ||
+            siginfo->si_code == SI_TKILL) {
+            _EMIT_F(csiginfo, ",'senderPid':%d,", siginfo->si_pid);
+            _EMIT_F(csiginfo, "'senderUid':%u", siginfo->si_uid);
+        }
 
         _EMIT_E(exception, "signalInfo", csiginfo.c_str(), nullptr);
     }
@@ -231,17 +251,17 @@ const char *emit_registers(const ucontext_t *sa_ucontext, std::string &state) {
     _EMIT_F(registers, "'error_code':%d", mcontext->gregs[REG_ERR]);
 
 #elif defined(__arm__)
-    _EMIT_F(registers, "'r0':'%08x',", REG_R0, mcontext->arm_r0);
-    _EMIT_F(registers, "'r1':'%08x',", REG_R1, mcontext->arm_r1);
-    _EMIT_F(registers, "'r2':'%08x',", REG_R2, mcontext->arm_r2);
-    _EMIT_F(registers, "'r3':'%08x',", REG_R3, mcontext->arm_r3);
-    _EMIT_F(registers, "'r4':'%08x',", REG_R4, mcontext->arm_r4);
-    _EMIT_F(registers, "'r5':'%08x',", REG_R5, mcontext->arm_r5);
-    _EMIT_F(registers, "'r6':'%08x',", REG_R6, mcontext->arm_r6);
-    _EMIT_F(registers, "'r7':'%08x',", REG_R7, mcontext->arm_r7);
-    _EMIT_F(registers, "'r8':'%08x',", REG_R8, mcontext->arm_r8);
-    _EMIT_F(registers, "'r9':'%08x',", REG_R9, mcontext->arm_r9);
-    _EMIT_F(registers, "'r10':'%08x',", REG_R10, mcontext->arm_r10);
+    _EMIT_F(registers, "'r0':'%08x',", mcontext->arm_r0);
+    _EMIT_F(registers, "'r1':'%08x',", mcontext->arm_r1);
+    _EMIT_F(registers, "'r2':'%08x',", mcontext->arm_r2);
+    _EMIT_F(registers, "'r3':'%08x',", mcontext->arm_r3);
+    _EMIT_F(registers, "'r4':'%08x',", mcontext->arm_r4);
+    _EMIT_F(registers, "'r5':'%08x',", mcontext->arm_r5);
+    _EMIT_F(registers, "'r6':'%08x',", mcontext->arm_r6);
+    _EMIT_F(registers, "'r7':'%08x',", mcontext->arm_r7);
+    _EMIT_F(registers, "'r8':'%08x',", mcontext->arm_r8);
+    _EMIT_F(registers, "'r9':'%08x',", mcontext->arm_r9);
+    _EMIT_F(registers, "'r10':'%08x',", mcontext->arm_r10);
     _EMIT_F(registers, "'fp':'%08x',", mcontext->arm_fp);
     _EMIT_F(registers, "'ip':'%08x',", mcontext->arm_ip);
     _EMIT_F(registers, "'sp':'%08x',", mcontext->arm_sp);
@@ -253,13 +273,14 @@ const char *emit_registers(const ucontext_t *sa_ucontext, std::string &state) {
     _EMIT_F(registers, "'fault_address':'%p'", mcontext->fault_address);
 
 #elif defined(__aarch64__)
+    // registers are 64-bit, regardless of how the kernel headers declare them (__u64)
     for (int i = 0; i < 30; i++) {
-        _EMIT_F(registers, "'x%d':'%016x',", i, mcontext->regs[i]);
+        _EMIT_F(registers, "'x%d':'%016" PRIx64 "',", i, static_cast<uint64_t>(mcontext->regs[i]));
     }
-    _EMIT_F(registers, "'lr':'%016x',", mcontext->regs[30]);        // == r30
-    _EMIT_F(registers, "'sp':'%016x',", mcontext->sp);              // == r31
-    _EMIT_F(registers, "'pc':'%016x',", mcontext->pc);              // == r32
-    _EMIT_F(registers, "'pst':'%016x',", mcontext->pstate);         // == r33
+    _EMIT_F(registers, "'lr':'%016" PRIx64 "',", static_cast<uint64_t>(mcontext->regs[30]));    // == r30
+    _EMIT_F(registers, "'sp':'%016" PRIx64 "',", static_cast<uint64_t>(mcontext->sp));          // == r31
+    _EMIT_F(registers, "'pc':'%016" PRIx64 "',", static_cast<uint64_t>(mcontext->pc));          // == r32
+    _EMIT_F(registers, "'pst':'%016" PRIx64 "',", static_cast<uint64_t>(mcontext->pstate));     // == r33
     _EMIT_F(registers, "'fault_address':'%016p'", mcontext->fault_address);
 
 #else

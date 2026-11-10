@@ -8,6 +8,7 @@
 
 #include <agent-ndk.h>
 #include <vector>
+#include "elf-build-id.h"
 
 #ifndef PATH_MAX
 #define PATH_MAX 1024
@@ -68,6 +69,7 @@ typedef struct stackframe {
     uintptr_t so_base;          // Base address of shared object
     uintptr_t sym_addr;         // Address of nearest symbol
     uintptr_t sym_addr_offset;  // Offset from symbol
+    char build_id[elfutil::BUILD_ID_HEX_SZ_MAX];    // GNU build id of shared object (hex), if any
 
 }   stackframe_t;
 
